@@ -1,0 +1,8 @@
+.vs/
+.vscode/
+.clion/
+.idea/
+
+out/
+bin/
+build/
