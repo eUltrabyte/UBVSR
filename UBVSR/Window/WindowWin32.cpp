@@ -77,6 +77,14 @@ void WindowWin32::create()
 
 void WindowWin32::update()
 {
+	m_hdc = GetDC(m_hwnd);
+
+	static auto hdcBack = CreateCompatibleDC(m_hdc);
+	static auto backBuffer = CreateCompatibleBitmap(m_hdc, get_win_width(), get_win_height());
+	SelectObject(hdcBack, backBuffer);
+
+	BitBlt(hdcBack, 0, 0, get_win_width(), get_win_height(), m_hdc, 0, 0, SRCCOPY);
+
 	ReleaseDC(m_hwnd, m_hdc);
 	UpdateWindow(m_hwnd);
 
@@ -86,7 +94,8 @@ void WindowWin32::update()
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
-	m_hdc = GetDC(m_hwnd);
+
+	//
 }
 
 void WindowWin32::destroy()
@@ -115,7 +124,7 @@ HWND WindowWin32::get_hwnd() const
 HDC WindowWin32::get_hdc() const
 {
 	return m_hdc;
-}// namespace ubv
-};
+} // namespace ubv
+}; // namespace ubv
 
 #endif

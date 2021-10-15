@@ -10,23 +10,21 @@ void loop()
 
 	while (true)
 	{
-		SwapBuffers(window.get_hdc());
 
 		static FpsCounter fps_counter;
 		// InvalidateRect(window.get_hwnd(), 0, true);
 
 		auto t2 = std::chrono::steady_clock::now();
 		double elapsed_time = std::chrono::duration<double>(t2 - t1).count();
-		std::cout << "FPS: " << fps_counter.update() << std::endl;
+		printf("FPS: %i \n", fps_counter.update());
 
 		const auto threads_n = std::thread::hardware_concurrency();
-		std::cout << threads_n << "\n";
 
 		std::vector<std::thread> threads;
 		for (unsigned i = 0; i < threads_n; ++i)
 		{
 			threads.emplace_back([&]() {
-				for (int x = i; x < window.get_win_width(); x += threads_n)
+				for (int x = 0; x < window.get_win_width(); ++x)
 				{
 					for (int y = i; y < window.get_win_height(); y += threads_n)
 					{
@@ -72,9 +70,7 @@ try
 	loop();
 
 	std::cout << "Goodbye UBVSR\n";
-
 	std::cin.get();
-
 	return 0;
 }
 catch (const std::exception &exception)
