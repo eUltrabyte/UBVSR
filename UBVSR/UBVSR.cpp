@@ -10,6 +10,8 @@ void loop()
 
 	while (true)
 	{
+		SwapBuffers(window.get_hdc());
+
 		static FpsCounter fps_counter;
 		// InvalidateRect(window.get_hwnd(), 0, true);
 
@@ -24,7 +26,7 @@ void loop()
 		for (unsigned i = 0; i < threads_n; ++i)
 		{
 			threads.emplace_back([&]() {
-				for (int x = 0; x < window.get_win_width(); ++x)
+				for (int x = i; x < window.get_win_width(); x += threads_n)
 				{
 					for (int y = i; y < window.get_win_height(); y += threads_n)
 					{
@@ -48,36 +50,34 @@ void loop()
 
 						window.set_pixel(x, y, colors[0], colors[1], colors[2]);
 
-						// std::async(std::launch::async, [window, x, y, elapsed_time](ubv::WindowWin32 window, int x,
-						// int y, double elapsed_time) { window.set_pixel(x, y, x + elapsed_time * 8.0, y + elapsed_time
-						// * 8.0, (x + y) + elapsed_time * 8.0); });
+						// std::async(std::launch::async, [&]() { window.set_pixel(x, y, x + elapsed_time * 8.0, y + elapsed_time * 8.0, (x + y) + elapsed_time * 8.0); });
 					}
 				}
 			});
-
-			threads.at(i).join();
+			threads[i].join();
 		}
+
 
 		window.update();
-		}
 	}
+}
 
-	int main(int, char **)
-	try
-	{
-		std::cout << "Hello UBVSR.\n";
+int main(int, char **)
+try
+{
+	std::cout << "Hello UBVSR.\n";
 
-		//std::thread t1(loop);
-		//t1.join();
-		loop();
+	//std::thread t1(loop);
+	//t1.join();
+	loop();
 
-		std::cout << "Goodbye UBVSR\n";
+	std::cout << "Goodbye UBVSR\n";
 
-		std::cin.get();
+	std::cin.get();
 
-		return 0;
-	}
-	catch (const std::exception &exception)
-	{
-		std::cout << "Fatal error!\n" << exception.what() << std::flush;
-	}
+	return 0;
+}
+catch (const std::exception &exception)
+{
+	std::cout << "Fatal error!\n" << exception.what() << std::flush;
+}

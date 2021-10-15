@@ -111,6 +111,11 @@ HWND WindowWin32::get_hwnd() const
 {
 	return m_hwnd;
 }
-}; // namespace ubv
+
+HDC WindowWin32::get_hdc() const
+{
+	return m_hdc;
+}// namespace ubv
+};
 
 #endif

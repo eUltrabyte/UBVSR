@@ -21,6 +21,7 @@ class WindowWin32 : public Window
 
 	HINSTANCE get_hinstance() const;
 	HWND get_hwnd() const;
+	HDC get_hdc() const;
 
   private:
 	HINSTANCE m_hinstance;
