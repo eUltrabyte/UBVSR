@@ -23,6 +23,11 @@ class WindowWin32 : public Window
 	HWND get_hwnd() const;
 	HDC get_hdc() const;
 
+public:
+
+	HBITMAP m_bitmap;
+	HDC m_memDC;
+
   private:
 	HINSTANCE m_hinstance;
 	HWND m_hwnd;

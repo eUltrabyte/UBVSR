@@ -70,22 +70,24 @@ void WindowWin32::create()
 		throw std::runtime_error("Failed to create window");
 	}
 
+
 	m_hdc = GetDC(m_hwnd);
+	m_memDC = CreateCompatibleDC(m_hdc);
+	m_bitmap = CreateCompatibleBitmap(m_hdc, get_win_width(), get_win_height());
+	SelectObject(m_memDC, m_bitmap);
 
 	ShowWindow(m_hwnd, SW_SHOW);
 }
 
 void WindowWin32::update()
 {
-	m_hdc = GetDC(m_hwnd);
+ 
+	
+	BitBlt(m_hdc, 0, 0, 1280, 720, m_memDC, 0, 0, SRCCOPY);
+	//BitBlt(m_hdc, 0, 0, 1280, 720, m_memDC, 0, 0, WHITENESS);
+	// ReleaseDC(m_hwnd, m_memDC);
 
-	static auto hdcBack = CreateCompatibleDC(m_hdc);
-	static auto backBuffer = CreateCompatibleBitmap(m_hdc, get_win_width(), get_win_height());
-	SelectObject(hdcBack, backBuffer);
-
-	BitBlt(hdcBack, 0, 0, get_win_width(), get_win_height(), m_hdc, 0, 0, SRCCOPY);
-
-	ReleaseDC(m_hwnd, m_hdc);
+	// ReleaseDC(m_hwnd, m_hdc);
 	UpdateWindow(m_hwnd);
 
 	MSG message;
@@ -94,8 +96,6 @@ void WindowWin32::update()
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
-
-	//
 }
 
 void WindowWin32::destroy()
@@ -108,7 +108,7 @@ void WindowWin32::destroy()
 void WindowWin32::set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
 							std::uint8_t t_color_b)
 {
-	SetPixel(m_hdc, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
+	SetPixel(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
 }
 
 HINSTANCE WindowWin32::get_hinstance() const
