@@ -4,7 +4,7 @@
 
 void loop()
 {
-	ubv::WindowWin32 window(ubv::WindowProps{ 1280, 720, "Test UBVSR" });
+	ubv::WindowWin32 window(ubv::WindowProps{ 1920, 1080, "Test UBVSR" });
 
 	auto t1 = std::chrono::steady_clock::now();
 
@@ -21,6 +21,7 @@ void loop()
 		//for (unsigned i = 0; i < threads_n; ++i)
 		//{
 			//threads.emplace_back([&]() {
+
 		for (int x = 0; x < window.get_win_width(); ++x)
 		{
 			for (int y = 0; y < window.get_win_height(); ++y)
@@ -43,6 +44,8 @@ void loop()
 					}
 				}
 
+				//tasks.emplace_back(std::async(std::launch::async, &ubv::WindowWin32::set_pixel, &window, x, y, colors[0], colors[1], colors[2]));
+
 				window.set_pixel(x, y, colors[0], colors[1], colors[2]);
 
 				// std::async(std::launch::async, [&]() { window.set_pixel(x, y, x + elapsed_time * 8.0, y + elapsed_time * 8.0, (x + y) + elapsed_time * 8.0); });
@@ -50,9 +53,11 @@ void loop()
 		}
 		//});
 		//threads[i].join();
+
+
+		window.update();
 	}
 	//threads.back().join();
-	window.update();
 }
 
 int main(int, char **)

@@ -82,13 +82,10 @@ void WindowWin32::create()
 void WindowWin32::update()
 {
  
-	
-	BitBlt(m_hdc, 0, 0, 1280, 720, m_memDC, 0, 0, SRCCOPY);
-	//BitBlt(m_hdc, 0, 0, 1280, 720, m_memDC, 0, 0, WHITENESS);
-	// ReleaseDC(m_hwnd, m_memDC);
-
-	// ReleaseDC(m_hwnd, m_hdc);
-	UpdateWindow(m_hwnd);
+	if (!BitBlt(m_hdc, 0, 0, get_win_width(), get_win_height(), m_memDC, 0, 0, SRCCOPY))
+	{
+		throw std::runtime_error("Failed to bit blt");
+	}
 
 	MSG message;
 	if (GetMessage(&message, 0, 0, 0))
@@ -96,6 +93,7 @@ void WindowWin32::update()
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
+	UpdateWindow(m_hwnd);
 }
 
 void WindowWin32::destroy()
@@ -108,7 +106,10 @@ void WindowWin32::destroy()
 void WindowWin32::set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
 							std::uint8_t t_color_b)
 {
-	SetPixel(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
+	if (SetPixel(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b)) == -1)
+	{
+		throw std::runtime_error("Failed to set pixel");
+	}
 }
 
 HINSTANCE WindowWin32::get_hinstance() const
