@@ -27,7 +27,7 @@ WindowWin32::WindowWin32(WindowProps t_win_props) : Window(std::move(t_win_props
 	create();
 }
 
-WindowWin32::~WindowWin32()
+WindowWin32::~WindowWin32() noexcept
 {
 	destroy();
 }
@@ -96,7 +96,7 @@ void WindowWin32::update()
 	UpdateWindow(m_hwnd);
 }
 
-void WindowWin32::destroy()
+void WindowWin32::destroy() noexcept
 {
 	PostQuitMessage(0);
 	DestroyWindow(m_hwnd);
@@ -106,26 +106,9 @@ void WindowWin32::destroy()
 void WindowWin32::set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
 							std::uint8_t t_color_b)
 {
-	if (SetPixel(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b)) == -1)
-	{
-		throw std::runtime_error("Failed to set pixel");
-	}
+	SetPixel(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
 }
 
-HINSTANCE WindowWin32::get_hinstance() const
-{
-	return m_hinstance;
-}
-
-HWND WindowWin32::get_hwnd() const
-{
-	return m_hwnd;
-}
-
-HDC WindowWin32::get_hdc() const
-{
-	return m_hdc;
-} // namespace ubv
 }; // namespace ubv
 
 #endif

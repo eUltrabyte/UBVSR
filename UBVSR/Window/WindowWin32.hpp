@@ -6,22 +6,31 @@
 
 namespace ubv
 {
-class WindowWin32 : public Window
+class WindowWin32 final : public Window
 {
   public:
 	WindowWin32(WindowProps t_win_props);
-	virtual ~WindowWin32();
+	virtual ~WindowWin32() noexcept;
 
 	void create() final;
 	void update() final;
-	void destroy() final;
+	void destroy() noexcept final;
 
 	void set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
 				   std::uint8_t t_color_b) final;
 
-	HINSTANCE get_hinstance() const;
-	HWND get_hwnd() const;
-	HDC get_hdc() const;
+	[[nodiscard]] constexpr HINSTANCE get_hinstance() const noexcept
+	{
+		return m_hinstance;
+	}
+	[[nodiscard]] constexpr HWND get_hwnd() const noexcept
+	{
+		return m_hwnd;
+	}
+	[[nodiscard]] constexpr HDC get_hdc() const noexcept
+	{
+		return m_hdc;
+	}
 
 public:
 
