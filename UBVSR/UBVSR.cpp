@@ -4,7 +4,7 @@
 
 void loop()
 {
-	ubv::WindowWin32 window(ubv::WindowProps{ 1920, 1080, "Test UBVSR" });
+	ubv::WindowWin32 window(ubv::WindowProps{ 1280, 720, "Test UBVSR" });
 
 	auto t1 = std::chrono::steady_clock::now();
 
