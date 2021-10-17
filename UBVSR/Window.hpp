@@ -11,6 +11,8 @@
 #include <iostream>
 #include <string>
 
+#include "Framebuffer.hpp"
+
 namespace ubv
 {
 struct WindowProps

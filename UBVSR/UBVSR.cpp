@@ -7,7 +7,7 @@ void draw_loop(ubv::WindowWin32* window) noexcept
 	const auto t1 = std::chrono::steady_clock::now();
 	while (true)
 	{
-
+		FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 		static FpsCounter fps_counter;
 		// InvalidateRect(window.get_hwnd(), 0, true);
 
@@ -43,7 +43,8 @@ void draw_loop(ubv::WindowWin32* window) noexcept
 
 				//tasks.emplace_back(std::async(std::launch::async, &ubv::WindowWin32::set_pixel, &window, x, y, colors[0], colors[1], colors[2]));
 
-				window->set_pixel(x, y, colors[0], colors[1], colors[2]);
+				//window->set_pixel(x, y, colors[0], colors[1], colors[2]);
+				frame_buffer.set_pixel(x, y, Pixel( colors[0], colors[1], colors[2] ));
 
 				// std::async(std::launch::async, [&]() { window.set_pixel(x, y, x + elapsed_time * 8.0, y + elapsed_time * 8.0, (x + y) + elapsed_time * 8.0); });
 			}
@@ -52,7 +53,7 @@ void draw_loop(ubv::WindowWin32* window) noexcept
 		//threads[i].join();
 
 
-		window->display();
+		window->display(frame_buffer);
 	}
 	//threads.back().join();
 }

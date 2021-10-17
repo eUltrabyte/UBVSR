@@ -100,7 +100,7 @@ void WindowWin32::destroy() noexcept
 void WindowWin32::set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
 							std::uint8_t t_color_b)
 {
-	SetPixel(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
+	SetPixelV(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
 }
 
 }; // namespace ubv
