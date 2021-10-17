@@ -13,7 +13,11 @@ LRESULT CALLBACK WindowProc(HWND t_hwnd, UINT t_msg, WPARAM t_wparam, LPARAM t_l
 		break;
 
 	case WM_DESTROY:
-		PostQuitMessage(0);
+		{
+			DestroyWindow(t_hwnd);
+			PostQuitMessage(0);
+			std::quick_exit(0);
+		}
 		break;
 
 	default:
@@ -60,12 +64,26 @@ void WindowWin32::create()
 		throw std::runtime_error("Failed to register window class");
 	}
 
-	m_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "UBVSR Win32 Window Class", get_win_title().c_str(),
-							WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT,
-							get_win_width(), get_win_height(), 0, 0, m_hinstance, 0);
+	std::uint16_t x = 50;
+	std::uint16_t y = 50;
+	std::uint16_t w = get_win_width() + 4;
+	std::uint16_t h = get_win_height() + 4;
+
+	RECT rect;
+	rect.left = x;
+	rect.top = y;
+	rect.right = x + w;
+	rect.bottom = y + h;
+
+	UINT styles = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+
+	AdjustWindowRectEx(&rect, styles, 0, 0);
+
+	m_hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "UBVSR Win32 Window Class", get_win_title().c_str(), styles, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 0, 0, m_hinstance, 0);
 
 	if (!m_hwnd)
 	{
+		std::cout << "FAILED TO CREATE WINDOW!" << std::endl;
 		UnregisterClass("UBVSR Win32 Window Class", m_hinstance);
 		throw std::runtime_error("Failed to create window");
 	}
