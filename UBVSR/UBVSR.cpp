@@ -12,7 +12,7 @@ void draw_loop(ubv::WindowWin32* window) noexcept
 		// InvalidateRect(window.get_hwnd(), 0, true);
 
 		const auto t2 = std::chrono::steady_clock::now();
-		double elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+		double elapsed_time = std::chrono::duration<double>(t2 - t1).count() * 8.0L;
 		printf("FPS: %i \n", fps_counter.update());
 		//std::vector<std::thread> threads;
 		//for (unsigned i = 0; i < threads_n; ++i)

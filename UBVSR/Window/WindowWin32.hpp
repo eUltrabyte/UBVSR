@@ -58,26 +58,56 @@ class WindowWin32 final : public Window
 		display();
 	}
 
-	inline void display(FrameBuffer &t_frame_buffer)
+	std::vector<std::byte> create_packed_dib(FrameBuffer &t_frame_buffer)
 	{
+		std::vector<std::byte> buffer;
 		SIZE sBmp = {t_frame_buffer.get_width(), t_frame_buffer.get_height()};
-		LPBITMAPINFOHEADER pbi; // the bitmap header from the file, etc.
-		std::memset(&pbi, 0, sizeof(LPBITMAPINFO));
-		pbi.biSize = 0;
+		BITMAPINFOHEADER pbi; // the bitmap header from the file, etc.
+		std::memset(&pbi, 0, sizeof(BITMAPINFOHEADER));
+		pbi.biSize = sizeof(BITMAPINFOHEADER);
 		pbi.biWidth = sBmp.cx;
 		pbi.biHeight = sBmp.cy;
 		pbi.biPlanes = 1; // ???
-		pbi.biBitCount = ;
-		pbi.biCompression;
-		pbi.biSizeImage;
-		pbi.biXPelsPerMeter;
-		pbi.biYPelsPerMeter;
-		pbi.biClrUsed;
-		pbi.biClrImportant;
+		pbi.biBitCount = 24;
+		pbi.biCompression = BI_RGB;
+		pbi.biSizeImage = 0;
+		pbi.biXPelsPerMeter = 2835;
+		pbi.biYPelsPerMeter = 2835;
+		pbi.biClrUsed = 3; // nie wiem w sumie
+		pbi.biClrImportant = 0;
 		LPVOID pvBits = (void *)t_frame_buffer.get_pixel_data().data(); // the raw bitmap bits
+		buffer.resize(sizeof(BITMAPINFOHEADER));
+		*((BITMAPINFOHEADER *)buffer.data()) = pbi;
+		buffer.resize(buffer.size() + (t_frame_buffer.get_pixel_data().size() * 3U));
+		std::memcpy(buffer.data() + sizeof(BITMAPINFOHEADER), t_frame_buffer.get_pixel_data().data(), t_frame_buffer.get_pixel_data().size() * 3U);
+		/* for (const auto &pixel : t_frame_buffer.get_pixel_data())
+		{
+			buffer.push_back(std::byte(pixel.r));
+			buffer.push_back(std::byte(pixel.g));
+			buffer.push_back(std::byte(pixel.b));
+		} */
+		return buffer;
+	}
 
-		StretchDIBits(m_hdc, 0, 0, sBmp.cx, sBmp.cy, 0, 0, sBmp.cx, sBmp.cy, pvBits, (BITMAPINFO *)&pbi, DIB_RGB_COLORS,
-					  SRCCOPY);
+	inline void display(FrameBuffer &t_frame_buffer)
+	{
+		SIZE sBmp = {t_frame_buffer.get_width(), t_frame_buffer.get_height()};
+		
+
+		HBITMAP map =
+			CreateBitmap(t_frame_buffer.get_width(),  // width. 512 in my case
+						 t_frame_buffer.get_height(), // height
+						 1,     // Color Planes, unfortanutelly don't know what is it actually. Let it be 1
+						 8 * 3, // Size of memory for one pixel in bits (in win32 4 bytes = 4*8 bits)
+						 reinterpret_cast<const void *>(t_frame_buffer.get_pixel_data().data())); // pointer to array
+		// Temp HDC to copy picture
+		
+		RECT rect;
+		HBRUSH brush = CreateDIBPatternBrushPt((void*)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS);
+		SetRect(&rect, 0, 0, t_frame_buffer.get_width(), t_frame_buffer.get_height());
+		FillRect(m_hdc, &rect, brush);
+		DeleteObject(brush);
+		//display();
 	}
 
 	void set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
