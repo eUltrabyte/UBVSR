@@ -70,18 +70,14 @@ void WindowWin32::create()
 		throw std::runtime_error("Failed to create window");
 	}
 
-
 	m_hdc = GetDC(m_hwnd);
-	m_memDC = CreateCompatibleDC(m_hdc);
-	m_bitmap = CreateCompatibleBitmap(m_hdc, get_win_width(), get_win_height());
-	SelectObject(m_memDC, m_bitmap);
 
 	ShowWindow(m_hwnd, SW_SHOW);
 }
 
 void WindowWin32::update()
 {
- 	MSG message;
+	MSG message;
 	if (GetMessage(&message, 0, 0, 0))
 	{
 		TranslateMessage(&message);
@@ -95,12 +91,6 @@ void WindowWin32::destroy() noexcept
 	PostQuitMessage(0);
 	DestroyWindow(m_hwnd);
 	UnregisterClass("UBVSR Win32 Window Class", m_hinstance);
-}
-
-void WindowWin32::set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
-							std::uint8_t t_color_b)
-{
-	SetPixelV(m_memDC, t_x, t_y, RGB(t_color_r, t_color_g, t_color_b));
 }
 
 }; // namespace ubv

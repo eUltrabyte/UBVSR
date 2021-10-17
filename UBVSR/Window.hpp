@@ -44,9 +44,6 @@ class Window
 	virtual void update() = 0;
 	virtual void destroy() = 0;
 
-	virtual void set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
-						   std::uint8_t t_color_b) = 0;
-
 	[[nodiscard]] constexpr std::uint16_t get_win_width() const noexcept
 	{
 		return m_win_props.width;
