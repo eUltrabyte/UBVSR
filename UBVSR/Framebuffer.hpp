@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace ubv {
 struct Pixel
 {
 	std::uint8_t b;
@@ -108,7 +109,7 @@ class FrameBuffer
 		{
 			if (steep)
 			{
-				set_pixel(t_p1.y, x, t_color);
+				set_pixel(y, x, t_color);
 			}
 			else
 			{
@@ -174,10 +175,15 @@ class FrameBuffer
 				}
 			}
 		}
+
+		draw_line(t_a, t_b, Pixel{255, 0, 0});
+		draw_line(t_b, t_c, Pixel{0, 255, 0});
+		draw_line(t_c, t_a, Pixel{0, 0, 255});
 	}
 
   private:
 	std::uint32_t m_width;
 	std::uint32_t m_height;
 	std::vector<Pixel> m_pixels_data;
+};
 };
