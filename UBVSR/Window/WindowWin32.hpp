@@ -16,6 +16,14 @@ class WindowWin32 final : public Window
 	void update() final;
 	void destroy() noexcept final;
 
+	inline void display()
+	{
+		if (!BitBlt(m_hdc, 0, 0, get_win_width(), get_win_height(), m_memDC, 0, 0, SRCCOPY))
+		{
+			throw std::runtime_error("Failed to bit blt");
+		}
+	}
+
 	void set_pixel(std::uint16_t t_x, std::uint16_t t_y, std::uint8_t t_color_r, std::uint8_t t_color_g,
 				   std::uint8_t t_color_b) final;
 

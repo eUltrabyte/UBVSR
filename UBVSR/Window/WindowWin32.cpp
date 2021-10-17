@@ -81,13 +81,7 @@ void WindowWin32::create()
 
 void WindowWin32::update()
 {
- 
-	if (!BitBlt(m_hdc, 0, 0, get_win_width(), get_win_height(), m_memDC, 0, 0, SRCCOPY))
-	{
-		throw std::runtime_error("Failed to bit blt");
-	}
-
-	MSG message;
+ 	MSG message;
 	if (GetMessage(&message, 0, 0, 0))
 	{
 		TranslateMessage(&message);

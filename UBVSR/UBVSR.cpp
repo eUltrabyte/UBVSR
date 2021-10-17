@@ -2,19 +2,16 @@
 
 #include "FpsCounter.hpp"
 
-void loop()
+void draw_loop(ubv::WindowWin32* window) noexcept
 {
-	ubv::WindowWin32 window(ubv::WindowProps{ 1280, 720, "Test UBVSR" });
-
-	auto t1 = std::chrono::steady_clock::now();
-
+	const auto t1 = std::chrono::steady_clock::now();
 	while (true)
 	{
 
 		static FpsCounter fps_counter;
 		// InvalidateRect(window.get_hwnd(), 0, true);
 
-		auto t2 = std::chrono::steady_clock::now();
+		const auto t2 = std::chrono::steady_clock::now();
 		double elapsed_time = std::chrono::duration<double>(t2 - t1).count();
 		printf("FPS: %i \n", fps_counter.update());
 		//std::vector<std::thread> threads;
@@ -22,9 +19,9 @@ void loop()
 		//{
 			//threads.emplace_back([&]() {
 
-		for (int x = 0; x < window.get_win_width(); ++x)
+		for (int x = 0; x < window->get_win_width(); ++x)
 		{
-			for (int y = 0; y < window.get_win_height(); ++y)
+			for (int y = 0; y < window->get_win_height(); ++y)
 			{
 
 				std::array<unsigned, 3> colors;
@@ -46,7 +43,7 @@ void loop()
 
 				//tasks.emplace_back(std::async(std::launch::async, &ubv::WindowWin32::set_pixel, &window, x, y, colors[0], colors[1], colors[2]));
 
-				window.set_pixel(x, y, colors[0], colors[1], colors[2]);
+				window->set_pixel(x, y, colors[0], colors[1], colors[2]);
 
 				// std::async(std::launch::async, [&]() { window.set_pixel(x, y, x + elapsed_time * 8.0, y + elapsed_time * 8.0, (x + y) + elapsed_time * 8.0); });
 			}
@@ -55,9 +52,22 @@ void loop()
 		//threads[i].join();
 
 
-		window.update();
+		window->display();
 	}
 	//threads.back().join();
+}
+
+void loop()
+{
+	ubv::WindowWin32 window(ubv::WindowProps{ 1280, 720, "Test UBVSR" });
+	std::thread draw_thread{ draw_loop, &window };
+	draw_thread.detach();
+
+	while (true)
+	{
+		window.update();
+		std::this_thread::yield();
+	}
 }
 
 int main(int, char **)
@@ -65,9 +75,9 @@ try
 {
 	std::cout << "Hello UBVSR.\n";
 
-	//std::thread t1(loop);
-	//t1.join();
-	loop();
+	std::thread t1(loop);
+	t1.join();
+	//loop();
 
 	std::cout << "Goodbye UBVSR\n";
 	std::cin.get();
