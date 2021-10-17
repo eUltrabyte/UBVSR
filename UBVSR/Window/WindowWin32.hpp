@@ -18,9 +18,9 @@ class WindowWin32 final : public Window
 
 	[[nodiscard]] inline std::vector<std::byte> create_packed_dib(FrameBuffer &t_frame_buffer)
 	{
-		std::vector<std::byte> buffer{sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_pixel_data().size() * 3U};
-		SIZE sBmp = {t_frame_buffer.get_width(), t_frame_buffer.get_height()};
-		BITMAPINFOHEADER pbi;
+		static std::vector<std::byte> buffer{sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_pixel_data().size() * 3U};
+		static SIZE sBmp = {t_frame_buffer.get_width(), t_frame_buffer.get_height()};
+		static BITMAPINFOHEADER pbi;
 		pbi.biSize = sizeof(BITMAPINFOHEADER);
 		pbi.biWidth = sBmp.cx;
 		pbi.biHeight = sBmp.cy;
@@ -41,7 +41,7 @@ class WindowWin32 final : public Window
 
 	inline void display(FrameBuffer &t_frame_buffer)
 	{
-		RECT rect;
+		static RECT rect;
 		HBRUSH brush = CreateDIBPatternBrushPt((void *)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS);
 		SetRect(&rect, 0, 0, t_frame_buffer.get_width(), t_frame_buffer.get_height());
 		FillRect(m_hdc, &rect, brush);

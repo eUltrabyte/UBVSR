@@ -91,6 +91,7 @@ void WindowWin32::create()
 	m_hdc = GetDC(m_hwnd);
 
 	ShowWindow(m_hwnd, SW_SHOW);
+	//UpdateWindow(m_hwnd);
 }
 
 void WindowWin32::update()
@@ -101,7 +102,6 @@ void WindowWin32::update()
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
-	UpdateWindow(m_hwnd);
 }
 
 void WindowWin32::destroy() noexcept
