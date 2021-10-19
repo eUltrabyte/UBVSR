@@ -217,7 +217,7 @@ class FrameBuffer
 		//}
 	};
 	
-	fvec2 line_intersection(fvec2 A, fvec2 B, fvec2 C, fvec2 D)
+	inline fvec2 line_intersection(fvec2 A, fvec2 B, fvec2 C, fvec2 D)
 	{
 		// Line AB represented as a1x + b1y = c1
 		const float a1 = B.y - A.y;
@@ -238,7 +238,7 @@ class FrameBuffer
 
 
 
-	void draw_triangle(const std::array<Vertex, 3>& t_vertices)
+	inline void draw_triangle(const std::array<Vertex, 3>& t_vertices)
 	{
 		for (std::uint32_t x = 0; x < m_width; ++x)
 		{
