@@ -30,9 +30,9 @@ void WindowX11::create()
 
 void WindowX11::update()
 {
-	//XNextEvent(m_display, &m_event);
+	XNextEvent(m_display, &m_event);
 
-   // if (m_event.type == Expose)
+   if (m_event.type == Expose)
 	{
 		XPutImage(
 		    m_display,
