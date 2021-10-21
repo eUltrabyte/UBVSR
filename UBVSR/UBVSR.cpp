@@ -120,7 +120,7 @@ void draw_loop(ubv::Window* window) noexcept
 		// 0}, ubv::Pixel(255, 0, 0), ubv::Pixel(0, 255, 0)); frame_buffer.draw_line({0, 0}, {1280, 720},
 		// ubv::Pixel(255, 0, 0), ubv::Pixel(0, 0, 255));
 		window->display(frame_buffer);
-		// window->update();
+		window->update();
 	}
 }
 
@@ -142,10 +142,10 @@ void loop()
 	//std::thread draw_thread(draw_loop, &window);
 	//draw_thread.detach();
 
-	while (true)
-	{
-		window.update();
-	}
+	//while (true)
+	//{
+	//	window.update();
+	//}
 }
 
 int main(int, char **)
