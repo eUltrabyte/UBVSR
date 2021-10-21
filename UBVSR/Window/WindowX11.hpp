@@ -4,13 +4,17 @@
 
 #if defined(__unix__)
 
+namespace std
+{
 
-void swap(const ubv::Pixel& p1, const ubv::Pixel& p2)
+template<>
+void std::swap(const ubv::Pixel& p1, const ubv::Pixel& p2)
 	{
 		std::swap(p1.r, p2.r);
         std::swap(p1.g, p2.g);
         std::swap(p1.b, p2.b);
 	}
+};
 
 namespace ubv
 {
