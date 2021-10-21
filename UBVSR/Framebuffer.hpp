@@ -33,7 +33,7 @@ template <typename T> struct vec2
 	}
 };
 
-static_assert(sizeof(Pixel) == 3);
+//static_assert(sizeof(Pixel) == 3);
 
 class FrameBuffer
 {
