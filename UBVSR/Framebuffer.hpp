@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <cmath>
 
 namespace ubv {
 struct Pixel
@@ -68,7 +69,7 @@ class FrameBuffer
 		return m_pixels_data;
 	}
 
-	inline static Pixel null_pixel;
+	inline static Pixel null_pixel = Pixel();
 
 	inline void clear(Pixel t_color) noexcept
 	{

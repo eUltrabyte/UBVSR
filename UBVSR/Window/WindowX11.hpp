@@ -8,6 +8,7 @@ namespace ubv
 {
 class WindowX11 final : public Window
 {
+public:
 	WindowX11(WindowProps t_win_props);
 	virtual ~WindowX11() noexcept;
 
@@ -25,6 +26,7 @@ private:
     int m_screen;
 	::Window m_window;
     XEvent m_event;
-}
+};
+};
 
 #endif
