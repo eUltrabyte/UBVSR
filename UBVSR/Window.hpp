@@ -21,7 +21,7 @@ struct WindowProps
 	std::uint16_t height;
 	std::string title;
 
-	constexpr explicit WindowProps(std::uint16_t t_width = 0, std::uint16_t t_height = 0,
+	inline explicit WindowProps(std::uint16_t t_width = 0, std::uint16_t t_height = 0,
 								   std::string t_title = "") noexcept
 		: width{t_width}, height{t_height}, title{std::move(t_title)}
 	{
@@ -31,7 +31,7 @@ struct WindowProps
 class Window
 {
   public:
-	constexpr explicit Window(WindowProps t_win_props = WindowProps{}) noexcept : m_win_props{std::move(t_win_props)}
+	inline explicit Window(WindowProps t_win_props = WindowProps{}) noexcept : m_win_props{std::move(t_win_props)}
 	{
 	}
 	virtual ~Window() noexcept = default;
