@@ -23,6 +23,7 @@ void WindowX11::create()
 	XStoreName(m_display, m_window, get_win_title().c_str());
 	XSelectInput(m_display, m_window, ExposureMask | KeyPressMask);
 	XMapWindow(m_display, m_window);
+	XFlush(m_display);
 }
 
 void WindowX11::update()
