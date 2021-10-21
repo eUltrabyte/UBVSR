@@ -129,7 +129,7 @@ void loop()
 	// std::thread draw_thread(draw_loop, &window); // draw_loop(&window);
 	// draw_thread.detach();
 
-	ubv::WindowX11 window;
+	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 
 	while (true)
 	{
