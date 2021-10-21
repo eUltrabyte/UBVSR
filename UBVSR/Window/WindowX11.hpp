@@ -26,8 +26,8 @@ class WindowX11 final : public Window
 			(char*)t_frame_buffer.get_pixel_data().data(),
 			get_win_width(),
 			get_win_height(),
-			32, //nwm
-			get_win_width() * 3U
+			8, //nwm
+			0
 		);
 
 		XPutImage(
