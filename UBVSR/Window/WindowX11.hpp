@@ -11,7 +11,6 @@ class WindowX11 final : public Window
 public:
 	WindowX11(WindowProps t_win_props);
 	virtual ~WindowX11() noexcept;
-	c
 	void create() final;
 	void update() final;
 	void destroy() noexcept final;
