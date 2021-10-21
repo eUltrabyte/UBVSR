@@ -40,6 +40,8 @@ void WindowX11::update()
 		    0, 0, 0, 0,
 		    get_win_width(), get_win_height()
 		);
+		XSync(display, 1);
+		XFlush(display);
 	}
 
 	if (m_event.type == KeyPress)

@@ -21,13 +21,13 @@ class WindowX11 final : public Window
 			m_display,
 			DefaultVisual(m_display, 0),
 			24,
-			XYPixmap, //it can be XYPixmap, or ZPixmap.
+			ZPixmap, //it can be XYPixmap, or ZPixmap.
 			0,
 			(char*)t_frame_buffer.get_pixel_data().data(),
 			get_win_width(),
 			get_win_height(),
-			16, //nwm
-			t_frame_buffer.get_pixel_data().size() * 3U
+			32, //nwm
+			0
 		);
 	}
 
