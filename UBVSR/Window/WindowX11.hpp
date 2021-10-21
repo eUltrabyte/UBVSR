@@ -7,8 +7,8 @@
 namespace std
 {
 
-template<>
-void std::swap(const ubv::Pixel& p1, const ubv::Pixel& p2)
+template<typename T>
+void std::swap(const T<ubv::Pixel>& p1, const T<ubv::Pixel>& p2)
 	{
 		std::swap(p1.r, p2.r);
         std::swap(p1.g, p2.g);
