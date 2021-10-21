@@ -30,14 +30,16 @@ class WindowX11 final : public Window
 			0
 		);
 
-		XPutImage(
-		m_display,
-		m_window,
-		DefaultGC(m_display, m_screen),
-		m_image,
-		0, 0, 0, 0,
-		get_win_width(), get_win_height()
-		);
+        if (m_event.type == Expose) {
+		    XPutImage(
+		    m_display,
+		    m_window,
+		    DefaultGC(m_display, m_screen),
+		    m_image,
+		    0, 0, 0, 0,
+		    get_win_width(), get_win_height()
+		    );
+        }
 	}
 
     XEvent* get_event();
