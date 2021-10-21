@@ -17,15 +17,15 @@ class WindowX11 final : public Window
 
 	inline void display(const FrameBuffer &t_frame_buffer) final
 	{
-		XImage image = XCreateImage(
+		XImage* image = XCreateImage(
 			m_display,
 			DefaultVisual(m_display, 0),
 			24,
 			XYBitmap, //it can be XYPixmap, or ZPixmap.
 			0,
 			(char*)t_frame_buffer.get_pixel_data().data(),
-			get_width(),
-			get_height(),
+			get_win_width(),
+			get_win_height(),
 			32, //nwm
 			0
 		);
