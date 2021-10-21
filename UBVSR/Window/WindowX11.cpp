@@ -4,23 +4,23 @@
 
 namespace ubv
 {
-WindowX11::WindowX11(WindowProps t_win_props)
+WindowX11::WindowX11(WindowProps t_win_props) : Window(std::move(t_win_props))
 {
 	m_display = XOpenDisplay(0);
 	m_screen = DefaultScreen(m_display);
-    create();
+	create();
 }
 
 WindowX11::~WindowX11()
 {
-    destroy();
+	destroy();
 }
 
 void WindowX11::create()
 {
-	m_window = XCreateSimpleWindow(m_display, RootWindow(m_display, m_screen), 10, 10, 1280, 720, 1,
+	m_window = XCreateSimpleWindow(m_display, RootWindow(m_display, m_screen), 10, 10, get_win_width(), get_win_height(), 1,
 								   BlackPixel(m_display, m_screen), WhitePixel(m_display, m_screen));
-
+	XStoreName(m_display, m_window, get_win_title().c_str());
 	XSelectInput(m_display, m_window, ExposureMask | KeyPressMask);
 	XMapWindow(m_display, m_window);
 }
@@ -30,7 +30,7 @@ void WindowX11::update()
 	XNextEvent(m_display, &m_event);
 	if (m_event.type == Expose)
 	{
-        
+		
 		//XSetForeground(display, DefaultGC(display, screen), red.pixel);
 		//XFillRectangle(display, window, DefaultGC(display, screen), 20, 20, 10, 10);
 		//XDrawPoint(display, window, DefaultGC(display, screen), 50, 50);
