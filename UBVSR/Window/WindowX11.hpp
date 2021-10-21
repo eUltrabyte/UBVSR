@@ -36,10 +36,8 @@ class WindowX11 final : public Window
 		DefaultGC(m_display, m_screen),
 		image,
 		0, 0, 0, 0,
-		get_width(), get_height()
+		get_win_width(), get_win_height()
 		);
-
-		XDestroyImage(image);
 	}
 
   private:
