@@ -30,9 +30,7 @@ void WindowX11::create()
 
 void WindowX11::update()
 {
-	// XNextEvent(m_display, &m_event);
-    std::thread _thread(XNextEvent, m_display, &m_event);
-    _thread.detach();
+	XNextEvent(m_display, &m_event);
 
     if (m_event.type == Expose)
 	{
