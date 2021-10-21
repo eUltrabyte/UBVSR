@@ -136,10 +136,10 @@ void loop()
 	std::thread draw_thread(draw_loop, &window);
 	draw_thread.detach();
 
-	while (true)
-	{
-		window.update();
-	}
+	//while (true)
+	//{
+	//	window.update();
+	//}
 }
 
 int main(int, char **)
