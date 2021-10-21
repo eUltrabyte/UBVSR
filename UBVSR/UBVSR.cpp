@@ -32,7 +32,7 @@ void draw_loop(ubv::Window* window) noexcept
 
 		const Timepoint t2;
 		double elapsed_time = (t2 - t1) * 8.0L;
-		printf("FPS: %i \n", fps_counter.update(t2));
+		std::cout << "FPS: " << fps_counter.update(t2) << std::endl;
 
 		for (int x = 0; x < window->get_win_width(); ++x)
 		{

@@ -44,6 +44,7 @@ void WindowX11::update()
 
 void WindowX11::destroy() noexcept
 {
+    XDestroyImage(m_image);
 	XCloseDisplay(m_display);
 }
 }; // namespace ubv

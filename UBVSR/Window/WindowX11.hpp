@@ -17,7 +17,7 @@ class WindowX11 final : public Window
 
 	inline void display(const FrameBuffer &t_frame_buffer) final
 	{
-		XImage* image = XCreateImage(
+		m_image = XCreateImage(
 			m_display,
 			DefaultVisual(m_display, 0),
 			24,
@@ -34,12 +34,10 @@ class WindowX11 final : public Window
 		m_display,
 		m_window,
 		DefaultGC(m_display, m_screen),
-		image,
+		m_image,
 		0, 0, 0, 0,
 		get_win_width(), get_win_height()
 		);
-
-        XDestroyImage(image);
 	}
 
   private:
@@ -47,6 +45,7 @@ class WindowX11 final : public Window
 	int m_screen;
 	::Window m_window;
 	XEvent m_event;
+    XImage* m_image;
 };
 }; // namespace ubv
 
