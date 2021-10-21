@@ -10,4 +10,8 @@
 #include <unordered_map>
 #include <set>
 
-#include "Window/WindowX11.hpp"
+#if defined(_WIN32)
+#include <Window/WindowWin32.hpp>
+#elif defined(__unix__)
+#include <Window/WindowX11.hpp>
+#endif
