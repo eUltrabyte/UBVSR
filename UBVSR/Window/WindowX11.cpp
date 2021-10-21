@@ -43,7 +43,7 @@ void WindowX11::update()
 
 	if (m_event.type == KeyPress)
 	{
-		break;
+		std::quick_exit();
 	}
 }
 
