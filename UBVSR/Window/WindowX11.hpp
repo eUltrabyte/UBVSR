@@ -15,7 +15,7 @@ class WindowX11 final : public Window
 	void update() final;
 	void destroy() noexcept final;
 
-	inline void display(FrameBuffer &t_frame_buffer)
+	inline void display(const FrameBuffer &t_frame_buffer) final
 	{
 		XImage image = XCreateImage(
 			m_display,

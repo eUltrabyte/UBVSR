@@ -39,7 +39,7 @@ class WindowWin32 final : public Window
 		return buffer;
 	}
 
-	inline void display(FrameBuffer &t_frame_buffer)
+	inline void display(FrameBuffer &t_frame_buffer) final
 	{
 		static RECT rect;
 		HBRUSH brush = CreateDIBPatternBrushPt((void *)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS);
