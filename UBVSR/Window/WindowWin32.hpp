@@ -16,7 +16,7 @@ class WindowWin32 final : public Window
 	void update() final;
 	void destroy() noexcept final;
 
-	[[nodiscard]] inline std::vector<std::byte> create_packed_dib(FrameBuffer &t_frame_buffer)
+	[[nodiscard]] inline std::vector<std::byte> create_packed_dib(const FrameBuffer &t_frame_buffer)
 	{
 		static std::vector<std::byte> buffer{sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_pixel_data().size() * 3U};
 		static SIZE sBmp = {t_frame_buffer.get_width(), t_frame_buffer.get_height()};
@@ -39,7 +39,7 @@ class WindowWin32 final : public Window
 		return buffer;
 	}
 
-	inline void display(FrameBuffer &t_frame_buffer) final
+	inline virtual void display(const FrameBuffer &t_frame_buffer) final
 	{
 		static RECT rect;
 		HBRUSH brush = CreateDIBPatternBrushPt((void *)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS);
