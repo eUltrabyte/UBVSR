@@ -91,10 +91,12 @@ void draw_loop(ubv::Window* window) noexcept
 		const std::array<ubv::FrameBuffer::Vertex, 3> triangle9{ vertex_f,vertex_c,vertex_g };
 		const std::array<ubv::FrameBuffer::Vertex, 3> triangle10{vertex_c,vertex_d,vertex_g};
 
+		frame_buffer.draw_triangle(triangle4);
+
 		//ubv::vec2<float> point_a = rotate({640 - 400, 360 + 346}, {640.0F, 360.0F}, angle);
 		//ubv::vec2<float> point_b = rotate({640 - 400, 360 - 346}, {640.0F, 360.0F}, angle);
 		//ubv::vec2<float> point_c = rotate({640 + 400, 360 + 346}, {640.0F, 360.0F}, angle);
-		std::vector<std::future<void>> tasks;
+		/*std::vector<std::future<void>> tasks;
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle3));
@@ -108,7 +110,7 @@ void draw_loop(ubv::Window* window) noexcept
 		for (const auto& task : tasks)
 		{
 			task.wait();
-		}
+		}*/
 
 		// frame_buffer.draw_colored_triangle(point_a, point_b, point_c, ubv::Pixel(0, 255, 0), ubv::Pixel(255, 0, 0),
 		// ubv::Pixel(0, 0, 255)); frame_buffer.draw_fancy_glowy_circle(500, 500, std::abs(500.0 * sin(elapsed_time
