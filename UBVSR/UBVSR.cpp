@@ -56,9 +56,9 @@ void draw_loop(ubv::WindowWin32 *window) noexcept
 				}
 				// frame_buffer.set_pixel(x, y, ubv::Pixel(colors[0], colors[1], colors[2]));
 			}
-		}*/
+		}
 		float zz = std::abs(sin(elapsed_time) * 200.0F);
-		/*frame_buffer.draw_triangle({
+		frame_buffer.draw_triangle({
 			ubv::FrameBuffer::Vertex{{0.0F, 0.0F}, ubv::Pixel(255, 255, 255)},
 			ubv::FrameBuffer::Vertex{{0.0F, 720.0F}, ubv::Pixel(0, 0, 0)},
 			ubv::FrameBuffer::Vertex{{1280.0F, 0.0F}, ubv::Pixel(0, 0, 0)}
@@ -67,7 +67,7 @@ void draw_loop(ubv::WindowWin32 *window) noexcept
 			ubv::FrameBuffer::Vertex{{0.0F, 720.0F}, ubv::Pixel(0, 0, 0)},
 			ubv::FrameBuffer::Vertex{{1280.0F, 0.0F}, ubv::Pixel(0, 0, 0)},
 			ubv::FrameBuffer::Vertex{{1280.0F, 720.0F}, ubv::Pixel(255, 255, 255)}
-			});*/
+			});
 
 		const float angle = sin(elapsed_time / 4.0F) * 0.25F;
 
