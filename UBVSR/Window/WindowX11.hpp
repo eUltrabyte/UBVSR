@@ -27,7 +27,7 @@ class WindowX11 final : public Window
 			get_win_width(),
 			get_win_height(),
 			16, //nwm
-			0
+			t_frame_buffer.get_pixel_data().size() * 3U
 		);
 	}
 
