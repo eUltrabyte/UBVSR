@@ -40,8 +40,8 @@ void WindowX11::update()
 		    0, 0, 0, 0,
 		    get_win_width(), get_win_height()
 		);
-		XSync(m_display, 1);
-		XFlush(m_display);
+		//XSync(m_display, 1);
+		//XFlush(m_display);
 	}
 }
 
