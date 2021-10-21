@@ -5,17 +5,6 @@
 #if defined(__unix__)
 
 
-class Pixel {
-    friend void swap(Pixel& a, Pixel&b) {
-        using std::swap;
-
-        std::swap(p1.r, p2.r);
-        std::swap(p1.g, p2.g);
-        std::swap(p1.b, p2.b);
-    }
-};
-
-
 namespace ubv
 {
 class WindowX11 final : public Window

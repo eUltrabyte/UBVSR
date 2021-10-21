@@ -1,14 +1,15 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
-#include <vector>
 #include <map>
 #include <set>
-#include <algorithm>
-#include <cmath>
+#include <vector>
 
-namespace ubv {
+namespace ubv
+{
 struct Pixel
 {
 #if defined(__unix__)
@@ -25,6 +26,14 @@ struct Pixel
 	constexpr explicit Pixel(std::uint8_t t_r, std::uint8_t t_g, std::uint8_t t_b) noexcept : r{t_r}, g{t_g}, b{t_b}
 	{
 	}
+	friend void swap(Pixel &a, Pixel &b)
+	{
+		using std::swap;
+
+		std::swap(p1.r, p2.r);
+		std::swap(p1.g, p2.g);
+		std::swap(p1.b, p2.b);
+	}
 };
 
 template <typename T> struct vec2
@@ -37,7 +46,7 @@ template <typename T> struct vec2
 	}
 };
 
-//static_assert(sizeof(Pixel) == 3);
+// static_assert(sizeof(Pixel) == 3);
 
 class FrameBuffer
 {
@@ -93,8 +102,10 @@ class FrameBuffer
 
 	inline void set_pixel(std::uint32_t t_x, std::uint32_t t_y, vec2<std::uint32_t> t_size, Pixel t_color) noexcept
 	{
-		for(std::uint32_t y = 0; y < (t_y + t_size.y); ++y) {
-			for(std::uint32_t x = 0; x < (t_x + t_size.x); ++x) {
+		for (std::uint32_t y = 0; y < (t_y + t_size.y); ++y)
+		{
+			for (std::uint32_t x = 0; x < (t_x + t_size.x); ++x)
+			{
 				at(x, y) = t_color;
 			}
 		}
@@ -106,17 +117,15 @@ class FrameBuffer
 	inline Pixel interpolate(Pixel t_color1, Pixel t_color2, float t_fraction) const noexcept
 	{
 		t_fraction = std::clamp(t_fraction, 0.0F, 1.0F);
-		return Pixel{
-			std::uint8_t((float(t_color2.r) - float(t_color1.r)) * t_fraction + float(t_color1.r)),
-			std::uint8_t((float(t_color2.g) - float(t_color1.g)) * t_fraction + float(t_color1.g)),
-			std::uint8_t((float(t_color2.b) - float(t_color1.b)) * t_fraction + float(t_color1.b))
-		};
+		return Pixel{std::uint8_t((float(t_color2.r) - float(t_color1.r)) * t_fraction + float(t_color1.r)),
+					 std::uint8_t((float(t_color2.g) - float(t_color1.g)) * t_fraction + float(t_color1.g)),
+					 std::uint8_t((float(t_color2.b) - float(t_color1.b)) * t_fraction + float(t_color1.b))};
 	}
 
 	inline void draw_line(fvec2 t_p1, fvec2 t_p2, Pixel t_color1, Pixel t_color2) noexcept
 	{
-		//set_pixel(t_p1.x, t_p1.y, t_color1);
-		//set_pixel(t_p2.x, t_p2.y, t_color2);
+		// set_pixel(t_p1.x, t_p1.y, t_color1);
+		// set_pixel(t_p2.x, t_p2.y, t_color2);
 		bool steep = false;
 		if (std::abs(t_p1.x - t_p2.x) < std::abs(t_p1.y - t_p2.y))
 		{
@@ -124,7 +133,7 @@ class FrameBuffer
 			std::swap(t_p2.x, t_p2.y);
 			steep = true;
 		}
-		
+
 		if (t_p1.x > t_p2.x)
 		{
 			std::swap(t_p1.x, t_p2.x);
@@ -134,7 +143,7 @@ class FrameBuffer
 
 		int error = 0;
 		int y = t_p1.y;
-		
+
 		for (int x = t_p1.x; x <= t_p2.x; ++x)
 		{
 			const float total_distance = t_p2.x - t_p1.x;
@@ -149,7 +158,7 @@ class FrameBuffer
 			{
 				set_pixel(x, y, interpolate(t_color1, t_color2, fraction));
 			}
-			
+
 			error += std::abs(t_p2.y - t_p1.y) * 2;
 			if (error > (t_p2.x - t_p1.x))
 			{
@@ -219,12 +228,12 @@ class FrameBuffer
 	{
 		fvec2 position;
 		Pixel color;
-		//inline bool operator<(const Vertex& t_other) const noexcept
+		// inline bool operator<(const Vertex& t_other) const noexcept
 		//{
 		//	return position.x < t_other.position.x;
-		//}
+		// }
 	};
-	
+
 	inline fvec2 line_intersection(fvec2 A, fvec2 B, fvec2 C, fvec2 D)
 	{
 		// Line AB represented as a1x + b1y = c1
@@ -241,35 +250,49 @@ class FrameBuffer
 
 		const float x = (b2 * c1 - b1 * c2) / determinant;
 		const float y = (a1 * c2 - a2 * c1) / determinant;
-		return fvec2{ float(x), float(y) };
+		return fvec2{float(x), float(y)};
 	}
 
-
-
-	inline void draw_triangle(const std::array<Vertex, 3>& t_vertices)
+	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices)
 	{
 		for (std::uint32_t x = 0; x < m_width; ++x)
 		{
 			for (std::uint32_t y = 0; y < m_height; ++y)
 			{
-				fvec2 p = fvec2{ (float)x,(float)y };
-				if (is_point_inside_triangle(fvec2{ (float)x,(float)y }, t_vertices[0].position, t_vertices[1].position, t_vertices[2].position))
+				fvec2 p = fvec2{(float)x, (float)y};
+				if (is_point_inside_triangle(fvec2{(float)x, (float)y}, t_vertices[0].position, t_vertices[1].position,
+											 t_vertices[2].position))
 				{
 					Pixel pixel;
 					std::array<float, 3> scales;
 					for (int i = 0; i < 3; ++i)
 					{
-						auto point = line_intersection(t_vertices[i].position, p, t_vertices[(i + 1) % 3].position, t_vertices[(i + 2) % 3].position);
-						auto total_distance = std::sqrt(std::pow(std::abs(t_vertices[i].position.x - point.x), 2.0F) + std::pow(std::abs(t_vertices[i].position.y - point.y), 2.0F));
-						auto distance = std::sqrt(std::pow(std::abs(p.x - point.x), 2.0F) + std::pow(std::abs(p.y - point.y), 2.0F));
+						auto point = line_intersection(t_vertices[i].position, p, t_vertices[(i + 1) % 3].position,
+													   t_vertices[(i + 2) % 3].position);
+						auto total_distance = std::sqrt(std::pow(std::abs(t_vertices[i].position.x - point.x), 2.0F) +
+														std::pow(std::abs(t_vertices[i].position.y - point.y), 2.0F));
+						auto distance = std::sqrt(std::pow(std::abs(p.x - point.x), 2.0F) +
+												  std::pow(std::abs(p.y - point.y), 2.0F));
 						auto fraction = std::clamp(distance / total_distance, 0.0F, 1.0F);
 						scales[i] = fraction;
 					}
 
 					const auto total_scale = scales[0] + scales[1] + scales[2];
-					pixel.r = std::clamp((float(t_vertices[0].color.r) * scales[0] + float(t_vertices[1].color.r) * scales[1] + float(t_vertices[2].color.r) * scales[2]) / (total_scale), 0.0F, 255.0F);
-					pixel.g = std::clamp((float(t_vertices[0].color.g) * scales[0] + float(t_vertices[1].color.g) * scales[1] + float(t_vertices[2].color.g) * scales[2]) / (total_scale), 0.0F, 255.0F);
-					pixel.b = std::clamp((float(t_vertices[0].color.b) * scales[0] + float(t_vertices[1].color.b) * scales[1] + float(t_vertices[2].color.b) * scales[2]) / (total_scale), 0.0F, 255.0F);
+					pixel.r = std::clamp((float(t_vertices[0].color.r) * scales[0] +
+										  float(t_vertices[1].color.r) * scales[1] +
+										  float(t_vertices[2].color.r) * scales[2]) /
+											 (total_scale),
+										 0.0F, 255.0F);
+					pixel.g = std::clamp((float(t_vertices[0].color.g) * scales[0] +
+										  float(t_vertices[1].color.g) * scales[1] +
+										  float(t_vertices[2].color.g) * scales[2]) /
+											 (total_scale),
+										 0.0F, 255.0F);
+					pixel.b = std::clamp((float(t_vertices[0].color.b) * scales[0] +
+										  float(t_vertices[1].color.b) * scales[1] +
+										  float(t_vertices[2].color.b) * scales[2]) /
+											 (total_scale),
+										 0.0F, 255.0F);
 
 					set_pixel(x, y, pixel);
 				}
@@ -277,7 +300,8 @@ class FrameBuffer
 		}
 	}
 
-	/*inline void draw_colored_triangle(fvec2 t_a, fvec2 t_b, fvec2 t_c, Pixel t_color_a, Pixel t_color_b, Pixel t_color_c) noexcept
+	/*inline void draw_colored_triangle(fvec2 t_a, fvec2 t_b, fvec2 t_c, Pixel t_color_a, Pixel t_color_b, Pixel
+	t_color_c) noexcept
 	{
 		std::map<std::uint16_t, std::set<Vertex>> vertices_lines;
 		for (int line = 0; line < 3; ++line)
@@ -363,9 +387,10 @@ class FrameBuffer
 				continue;
 			const auto& vertex_a = *vertices.begin();
 			const auto& vertex_b = *vertices.rbegin();
-			draw_line(fvec2{ float(vertex_a.position.x),float(vertex_a.position.y) }, fvec2{ float(vertex_b.position.x),float(vertex_b.position.y) }, vertex_a.color, vertex_b.color);
+			draw_line(fvec2{ float(vertex_a.position.x),float(vertex_a.position.y) }, fvec2{
+	float(vertex_b.position.x),float(vertex_b.position.y) }, vertex_a.color, vertex_b.color);
 		}
-		
+
 	}*/
 
   private:
@@ -373,4 +398,4 @@ class FrameBuffer
 	std::uint32_t m_height;
 	std::vector<Pixel> m_pixels_data;
 };
-};
+}; // namespace ubv
