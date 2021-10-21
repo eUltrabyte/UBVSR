@@ -2,6 +2,8 @@
 
 #if defined(__unix__)
 
+#include <thread>
+
 namespace ubv
 {
 WindowX11::WindowX11(WindowProps t_win_props) : Window(std::move(t_win_props))
