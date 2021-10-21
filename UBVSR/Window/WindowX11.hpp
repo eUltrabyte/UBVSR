@@ -4,17 +4,17 @@
 
 #if defined(__unix__)
 
-namespace std
-{
 
-template<typename T>
-void std::swap(const T<ubv::Pixel>& p1, const T<ubv::Pixel>& p2)
-	{
-		std::swap(p1.r, p2.r);
+class Pixel {
+    friend void swap(Pixel& a, Pixel&b) {
+        using std::swap;
+
+        std::swap(p1.r, p2.r);
         std::swap(p1.g, p2.g);
         std::swap(p1.b, p2.b);
-	}
+    }
 };
+
 
 namespace ubv
 {
