@@ -20,13 +20,13 @@ class WindowX11 final : public Window
 		m_image = XCreateImage(
 			m_display,
 			DefaultVisual(m_display, 0),
-			24,
+			DefaultDepth(m_display, 0),
 			ZPixmap, //it can be XYPixmap, or ZPixmap.
 			0,
 			(char*)t_frame_buffer.get_pixel_data().data(),
 			get_win_width(),
 			get_win_height(),
-			16, //nwm
+			32, //nwm
 			0
 		);
 	}
