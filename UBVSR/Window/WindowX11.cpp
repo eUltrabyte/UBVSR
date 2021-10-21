@@ -19,7 +19,7 @@ WindowX11::~WindowX11()
 void WindowX11::create()
 {
 	m_window = XCreateSimpleWindow(m_display, RootWindow(m_display, m_screen), 10, 10, 1280, 720, 1,
-								   BlackPixel(display, m_screen), WhitePixel(display, m_screen));
+								   BlackPixel(m_display, m_screen), WhitePixel(m_display, m_screen));
 
 	XSelectInput(m_display, m_window, ExposureMask | KeyPressMask);
 	XMapWindow(m_display, m_window);
@@ -27,7 +27,7 @@ void WindowX11::create()
 
 void WindowX11::update()
 {
-	XNextEvent(display, &m_event);
+	XNextEvent(m_display, &m_event);
 	if (m_event.type == Expose)
 	{
 		//XSetForeground(display, DefaultGC(display, screen), red.pixel);
