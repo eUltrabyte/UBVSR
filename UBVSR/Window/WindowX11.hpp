@@ -40,6 +40,8 @@ class WindowX11 final : public Window
 		);
 	}
 
+    XEvent* get_event();
+
   private:
 	Display *m_display;
 	int m_screen;

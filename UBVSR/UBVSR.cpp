@@ -133,7 +133,14 @@ void loop()
 
 	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 
-	draw_loop(&window);
+	if (window.get_event->type == Expose)
+	{
+		
+		//XSetForeground(display, DefaultGC(display, screen), red.pixel);
+		//XFillRectangle(display, window, DefaultGC(display, screen), 20, 20, 10, 10);
+		//XDrawPoint(display, window, DefaultGC(display, screen), 50, 50);
+		draw_loop(&window);
+	}
 
 	//std::thread draw_thread(draw_loop, &window);
 	//draw_thread.detach();

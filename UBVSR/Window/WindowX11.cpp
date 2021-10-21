@@ -28,17 +28,18 @@ void WindowX11::create()
 void WindowX11::update()
 {
 	XNextEvent(m_display, &m_event);
-	if (m_event.type == Expose)
-	{
-		
-		//XSetForeground(display, DefaultGC(display, screen), red.pixel);
-		//XFillRectangle(display, window, DefaultGC(display, screen), 20, 20, 10, 10);
-		//XDrawPoint(display, window, DefaultGC(display, screen), 50, 50);
-	}
+
+    //if (m_event.type == Expose)
+	//{
+	//	
+	//	//XSetForeground(display, DefaultGC(display, screen), red.pixel);
+	//	//XFillRectangle(display, window, DefaultGC(display, screen), 20, 20, 10, 10);
+	//	//XDrawPoint(display, window, DefaultGC(display, screen), 50, 50);
+	//}
 
 	if (m_event.type == KeyPress)
 	{
-		//break;
+		break;
 	}
 }
 
@@ -47,6 +48,11 @@ void WindowX11::destroy() noexcept
     XDestroyImage(m_image);
 	XCloseDisplay(m_display);
 }
+
+XEvent* WindowX11::get_event() {
+    return &m_event;
+}
+
 }; // namespace ubv
 
 #endif
