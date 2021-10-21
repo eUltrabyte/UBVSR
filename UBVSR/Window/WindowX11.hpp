@@ -18,7 +18,8 @@ class WindowX11 final : public Window
 
 	inline void display(const FrameBuffer &t_frame_buffer) final
 	{
-        std::reverse(t_frame_buffer.get_pixel_data().begin(), t_frame_buffer.get_pixel_data().end());
+		std::vector<Pixel> data = t_frame_buffer.get_pixel_data();
+        std::reverse(data.begin(), data.end());
 		m_image = XCreateImage(
 			m_display,
 			DefaultVisual(m_display, 0),
