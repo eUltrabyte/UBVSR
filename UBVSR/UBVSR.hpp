@@ -11,7 +11,7 @@
 #include <set>
 
 #if defined(_WIN32)
-#include <Window/WindowWin32.hpp>
+#include "Window/WindowWin32.hpp"
 #elif defined(__unix__)
-#include <Window/WindowX11.hpp>
+#include "Window/WindowX11.hpp"
 #endif
