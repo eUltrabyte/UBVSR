@@ -4,6 +4,17 @@
 
 #if defined(__unix__)
 
+
+namespace std
+{
+	void swap(const ubv::Pixel& p1, const ubv::Pixel& p2)
+	{
+		std::swap(p1.r, p2.r);
+        std::swap(p1.g, p2.g);
+        std::swap(p1.b, p2.b);
+	}
+}
+
 namespace ubv
 {
 class WindowX11 final : public Window
@@ -17,7 +28,7 @@ class WindowX11 final : public Window
 
 	inline void display(const FrameBuffer &t_frame_buffer) final
 	{
-        // std::reverse(t_frame_buffer.get_pixel_data().begin(), t_frame_buffer.get_pixel_data().end());
+        std::reverse(t_frame_buffer.get_pixel_data().begin(), t_frame_buffer.get_pixel_data().end());
 		m_image = XCreateImage(
 			m_display,
 			DefaultVisual(m_display, 0),
