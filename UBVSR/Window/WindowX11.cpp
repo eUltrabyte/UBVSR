@@ -37,7 +37,7 @@ void WindowX11::update()
 
     // if (m_event.type == Expose)
 	{ 
-		std::cout << "Exposed ! " << std::endl;
+		//std::cout << "Exposed ! " << std::endl;
 		XPutImage(
 		    m_display,
 		    m_window,
