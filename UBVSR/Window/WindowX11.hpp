@@ -25,7 +25,7 @@ class WindowX11 final : public Window
 		for (std::uint16_t y=0;y<t_frame_buffer.get_height();++y)
 		{
 			for (std::uint16_t x=0;x<t_frame_buffer.get_width();++x) {
-                data[(t_frame_buffer.get_height() - y - 1) * t_frame_buffer.get_width() + x] = t_frame_buffer.get_pixel_data[y * t_frame_buffer.get_width() + x];
+                data[(t_frame_buffer.get_height() - y - 1) * t_frame_buffer.get_width() + x] = t_frame_buffer.get_pixel_data()[y * t_frame_buffer.get_width() + x];
             }
 		}
 
