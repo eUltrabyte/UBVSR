@@ -6,6 +6,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 if(UNIX)
 find_package(X11 REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 endif(UNIX)
 
 add_executable(UBVSR
@@ -21,5 +23,5 @@ add_executable(UBVSR
 )
 
 if(UNIX)
-target_link_libraries(UBVSR X11)
+target_link_libraries(UBVSR X11 Threads::Threads)
 endif(UNIX)
