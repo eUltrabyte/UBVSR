@@ -27,7 +27,7 @@ class WindowX11 final : public Window
 			get_win_width(),
 			get_win_height(),
 			8, //nwm
-			0
+			get_win_height() * 3U
 		);
 	}
 
