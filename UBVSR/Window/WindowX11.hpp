@@ -20,7 +20,14 @@ class WindowX11 final : public Window
 	{
 		static std::vector<Pixel> data;
 		data = t_frame_buffer.get_pixel_data();
-		// std::reverse(data.begin(), data.end());
+		
+
+		for (std::uint16_t y=0;y<t_frame_buffer.get_height();++y)
+		{
+			for (std::uint16_t x=0;x<t_frame_buffer.get_width();++x) {
+                data[(t_frame_buffer.get_height() - y - 1) * t_frame_buffer.get_width() + x] = data[y * t_frame_buffer.get_width() + x];
+            }
+		}
 
 		m_image = XCreateImage(
 			m_display,
