@@ -2,7 +2,7 @@
 
 #include "FpsCounter.hpp"
 
-/* ubv::vec2<float> rotate(ubv::vec2<float> t_point, ubv::vec2<float> t_origin, float t_angle)
+ubv::vec2<float> rotate(ubv::vec2<float> t_point, ubv::vec2<float> t_origin, float t_angle)
 {
 	float s = sin(t_angle);
 	float c = cos(t_angle);
@@ -21,7 +21,7 @@
 	return t_point;
 }
 
-void draw_loop(ubv::WindowWin32 *window) noexcept
+void draw_loop(ubv::Window* window) noexcept
 {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
@@ -34,7 +34,7 @@ void draw_loop(ubv::WindowWin32 *window) noexcept
 		double elapsed_time = (t2 - t1) * 8.0L;
 		printf("FPS: %i \n", fps_counter.update(t2));
 
-		/*for (int x = 0; x < window->get_win_width(); ++x)
+		for (int x = 0; x < window->get_win_width(); ++x)
 		{
 			for (int y = 0; y < window->get_win_height(); ++y)
 			{
@@ -120,7 +120,7 @@ void draw_loop(ubv::WindowWin32 *window) noexcept
 		window->display(frame_buffer);
 		// window->update();
 	}
-} */
+}
 
 void loop()
 {
@@ -130,6 +130,9 @@ void loop()
 	// draw_thread.detach();
 
 	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+
+	std::thread draw_thread(draw_loop, &window);
+	draw_thread.detach();
 
 	while (true)
 	{
