@@ -26,7 +26,7 @@ struct Pixel
 	constexpr explicit Pixel(std::uint8_t t_r, std::uint8_t t_g, std::uint8_t t_b) noexcept : r{t_r}, g{t_g}, b{t_b}
 	{
 	}
-	friend void swap(Pixel &p1, Pixel &p2)
+	friend void swap(const Pixel &p1, const Pixel &p2)
 	{
 		using std::swap;
 
