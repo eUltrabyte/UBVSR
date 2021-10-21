@@ -29,13 +29,17 @@ void WindowX11::update()
 {
 	XNextEvent(m_display, &m_event);
 
-    //if (m_event.type == Expose)
-	//{
-	//	
-	//	//XSetForeground(display, DefaultGC(display, screen), red.pixel);
-	//	//XFillRectangle(display, window, DefaultGC(display, screen), 20, 20, 10, 10);
-	//	//XDrawPoint(display, window, DefaultGC(display, screen), 50, 50);
-	//}
+    if (m_event.type == Expose)
+	{
+		XPutImage(
+		    m_display,
+		    m_window,
+		    DefaultGC(m_display, m_screen),
+		    m_image,
+		    0, 0, 0, 0,
+		    get_win_width(), get_win_height()
+		);
+	}
 
 	if (m_event.type == KeyPress)
 	{
