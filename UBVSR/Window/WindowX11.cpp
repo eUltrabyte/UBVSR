@@ -28,7 +28,9 @@ void WindowX11::create()
 
 void WindowX11::update()
 {
-	XNextEvent(m_display, &m_event);
+	// XNextEvent(m_display, &m_event);
+    std::thread _thread(XNextEvent, m_display, &m_event);
+    _thread.detach();
 
     if (m_event.type == Expose)
 	{
@@ -40,8 +42,8 @@ void WindowX11::update()
 		    0, 0, 0, 0,
 		    get_win_width(), get_win_height()
 		);
-		//XSync(m_display, 1);
-		//XFlush(m_display);
+		XSync(m_display, 1);
+		XFlush(m_display);
 	}
 }
 
