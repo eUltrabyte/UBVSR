@@ -4,6 +4,10 @@ project("UBVSR")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Release)
 
+if(UNIX)
+find_package(X11 REQUIRED)
+endif(UNIX)
+
 add_executable(UBVSR
     "UBVSR/UBVSR.cpp"
     "UBVSR/UBVSR.hpp"
@@ -15,3 +19,7 @@ add_executable(UBVSR
     "UBVSR/Framebuffer.hpp"
     "UBVSR/FpsCounter.hpp"
 )
+
+if(UNIX)
+target_link_libraries(UBVSR X11)
+endif(UNIX)
