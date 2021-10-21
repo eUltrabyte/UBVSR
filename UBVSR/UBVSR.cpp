@@ -2,7 +2,7 @@
 
 #include "FpsCounter.hpp"
 
-ubv::vec2<float> rotate(ubv::vec2<float> t_point, ubv::vec2<float> t_origin, float t_angle)
+/* ubv::vec2<float> rotate(ubv::vec2<float> t_point, ubv::vec2<float> t_origin, float t_angle)
 {
 	float s = sin(t_angle);
 	float c = cos(t_angle);
@@ -120,14 +120,16 @@ void draw_loop(ubv::WindowWin32 *window) noexcept
 		window->display(frame_buffer);
 		// window->update();
 	}
-}
+} */
 
 void loop()
 {
 
-	ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
-	std::thread draw_thread(draw_loop, &window); // draw_loop(&window);
-	draw_thread.detach();
+	// ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+	// std::thread draw_thread(draw_loop, &window); // draw_loop(&window);
+	// draw_thread.detach();
+
+	ubv::WindowX11 window;
 
 	while (true)
 	{

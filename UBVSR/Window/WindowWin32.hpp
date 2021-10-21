@@ -1,8 +1,8 @@
 #pragma once
 
-#if defined(_WIN32)
-
 #include "../Window.hpp"
+
+#if defined(_WIN32)
 
 namespace ubv
 {

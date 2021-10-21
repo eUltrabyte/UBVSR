@@ -10,6 +10,8 @@ add_executable(UBVSR
     "UBVSR/Window.hpp"
     "UBVSR/Window/WindowWin32.cpp"
     "UBVSR/Window/WindowWin32.hpp"
+    "UBVSR/Window/WindowX11.cpp"
+    "UBVSR/Window/WindowX11.hpp"
     "UBVSR/Framebuffer.hpp"
     "UBVSR/FpsCounter.hpp"
 )

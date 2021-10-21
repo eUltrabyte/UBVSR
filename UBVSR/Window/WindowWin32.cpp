@@ -1,6 +1,6 @@
-#if defined(_WIN32)
-
 #include "WindowWin32.hpp"
+
+#if defined(_WIN32)
 
 namespace ubv
 {
