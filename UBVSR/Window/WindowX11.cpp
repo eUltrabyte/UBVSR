@@ -32,6 +32,7 @@ void WindowX11::create()
 
 void WindowX11::update()
 {
+	XSendEvent(m_display, m_window, 0, ExposureMask, Expose);
 	XNextEvent(m_display, &m_event);
 
    //if (m_event.type == Expose)
