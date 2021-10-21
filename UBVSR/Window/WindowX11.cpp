@@ -2,7 +2,9 @@
 
 #if defined(__unix__)
 
+
 #include <thread>
+#include <iostream>
 
 namespace ubv
 {
@@ -33,7 +35,8 @@ void WindowX11::update()
 	XNextEvent(m_display, &m_event);
 
    if (m_event.type == Expose)
-	{
+	{ 
+		std::cout << "Exposed ! " << std::endl;
 		XPutImage(
 		    m_display,
 		    m_window,
