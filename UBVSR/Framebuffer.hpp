@@ -129,7 +129,9 @@ class FrameBuffer
 		{
 			std::swap(t_p1.x, t_p2.x);
 			std::swap(t_p1.y, t_p2.y);
-			std::swap(t_color1, t_color2);
+			std::swap(t_color1.r, t_color2.r);
+			std::swap(t_color1.g, t_color2.g);
+			std::swap(t_color1.b, t_color2.b);
 		}
 
 		int error = 0;
