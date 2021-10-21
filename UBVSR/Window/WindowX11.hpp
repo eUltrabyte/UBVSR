@@ -27,7 +27,7 @@ class WindowX11 final : public Window
 			get_win_width(),
 			get_win_height(),
 			32, //nwm
-			0
+			get_win_width() * 3U
 		);
 
 		XPutImage(
@@ -38,6 +38,8 @@ class WindowX11 final : public Window
 		0, 0, 0, 0,
 		get_win_width(), get_win_height()
 		);
+
+        XDestroyImage(image);
 	}
 
   private:
