@@ -21,7 +21,7 @@ void WindowX11::create()
 	m_window = XCreateSimpleWindow(m_display, RootWindow(m_display, m_screen), 10, 10, get_win_width(), get_win_height(), 1,
 								   BlackPixel(m_display, m_screen), WhitePixel(m_display, m_screen));
 	XStoreName(m_display, m_window, get_win_title().c_str());
-	XSelectInput(m_display, m_window, ExposureMask | KeyPressMask);
+	XSelectInput(m_display, m_window, ExposureMask);
 	XMapWindow(m_display, m_window);
 	XFlush(m_display);
 }
@@ -42,11 +42,6 @@ void WindowX11::update()
 		);
 		XSync(m_display, 1);
 		XFlush(m_display);
-	}
-
-	if (m_event.type == KeyPress)
-	{
-		//std::quick_exit(0);
 	}
 }
 
