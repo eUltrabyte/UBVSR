@@ -30,6 +30,7 @@ void WindowX11::update()
 	XNextEvent(m_display, &m_event);
 	if (m_event.type == Expose)
 	{
+        
 		//XSetForeground(display, DefaultGC(display, screen), red.pixel);
 		//XFillRectangle(display, window, DefaultGC(display, screen), 20, 20, 10, 10);
 		//XDrawPoint(display, window, DefaultGC(display, screen), 50, 50);
@@ -41,7 +42,7 @@ void WindowX11::update()
 	}
 }
 
-void WindowX11::destroy()
+void WindowX11::destroy() noexcept
 {
 	XCloseDisplay(m_display);
 }
