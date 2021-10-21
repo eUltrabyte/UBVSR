@@ -26,7 +26,7 @@ class WindowX11 final : public Window
 			(char*)t_frame_buffer.get_pixel_data().data(),
 			get_win_width(),
 			get_win_height(),
-			get_win_width(), //nwm
+			16, //nwm
 			0
 		);
 	}
