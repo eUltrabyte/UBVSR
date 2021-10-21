@@ -13,9 +13,9 @@ namespace ubv
 struct Pixel
 {
 #if defined(__unix__)
-	std::uint8_t r;
-	std::uint8_t g;
 	std::uint8_t b;
+	std::uint8_t g;
+	std::uint8_t r;
 	std::uint8_t a{255};
 #else
 	std::uint8_t b;
