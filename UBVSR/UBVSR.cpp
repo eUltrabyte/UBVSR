@@ -133,7 +133,7 @@ void loop()
 
 	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 
-	if (window.get_event->type == Expose)
+	if (window.get_event()->type == Expose)
 	{
 		
 		//XSetForeground(display, DefaultGC(display, screen), red.pixel);
