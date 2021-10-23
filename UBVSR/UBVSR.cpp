@@ -27,37 +27,12 @@ void draw_loop(ubv::Window* window) noexcept
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while (true)
 	{
-		frame_buffer.clear(ubv::Pixel(0, 0, 0));
+		//frame_buffer.clear(ubv::Pixel(0, 0, 0));
 		static FpsCounter fps_counter;
 
 		const Timepoint t2;
-		double elapsed_time = (t2 - t1) * 8.0L;
-		std::cout << "FPS: " << fps_counter.update(t2) << std::endl;
-
-		for (int x = 0; x < window->get_win_width(); ++x)
-		{
-			for (int y = 0; y < window->get_win_height(); ++y)
-			{
-				static std::array<unsigned, 3> colors;
-				colors[0] = (x) / 4 + elapsed_time * 8.0;
-				colors[1] = (y + x) / 4 + elapsed_time * 8.0;
-				colors[2] = (y) / 4 + elapsed_time * 8.0;
-
-				for (auto &color : colors)
-				{
-					if (color >= 512)
-					{
-						color %= 512;
-					}
-					if (color > 255 && color < 512)
-					{
-						color = 255 - (color - 256);
-					}
-				}
-				// frame_buffer.set_pixel(x, y, ubv::Pixel(colors[0], colors[1], colors[2]));
-			}
-		}
-		float zz = std::abs(sin(elapsed_time) * 200.0F);
+		double elapsed_time = (t2 - t1) * 2.0L;
+		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		/*frame_buffer.draw_triangle({
 			ubv::FrameBuffer::Vertex{{0.0F, 0.0F}, ubv::Pixel(255, 255, 255)},
 			ubv::FrameBuffer::Vertex{{0.0F, 720.0F}, ubv::Pixel(0, 0, 0)},
@@ -69,7 +44,7 @@ void draw_loop(ubv::Window* window) noexcept
 			ubv::FrameBuffer::Vertex{{1280.0F, 720.0F}, ubv::Pixel(255, 255, 255)}
 			});*/
 
-		const float angle = sin(elapsed_time / 4.0F) * 0.25F;
+		const float angle = sin(elapsed_time) * 0.25F;
 
 		const ubv::FrameBuffer::Vertex vertex_a{ {0, 0}, ubv::Pixel{255, 0, 0} };
 		const ubv::FrameBuffer::Vertex vertex_b{ {1280, 0}, ubv::Pixel{0, 255, 0} };

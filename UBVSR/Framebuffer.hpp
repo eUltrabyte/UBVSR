@@ -255,9 +255,15 @@ class FrameBuffer
 
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices)
 	{
-		for (std::uint32_t x = 0; x < m_width; ++x)
+		std::uint32_t start_x = std::max<float>(std::min<float>({t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })-1, 0);
+		std::uint32_t end_x = std::min<float>(std::max<float>({ t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })+1, m_width);
+
+		std::uint32_t start_y = std::max<float>(std::min<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })-1, 0);
+		std::uint32_t end_y = std::min<float>(std::max<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })+1, m_height);
+
+		for (std::uint32_t x = start_x; x < end_x; ++x)
 		{
-			for (std::uint32_t y = 0; y < m_height; ++y)
+			for (std::uint32_t y = start_y; y < end_y; ++y)
 			{
 				fvec2 p = fvec2{(float)x, (float)y};
 				if (is_point_inside_triangle(fvec2{(float)x, (float)y}, t_vertices[0].position, t_vertices[1].position,
