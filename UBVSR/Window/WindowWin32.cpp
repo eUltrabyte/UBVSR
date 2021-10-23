@@ -97,7 +97,7 @@ void WindowWin32::create()
 void WindowWin32::update()
 {
 	MSG message;
-	if (GetMessage(&message, 0, 0, 0))
+	if (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 	{
 		TranslateMessage(&message);
 		DispatchMessage(&message);
