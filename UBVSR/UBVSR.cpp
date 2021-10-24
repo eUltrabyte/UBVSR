@@ -20,7 +20,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& texture2) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
@@ -79,18 +79,29 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 			}
 		}*/
 
-		const ubv::Vertex vertex_a{ rotate(ubv::fvec2{ 640 + 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 1, 0 } }; // 1 0
-		const ubv::Vertex vertex_b{ rotate(ubv::fvec2{ 640 + 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 1, 1 } };
-		const ubv::Vertex vertex_c{ rotate(ubv::fvec2{ 640 - 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 0, 1 } };
-		const ubv::Vertex vertex_d{ rotate(ubv::fvec2{ 640 - 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 0, 0 } };
+		const ubv::Vertex vertex_a{ ubv::fvec3(rotate(ubv::fvec2{ -0.6, -0.4 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), -1.0F), ubv::fvec2{ 1, 0 } }; // 1 0
+		const ubv::Vertex vertex_b{ ubv::fvec3(rotate(ubv::fvec2{ -0.6, -0.6 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), 1.0F), ubv::fvec2{ 1, 1 } };
+		const ubv::Vertex vertex_c{ ubv::fvec3(rotate(ubv::fvec2{ -0.4, -0.6 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), -1.0F), ubv::fvec2{ 0, 1 } };
+		const ubv::Vertex vertex_d{ ubv::fvec3(rotate(ubv::fvec2{ -0.4, -0.4 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), 1.0F), ubv::fvec2{ 0, 0 } };
+
+		const ubv::Vertex vertex_e{ ubv::fvec3(rotate(ubv::fvec2{ -0.8, -0.2 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), 1.0F), ubv::fvec2{ 1, 0 } }; // 1 0
+		const ubv::Vertex vertex_f{ ubv::fvec3(rotate(ubv::fvec2{ -0.8, -0.8 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), -1.0F), ubv::fvec2{ 1, 1 } };
+		const ubv::Vertex vertex_g{ ubv::fvec3(rotate(ubv::fvec2{ -0.2, -0.8 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), 1.0F), ubv::fvec2{ 0, 1 } };
+		const ubv::Vertex vertex_h{ ubv::fvec3(rotate(ubv::fvec2{ -0.2, -0.2 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), -1.0F), ubv::fvec2{ 0, 0 } };
 
 		const std::array<ubv::Vertex, 3> triangle1{	vertex_b, vertex_d, vertex_a };
 		const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_c };
 
+		const std::array<ubv::Vertex, 3> triangle3{	vertex_f, vertex_h, vertex_e };
+		const std::array<ubv::Vertex, 3> triangle4{	vertex_f, vertex_h, vertex_g };
+
 		std::vector<std::future<void>> tasks;
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture1));
+
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle3, texture2));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle4, texture2));
 
 		//frame_buffer.draw_triangle(triangle1, texture);
 		//frame_buffer.draw_triangle(triangle2, texture);
@@ -105,7 +116,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture{ "test2.tga", Texture::FilteringType::NEAREST } {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "test2.tga", Texture::FilteringType::NEAREST }, texture2{ "test2.tga", Texture::FilteringType::NEAREST } {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}
@@ -124,7 +135,7 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
-		draw_loop(&window, texture);
+		draw_loop(&window, texture1, texture2);
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();

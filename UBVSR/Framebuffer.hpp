@@ -18,7 +18,7 @@ namespace ubv {
 	class FrameBuffer {
 	public:
 		inline explicit FrameBuffer(std::uint32_t t_width, std::uint32_t t_height) noexcept
-			: m_width{ t_width }, m_height{ t_height }, m_pixels_data{ t_width * t_height } { }
+			: m_width{ t_width }, m_height{ t_height }, m_pixels_data{ t_width * t_height }, m_zbuffer{ (float)t_width * t_height, std::numeric_limits<float>::infinity() } { }
 	
 		[[nodiscard]] constexpr std::uint32_t get_width() const noexcept {
 			return m_width;
@@ -39,6 +39,13 @@ namespace ubv {
 				return m_pixels_data[t_y * m_width + t_x];
 			return null_pixel;
 		}
+		
+		[[nodiscard]] inline float& at_zbuffer(std::uint32_t t_x, std::uint32_t t_y) noexcept {
+			if (t_x < m_width && t_y < m_height)
+				return m_zbuffer[t_y * m_width + t_x];
+			static float inf = std::numeric_limits<float>::infinity();
+			return inf;
+		}
 	
 		[[nodiscard]] inline const std::vector<Pixel>& get_pixel_data() const noexcept {
 			return m_pixels_data;
@@ -50,8 +57,20 @@ namespace ubv {
 			for(auto& pixel : m_pixels_data) {
 				pixel = t_color;
 			}
+			m_zbuffer.clear();
+			m_zbuffer.resize(m_width * m_height, std::numeric_limits<float>::infinity());
 		}
-	
+		
+		inline bool zbuffer_test_and_set(u16vec2 t_position, float t_depth) {
+			float& existing_depth = at_zbuffer(t_position.x, t_position.y);
+			if (t_depth < existing_depth)
+			{
+				existing_depth = t_depth;
+				return true;
+			}
+			return false;
+		}
+
 		inline void set_pixel(std::uint32_t t_x, std::uint32_t t_y, Pixel t_color) noexcept {
 			at(t_x, t_y) = t_color;
 		}
@@ -161,26 +180,31 @@ namespace ubv {
 		}
 	
 		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture& t_texture) {
-			
 
-			const std::uint32_t start_x = std::max<float>(std::min<float>({t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })-1, 0);
-			const std::uint32_t end_x = std::min<float>(std::max<float>({ t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })+1, m_width);
+			std::array<fvec3, 3> vertices = { fvec3((t_vertices[0].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[0].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[0].position.z),
+											  fvec3((t_vertices[1].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[1].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[1].position.z),
+											  fvec3((t_vertices[2].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[2].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[2].position.z)
+			};
 
-			const std::uint32_t start_y = std::max<float>(std::min<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })-1, 0);
-			const std::uint32_t end_y = std::min<float>(std::max<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })+1, m_height);
+
+			const std::uint32_t start_x = std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1, 0);
+			const std::uint32_t end_x = std::min<float>(std::max<float>({ vertices[0].x, vertices[1].x , vertices[2].x })+1, m_width);
+
+			const std::uint32_t start_y = std::max<float>(std::min<float>({ vertices[0].y, vertices[1].y , vertices[2].y })-1, 0);
+			const std::uint32_t end_y = std::min<float>(std::max<float>({ vertices[0].y, vertices[1].y , vertices[2].y })+1, m_height);
 
 			for(std::uint32_t x = start_x; x < end_x; ++x) {
 				for(std::uint32_t y = start_y; y < end_y; ++y) {
 					const fvec2 p = fvec2{ static_cast<float>(x), static_cast<float>(y) };
-					if(is_point_inside_triangle(p, t_vertices[0].position, t_vertices[1].position, t_vertices[2].position)) {
+					if(is_point_inside_triangle(p, fvec2(vertices[0]), fvec2(vertices[1]), fvec2(vertices[2]))) {
 						//Pixel pixel;
 						ubv::fvec2 pos_uv;
+						float z_value = 0.0F;
 						std::array<float, 3> scales;
 						for(int i = 0; i < 3; ++i) {
-							auto point = line_intersection(t_vertices[i].position, p, t_vertices[(i + 1) % 3].position,
-														   t_vertices[(i + 2) % 3].position);
-							const auto dx = t_vertices[i].position.x - point.x;
-							const auto dy = t_vertices[i].position.y - point.y;
+							auto point = line_intersection(fvec2(vertices[i]), p, fvec2(vertices[(i + 1) % 3]), fvec2(vertices[(i + 2) % 3]));
+							const auto dx = vertices[i].x - point.x;
+							const auto dy = vertices[i].y - point.y;
 							const auto d2x = p.x - point.x;
 							const auto d2y = p.y - point.y;
 							auto total_distance = std::sqrt(dx * dx + dy * dy);
@@ -197,8 +221,15 @@ namespace ubv {
 						pos_uv.y = (t_vertices[0].texture_uv.y * scales[0] +
 									t_vertices[1].texture_uv.y * scales[1] +
 									t_vertices[2].texture_uv.y * scales[2]) / total_scale;
+
+						z_value = (vertices[0].z * scales[0] +
+								   vertices[1].z * scales[1] +
+								   vertices[2].z * scales[2]) / total_scale;
 	
-						set_pixel(x, y, t_texture.sample(pos_uv));
+						if(zbuffer_test_and_set(u16vec2(x, y), z_value)) {
+							set_pixel(x, y, t_texture.sample(pos_uv));
+						}
+						//set z buffer
 					}
 				}
 			}
@@ -208,6 +239,6 @@ namespace ubv {
 		std::uint32_t m_width;
 		std::uint32_t m_height;
 		std::vector<Pixel> m_pixels_data;
-		
+		std::vector<float> m_zbuffer;
 	};
 };

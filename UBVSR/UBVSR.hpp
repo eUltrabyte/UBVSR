@@ -27,6 +27,7 @@ namespace ubv {
 
         virtual void start();
 
-        Texture texture;
+        Texture texture1;
+        Texture texture2;
     };
 };
