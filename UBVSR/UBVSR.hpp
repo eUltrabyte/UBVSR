@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <cstdint>
 #include <future>
 #include <iostream>
 #include <stdexcept>
@@ -10,8 +9,22 @@
 #include <unordered_map>
 #include <set>
 
+#include "Pixel.hpp"
+#include "Vertex.hpp"
+
 #if defined(_WIN32)
-#include "Window/WindowWin32.hpp"
+    #include "Window/WindowWin32.hpp"
 #elif defined(__unix__)
-#include "Window/WindowX11.hpp"
+    #include "Window/WindowX11.hpp"
 #endif
+
+namespace ubv {
+    class Sandbox {
+    public:
+        explicit Sandbox(int t_argc, char** t_argv);
+        virtual ~Sandbox() noexcept;
+
+        virtual void start();
+
+    };
+};
