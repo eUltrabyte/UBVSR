@@ -31,7 +31,7 @@ namespace ubv {
 				DefaultDepth(m_display, 0),
 				ZPixmap,
 				0,
-				reinterpret_cast<const char*>(data.data()),
+				reinterpret_cast<char*>(data.data()),
 				get_win_width(),
 				get_win_height(),
 				32,
