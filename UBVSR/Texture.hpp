@@ -2,6 +2,8 @@
 
 #include "TGA.hpp"
 
+#include <cmath>
+
 namespace ubv {
 	class Texture {
 	public:
