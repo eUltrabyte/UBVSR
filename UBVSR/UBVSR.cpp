@@ -123,7 +123,7 @@ namespace ubv {
 		#elif defined(__unix__)
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
-
+		
 		draw_loop(&window, texture);
 
 		std::cout << "Goodbye UBVSR\n";
