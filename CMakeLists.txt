@@ -16,6 +16,8 @@ add_executable(UBVSR
     "UBVSR/Math.hpp"
     "UBVSR/Vertex.hpp"
     "UBVSR/Pixel.hpp"
+    "UBVSR/TGA.hpp"
+    "UBVSR/Texture.hpp"
     "UBVSR/Window.hpp"
     "UBVSR/Window/WindowWin32.cpp"
     "UBVSR/Window/WindowWin32.hpp"

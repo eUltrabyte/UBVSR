@@ -11,12 +11,14 @@
 
 #include "Pixel.hpp"
 #include "Vertex.hpp"
+#include "Texture.hpp"
 
 #if defined(_WIN32)
     #include "Window/WindowWin32.hpp"
 #elif defined(__unix__)
     #include "Window/WindowX11.hpp"
 #endif
+
 
 namespace ubv {
     class Sandbox {
@@ -26,5 +28,6 @@ namespace ubv {
 
         virtual void start();
 
+        Texture texture;
     };
 };

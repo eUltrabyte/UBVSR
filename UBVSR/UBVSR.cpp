@@ -20,11 +20,10 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
-	while (true)
-	{
+	while(true) {
 		//frame_buffer.clear(ubv::Pixel(0, 0, 0));
 		static FpsCounter fps_counter;
 
@@ -34,7 +33,7 @@ void draw_loop(ubv::Window* window) noexcept {
 
 		const float angle = sin(elapsed_time) * 0.25F;
 
-		const ubv::Vertex vertex_a{ ubv::fvec2{ 0, 0 }, ubv::Pixel{ 255, 0, 0 } };
+		/*const ubv::Vertex vertex_a{ubv::fvec2{0, 0}, ubv::Pixel{255, 0, 0}};
 		const ubv::Vertex vertex_b{ ubv::fvec2{ 1280, 0 }, ubv::Pixel{ 0, 255, 0 } };
 		const ubv::Vertex vertex_c{ ubv::fvec2{ 1280, 720 }, ubv::Pixel{ 0, 0, 255 } };
 		const ubv::Vertex vertex_d{ ubv::fvec2{ 0, 720 }, ubv::Pixel{ 255, 255, 0 } };
@@ -57,6 +56,7 @@ void draw_loop(ubv::Window* window) noexcept {
 		ubv::vec2<float> point_a = rotate(ubv::fvec2{ 640.0F - 400.0F, 360.0F + 346.0F }, ubv::fvec2{ 640.0F, 360.0F }, angle);
 		ubv::vec2<float> point_b = rotate(ubv::fvec2{ 640.0F - 400.0F, 360.0F - 346.0F }, ubv::fvec2{ 640.0F, 360.0F }, angle);
 		ubv::vec2<float> point_c = rotate(ubv::fvec2{ 640.0F + 400.0F, 360.0F + 346.0F }, ubv::fvec2{ 640.0F, 360.0F }, angle);
+
 		std::vector<std::future<void>> tasks;
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2));
@@ -68,17 +68,35 @@ void draw_loop(ubv::Window* window) noexcept {
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle8));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle9));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle10));
-		for (const auto& task : tasks)
-		{
+
+		for(const auto& task : tasks) {
 			task.wait();
 		}
+
+		for (unsigned x = 0; x < tga_file.get_width(); ++x) {
+			for (unsigned y = 0; y < tga_file.get_height(); ++y) {
+				frame_buffer.at(x, y) = tga_file.get_pixel(ubv::u16vec2{uint16_t(x),uint16_t(y)});
+			}
+		}*/
+
+		const ubv::Vertex vertex_a{ ubv::fvec2{ 1280, 0 }, ubv::fvec2{ 2, 0 } };
+		const ubv::Vertex vertex_b{ ubv::fvec2{ 1280, 720 }, ubv::fvec2{ 2, 2 } };
+		const ubv::Vertex vertex_c{ ubv::fvec2{ 0, 720 }, ubv::fvec2{ 0, 2 } };
+		const ubv::Vertex vertex_d{ ubv::fvec2{ 0, 0 }, ubv::fvec2{ 0, 0 } };
+
+		const std::array<ubv::Vertex, 3> triangle1{	vertex_b, vertex_d, vertex_a };
+		const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_c };
+
+		frame_buffer.draw_triangle(triangle1, texture);
+		frame_buffer.draw_triangle(triangle2, texture);
+
 		window->display(frame_buffer);
 		window->update();
 	}
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture{ "test.tga", Texture::FilteringType::NEAREST } {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}
@@ -97,7 +115,7 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
-		draw_loop(&window);
+		draw_loop(&window, texture);
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();

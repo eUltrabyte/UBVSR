@@ -3,6 +3,7 @@
 #include "Pixel.hpp"
 #include "Math.hpp"
 #include "Vertex.hpp"
+#include "Texture.hpp"
 
 #include <algorithm>
 #include <array>
@@ -158,7 +159,7 @@ namespace ubv {
 			return fvec2{float(x), float(y)};
 		}
 	
-		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices) {
+		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, Texture& t_texture) {
 			std::uint32_t start_x = std::max<float>(std::min<float>({t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })-1, 0);
 			std::uint32_t end_x = std::min<float>(std::max<float>({ t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })+1, m_width);
 	
@@ -169,7 +170,8 @@ namespace ubv {
 				for(std::uint32_t y = start_y; y < end_y; ++y) {
 					const fvec2 p = fvec2{ static_cast<float>(x), static_cast<float>(y) };
 					if(is_point_inside_triangle(p, t_vertices[0].position, t_vertices[1].position, t_vertices[2].position)) {
-						Pixel pixel;
+						//Pixel pixel;
+						ubv::fvec2 pos_uv;
 						std::array<float, 3> scales;
 						for(int i = 0; i < 3; ++i) {
 							auto point = line_intersection(t_vertices[i].position, p, t_vertices[(i + 1) % 3].position,
@@ -183,25 +185,17 @@ namespace ubv {
 						}
 	
 						const auto total_scale = scales[0] + scales[1] + scales[2];
-						pixel.r = std::clamp((static_cast<float>(t_vertices[0].color.r) * scales[0] +
-											  static_cast<float>(t_vertices[1].color.r) * scales[1] +
-											  static_cast<float>(t_vertices[2].color.r) * scales[2]) /
-												 total_scale,
-											 0.0F, 255.0F);
+						pos_uv.x = (t_vertices[0].texture_uv.x * scales[0] +
+											  t_vertices[1].texture_uv.x * scales[1] +
+											  t_vertices[2].texture_uv.x * scales[2]) /
+												 total_scale;
 											 
-						pixel.g = std::clamp((static_cast<float>(t_vertices[0].color.g) * scales[0] +
-											  static_cast<float>(t_vertices[1].color.g) * scales[1] +
-											  static_cast<float>(t_vertices[2].color.g) * scales[2]) /
-												 total_scale,
-											 0.0F, 255.0F);
-
-						pixel.b = std::clamp((static_cast<float>(t_vertices[0].color.b) * scales[0] +
-											  static_cast<float>(t_vertices[1].color.b) * scales[1] +
-											  static_cast<float>(t_vertices[2].color.b) * scales[2]) /
-												 total_scale,
-											 0.0F, 255.0F);
+						pos_uv.y = (t_vertices[0].texture_uv.y * scales[0] +
+											  t_vertices[1].texture_uv.y * scales[1] +
+											  t_vertices[2].texture_uv.y * scales[2]) /
+												 total_scale;
 	
-						set_pixel(x, y, pixel);
+						set_pixel(x, y, t_texture.sample(pos_uv));
 					}
 				}
 			}
