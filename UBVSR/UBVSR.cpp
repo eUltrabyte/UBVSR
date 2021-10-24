@@ -79,10 +79,10 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 			}
 		}*/
 
-		const ubv::Vertex vertex_a{ rotate(ubv::fvec2{ 640 + 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 1, 0 } }; // 1 0
-		const ubv::Vertex vertex_b{ rotate(ubv::fvec2{ 640 + 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 1, 1 } };
-		const ubv::Vertex vertex_c{ rotate(ubv::fvec2{ 640 - 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 0, 1 } };
-		const ubv::Vertex vertex_d{ rotate(ubv::fvec2{ 640 - 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 0, 0 } };
+		const ubv::Vertex vertex_a{ rotate(ubv::fvec2{ 640 + 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 1, 0 } }; // 1 0
+		const ubv::Vertex vertex_b{ rotate(ubv::fvec2{ 640 + 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 1, 1 } };
+		const ubv::Vertex vertex_c{ rotate(ubv::fvec2{ 640 - 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 0, 1 } };
+		const ubv::Vertex vertex_d{ rotate(ubv::fvec2{ 640 - 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time), ubv::fvec2{ 0, 0 } };
 
 		const std::array<ubv::Vertex, 3> triangle1{	vertex_b, vertex_d, vertex_a };
 		const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_c };
@@ -123,7 +123,7 @@ namespace ubv {
 		#elif defined(__unix__)
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
-		
+
 		draw_loop(&window, texture);
 
 		std::cout << "Goodbye UBVSR\n";
