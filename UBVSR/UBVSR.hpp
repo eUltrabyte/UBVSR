@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <future>
 #include <iostream>
 #include <stdexcept>
 #include <string>

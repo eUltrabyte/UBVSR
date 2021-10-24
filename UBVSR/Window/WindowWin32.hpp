@@ -15,19 +15,18 @@ namespace ubv {
 		void destroy() noexcept final;
 
 		[[nodiscard]] inline std::vector<std::byte> create_packed_dib(const FrameBuffer &t_frame_buffer) {
-			static std::vector<std::byte> buffer{sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_pixel_data().size() * 3U};
-			static SIZE sBmp = { (LONG)t_frame_buffer.get_width(), (LONG)t_frame_buffer.get_height() };
+			static std::vector<std::byte> buffer{ sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_pixel_data().size() * 3U };
 			static BITMAPINFOHEADER pbi;
 			pbi.biSize = sizeof(BITMAPINFOHEADER);
-			pbi.biWidth = sBmp.cx;
-			pbi.biHeight = sBmp.cy;
+			pbi.biWidth = (LONG)t_frame_buffer.get_width();
+			pbi.biHeight = (LONG)t_frame_buffer.get_height();
 			pbi.biPlanes = 1;
 			pbi.biBitCount = 24;
 			pbi.biCompression = BI_RGB;
 			pbi.biSizeImage = 0;
 			pbi.biXPelsPerMeter = 2835;
 			pbi.biYPelsPerMeter = 2835;
-			pbi.biClrUsed = 3; // nie wiem w sumie
+			pbi.biClrUsed = 3;
 			pbi.biClrImportant = 0;
 			LPVOID pvBits = (LPVOID)(t_frame_buffer.get_pixel_data().data()); // the raw bitmap bits
 			*((BITMAPINFOHEADER *)buffer.data()) = pbi;
@@ -38,10 +37,8 @@ namespace ubv {
 
 		inline virtual void display(const FrameBuffer &t_frame_buffer) final {
 			static RECT rect;
-			HBRUSH brush = CreateDIBPatternBrushPt((void *)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS);
 			SetRect(&rect, 0, 0, t_frame_buffer.get_width(), t_frame_buffer.get_height());
-			FillRect(m_hdc, &rect, brush);
-			DeleteObject(brush);
+			FillRect(m_hdc, &rect, CreateDIBPatternBrushPt((void*)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS));
 		}
 
 		[[nodiscard]] constexpr HINSTANCE get_hinstance() const noexcept {

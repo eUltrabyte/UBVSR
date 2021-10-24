@@ -7,13 +7,14 @@ namespace ubv {
 	public:
 		enum class FilteringType : std::uint8_t {
 			NEAREST,
-			LINEAR
+			LINEAR,
+            BILINEAR
 		} m_filtering_type;
 
 		bool clamp_x = false;
 		bool clamp_y = false;
 
-		Pixel sample(fvec2 pos_uv) {
+		Pixel sample(fvec2 pos_uv) const noexcept {
 			pos_uv.x = std::fmod(pos_uv.x, 1.0F);
 			pos_uv.y = std::fmod(pos_uv.y, 1.0F);
 			switch (m_filtering_type) {
@@ -26,10 +27,18 @@ namespace ubv {
 				break;
 				case FilteringType::LINEAR:
 				{
-					abort(); // no i chuj
+					std::abort(); // no i chuj
+                    return Pixel{ };
+				}
+				break;
+                case FilteringType::BILINEAR:
+				{
+					std::abort(); // no i chuj v2
+                    return Pixel{ };
 				}
 				break;
 			}
+            return Pixel{ };
 		}
 
 		inline Texture(std::string_view t_tga_filename, FilteringType t_filtering_type = FilteringType::LINEAR) 
@@ -37,7 +46,7 @@ namespace ubv {
 			// cos
 		}
      
-		constexpr u16vec2 get_size() noexcept {
+		constexpr u16vec2 get_size() const noexcept {
 			return u16vec2((uint16_t)m_tga.get_width(), (uint16_t)m_tga.get_height());
 		}
 

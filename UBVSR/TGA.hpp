@@ -29,13 +29,9 @@ namespace ubv {
 	    inline explicit TGA(std::string_view t_filename) {
             std::ifstream file((std::string)t_filename, std::ios::in | std::ios::binary);
 
-		    if(file.is_open()) {
-		    	std::cout << "wo korva\n";
-		    } else {
-		    	std::cout << "klasycznie\n";
-	    		throw 69;
-	    	}
-
+		    if(!file.is_open()) {
+		    	std::abort();
+		    }
 
 	    	file.read(reinterpret_cast<char*>(&header.idlength), sizeof(header.idlength));
 	    	file.read(reinterpret_cast<char*>(&header.colourmaptype), sizeof(header.colourmaptype));
@@ -59,11 +55,15 @@ namespace ubv {
 			return (*reinterpret_cast<Pixel*>(m_pixel_data.data() + (static_cast<std::size_t>(t_position.y) * get_width() + t_position.x) * (header.bitsperpixel/8U)));
         }
 
-		constexpr std::uint16_t get_width() noexcept {
+		inline const Pixel& get_pixel(u16vec2 t_position) const { //TODO: make it work on linux
+			return (*reinterpret_cast<const Pixel*>(m_pixel_data.data() + (static_cast<std::size_t>(t_position.y) * get_width() + t_position.x) * (header.bitsperpixel/8U)));
+        }
+
+		constexpr std::uint16_t get_width() const noexcept {
 			return header.width;
 		}
 
-		constexpr std::uint16_t get_height() noexcept {
+		constexpr std::uint16_t get_height() const noexcept {
 			return header.height;
 		}
 

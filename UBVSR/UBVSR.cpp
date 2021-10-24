@@ -24,11 +24,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
-		//frame_buffer.clear(ubv::Pixel(0, 0, 0));
+		frame_buffer.clear(ubv::Pixel(0, 0, 0));
 		static FpsCounter fps_counter;
 
 		const Timepoint t2;
-		double elapsed_time = (t2 - t1) * 2.0L;
+		float elapsed_time = (t2 - t1) * 2.0L;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 
 		const float angle = sin(elapsed_time) * 0.25F;
@@ -79,16 +79,25 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 			}
 		}*/
 
-		const ubv::Vertex vertex_a{ ubv::fvec2{ 1280, 0 }, ubv::fvec2{ 2, 0 } };
-		const ubv::Vertex vertex_b{ ubv::fvec2{ 1280, 720 }, ubv::fvec2{ 2, 2 } };
-		const ubv::Vertex vertex_c{ ubv::fvec2{ 0, 720 }, ubv::fvec2{ 0, 2 } };
-		const ubv::Vertex vertex_d{ ubv::fvec2{ 0, 0 }, ubv::fvec2{ 0, 0 } };
+		const ubv::Vertex vertex_a{ rotate(ubv::fvec2{ 640 + 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 1, 0 } }; // 1 0
+		const ubv::Vertex vertex_b{ rotate(ubv::fvec2{ 640 + 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 1, 1 } };
+		const ubv::Vertex vertex_c{ rotate(ubv::fvec2{ 640 - 100, 360 + 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 0, 1 } };
+		const ubv::Vertex vertex_d{ rotate(ubv::fvec2{ 640 - 100, 360 - 100 }, ubv::fvec2{ 640, 360 }, elapsed_time * 10), ubv::fvec2{ 0, 0 } };
 
 		const std::array<ubv::Vertex, 3> triangle1{	vertex_b, vertex_d, vertex_a };
 		const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_c };
 
-		frame_buffer.draw_triangle(triangle1, texture);
-		frame_buffer.draw_triangle(triangle2, texture);
+		std::vector<std::future<void>> tasks;
+
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture));
+
+		//frame_buffer.draw_triangle(triangle1, texture);
+		//frame_buffer.draw_triangle(triangle2, texture);
+
+		for(const auto& task : tasks) {
+			task.wait();
+		}
 
 		window->display(frame_buffer);
 		window->update();
@@ -96,7 +105,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture) noexcept {
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture{ "test.tga", Texture::FilteringType::NEAREST } {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture{ "test2.tga", Texture::FilteringType::NEAREST } {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}

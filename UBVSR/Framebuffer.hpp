@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <future>
 
 namespace ubv {
 	class FrameBuffer {
@@ -109,7 +110,7 @@ namespace ubv {
 		[[deprecated]] inline void draw_fancy_glowy_circle(float t_x, float t_y, float t_size) noexcept {
 			for(unsigned x = 0; x < m_width; ++x) {
 				for(unsigned y = 0; y < m_height; ++y) {
-					float distance = std::sqrt(std::pow(std::abs(t_x - float(x)), 2.0F) + std::pow(std::abs(t_y - float(y)), 2.0F));
+					float distance = std::sqrt((std::abs(t_x - float(x)) * std::abs(t_x - float(x))) + (std::abs(t_y - float(y)) * std::abs(t_y - float(y))));
 					if(distance < t_size) {
 						float brightness = distance / t_size;
 						const auto op = at(x, y);
@@ -159,13 +160,15 @@ namespace ubv {
 			return fvec2{float(x), float(y)};
 		}
 	
-		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, Texture& t_texture) {
-			std::uint32_t start_x = std::max<float>(std::min<float>({t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })-1, 0);
-			std::uint32_t end_x = std::min<float>(std::max<float>({ t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })+1, m_width);
-	
-			std::uint32_t start_y = std::max<float>(std::min<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })-1, 0);
-			std::uint32_t end_y = std::min<float>(std::max<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })+1, m_height);
-	
+		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture& t_texture) {
+			
+
+			const std::uint32_t start_x = std::max<float>(std::min<float>({t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })-1, 0);
+			const std::uint32_t end_x = std::min<float>(std::max<float>({ t_vertices[0].position.x, t_vertices[1].position.x , t_vertices[2].position.x })+1, m_width);
+
+			const std::uint32_t start_y = std::max<float>(std::min<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })-1, 0);
+			const std::uint32_t end_y = std::min<float>(std::max<float>({ t_vertices[0].position.y, t_vertices[1].position.y , t_vertices[2].position.y })+1, m_height);
+
 			for(std::uint32_t x = start_x; x < end_x; ++x) {
 				for(std::uint32_t y = start_y; y < end_y; ++y) {
 					const fvec2 p = fvec2{ static_cast<float>(x), static_cast<float>(y) };
@@ -176,24 +179,24 @@ namespace ubv {
 						for(int i = 0; i < 3; ++i) {
 							auto point = line_intersection(t_vertices[i].position, p, t_vertices[(i + 1) % 3].position,
 														   t_vertices[(i + 2) % 3].position);
-							auto total_distance = std::sqrt(std::pow(t_vertices[i].position.x - point.x, 2.0F) +
-															std::pow(t_vertices[i].position.y - point.y, 2.0F));
-							auto distance = std::sqrt(std::pow(p.x - point.x, 2.0F) +
-													  std::pow(p.y - point.y, 2.0F));
-							auto fraction = std::clamp(distance / total_distance, 0.0F, 1.0F);
+							const auto dx = t_vertices[i].position.x - point.x;
+							const auto dy = t_vertices[i].position.y - point.y;
+							const auto d2x = p.x - point.x;
+							const auto d2y = p.y - point.y;
+							auto total_distance = std::sqrt(dx * dx + dy * dy);
+							auto distance = std::sqrt(d2x * d2x + d2y * d2y);
+							auto fraction = distance / total_distance;
 							scales[i] = fraction;
 						}
 	
 						const auto total_scale = scales[0] + scales[1] + scales[2];
 						pos_uv.x = (t_vertices[0].texture_uv.x * scales[0] +
-											  t_vertices[1].texture_uv.x * scales[1] +
-											  t_vertices[2].texture_uv.x * scales[2]) /
-												 total_scale;
+									t_vertices[1].texture_uv.x * scales[1] +
+									t_vertices[2].texture_uv.x * scales[2]) / total_scale;
 											 
 						pos_uv.y = (t_vertices[0].texture_uv.y * scales[0] +
-											  t_vertices[1].texture_uv.y * scales[1] +
-											  t_vertices[2].texture_uv.y * scales[2]) /
-												 total_scale;
+									t_vertices[1].texture_uv.y * scales[1] +
+									t_vertices[2].texture_uv.y * scales[2]) / total_scale;
 	
 						set_pixel(x, y, t_texture.sample(pos_uv));
 					}
