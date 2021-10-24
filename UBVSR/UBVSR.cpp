@@ -20,7 +20,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& texture2) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& texture2, ubv::fmat4x4& projection) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
@@ -79,32 +79,129 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 			}
 		}*/
 
-		const ubv::Vertex vertex_a{ ubv::fvec3(rotate(ubv::fvec2{ -0.6, -0.4 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), -1.0F), ubv::fvec2{ 1, 0 } }; // 1 0
-		const ubv::Vertex vertex_b{ ubv::fvec3(rotate(ubv::fvec2{ -0.6, -0.6 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), 1.0F), ubv::fvec2{ 1, 1 } };
-		const ubv::Vertex vertex_c{ ubv::fvec3(rotate(ubv::fvec2{ -0.4, -0.6 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), -1.0F), ubv::fvec2{ 0, 1 } };
-		const ubv::Vertex vertex_d{ ubv::fvec3(rotate(ubv::fvec2{ -0.4, -0.4 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time), 1.0F), ubv::fvec2{ 0, 0 } };
+		const float uNear = 0.1F;
+		const float uFar = 1000.0F;
+		const float uFov = 90.0F;
+		const float uAspect = static_cast<float>(frame_buffer.get_height()) / static_cast<float>(frame_buffer.get_width());
+		const float uFov_in_radians = 1.0F / std::tanf(uFov * 0.5F / 180.0F * 3.14159F);
 
-		const ubv::Vertex vertex_e{ ubv::fvec3(rotate(ubv::fvec2{ -0.8, -0.2 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), 1.0F), ubv::fvec2{ 1, 0 } }; // 1 0
-		const ubv::Vertex vertex_f{ ubv::fvec3(rotate(ubv::fvec2{ -0.8, -0.8 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), -1.0F), ubv::fvec2{ 1, 1 } };
-		const ubv::Vertex vertex_g{ ubv::fvec3(rotate(ubv::fvec2{ -0.2, -0.8 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), 1.0F), ubv::fvec2{ 0, 1 } };
-		const ubv::Vertex vertex_h{ ubv::fvec3(rotate(ubv::fvec2{ -0.2, -0.2 }, ubv::fvec2{ -0.5, -0.5 }, elapsed_time / 2), -1.0F), ubv::fvec2{ 0, 0 } };
+		projection.set_mat_at(ubv::u16vec2(0, 0), uAspect * uFov_in_radians);
+		projection.set_mat_at(ubv::u16vec2(1, 1), uFov_in_radians);
+		projection.set_mat_at(ubv::u16vec2(2, 2), uFar / (uFar - uNear));
+		projection.set_mat_at(ubv::u16vec2(3, 2), (-uFar * uNear) / (uFar - uNear));
+		projection.set_mat_at(ubv::u16vec2(2, 3), 1.0F);
+		projection.set_mat_at(ubv::u16vec2(3, 3), 0.0F);
 
-		const std::array<ubv::Vertex, 3> triangle1{	vertex_b, vertex_d, vertex_a };
-		const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_c };
+		static ubv::fvec3 offset{ 3.5F, 3.5F, 3.5F };
 
-		const std::array<ubv::Vertex, 3> triangle3{	vertex_f, vertex_h, vertex_e };
-		const std::array<ubv::Vertex, 3> triangle4{	vertex_f, vertex_h, vertex_g };
+		if (GetAsyncKeyState(VK_LEFT))
+		{
+			offset.x -= 0.1F;
+		}
+
+		if (GetAsyncKeyState(VK_RIGHT))
+		{
+			offset.x += 0.1F;
+		}
+
+		if (GetAsyncKeyState(VK_UP))
+		{
+			offset.z -= 0.1F;
+		}
+
+		if (GetAsyncKeyState(VK_DOWN))
+		{
+			offset.z += 0.1F;
+		}
+
+		if (GetAsyncKeyState(0x41))
+		{
+			offset.y -= 0.1F;
+		}
+
+		if (GetAsyncKeyState(0x44))
+		{
+			offset.y += 0.1F;
+		}
+
+		ubv::Vertex c0a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c0b{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c0c{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c0d{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 1 } };
+
+		/* ubv::Vertex c1a{ projection.multiply(ubv::fvec3{ 0, 0, 1} + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c1b{ projection.multiply(ubv::fvec3{ 1, 0, 1} + offset), ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c1c{ projection.multiply(ubv::fvec3{ 0, 1, 1} + offset), ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c1d{ projection.multiply(ubv::fvec3{ 1, 1, 1} + offset), ubv::fvec2{ 1, 1 } };
+	
+		ubv::Vertex c2a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c2b{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c2c{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c2d{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
+	
+		ubv::Vertex c3a{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c3b{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c3c{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c3d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
+	
+		ubv::Vertex c4a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c4b{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c4c{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c4d{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 1, 1 } };
+	
+		ubv::Vertex c5a{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c5b{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c5c{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c5d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } }; */
+
+		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
+		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };
+
+		/* const std::array<ubv::Vertex, 3> t1a{ c1b, c1c, c1a };
+		const std::array<ubv::Vertex, 3> t1b{ c1b, c1c, c1d };
+
+		const std::array<ubv::Vertex, 3> t2a{ c2b, c2c, c2a };
+		const std::array<ubv::Vertex, 3> t2b{ c2b, c2c, c2d };
+
+		const std::array<ubv::Vertex, 3> t3a{ c3b, c3c, c3a };
+		const std::array<ubv::Vertex, 3> t3b{ c3b, c3c, c3d };
+
+		const std::array<ubv::Vertex, 3> t4a{ c4b, c4c, c4a };
+		const std::array<ubv::Vertex, 3> t4b{ c4b, c4c, c4d };
+
+		const std::array<ubv::Vertex, 3> t5a{ c5b, c5c, c5a };
+		const std::array<ubv::Vertex, 3> t5b{ c5b, c5c, c5d };*/
 
 		std::vector<std::future<void>> tasks;
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0b, texture1));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle3, texture2));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle4, texture2));
+		/* tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1b, texture1));
 
-		//frame_buffer.draw_triangle(triangle1, texture);
-		//frame_buffer.draw_triangle(triangle2, texture);
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2b, texture1));
+
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t3a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t3b, texture1));
+
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4b, texture1));
+
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5b, texture1)); */
+
+		/*const ubv::Vertex vertex_a{projection.multiply(ubv::fvec3(rotate(ubv::fvec2{0.5, -0.5}, ubv::fvec2{0.0, 0.0}, 0), 1.0F)), ubv::fvec2{-1, 0}}; // 1 0
+		const ubv::Vertex vertex_b{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{  0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ -1, -1 } };
+		const ubv::Vertex vertex_c{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ 0, -1 } };
+		const ubv::Vertex vertex_d{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5, -0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ 0, 0 } };*/
+
+		//const std::array<ubv::Vertex, 3> triangle1{ vertex_b, vertex_d, vertex_c };
+		//const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_a };
+
+		//tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture1));
+		//tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture1));
 
 		for(const auto& task : tasks) {
 			task.wait();
@@ -123,11 +220,13 @@ namespace ubv {
 	}
      
 	Sandbox::~Sandbox() {
-		//delete this;
+		delete this;
 	}
 
     void Sandbox::start() {
 		std::cout << "Hello UBVSR.\n";
+
+		projection = fmat4x4{ };
 
 		#if defined(_WIN32)
 			ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
@@ -135,7 +234,8 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
-		draw_loop(&window, texture1, texture2);
+
+		draw_loop(&window, texture1, texture2, projection);
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();

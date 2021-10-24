@@ -29,5 +29,7 @@ namespace ubv {
 
         Texture texture1;
         Texture texture2;
+
+        fmat4x4 projection;
     };
 };
