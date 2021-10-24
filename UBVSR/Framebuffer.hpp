@@ -187,11 +187,11 @@ namespace ubv {
 			};
 
 
-			const std::uint32_t start_x = std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1, 0);
-			const std::uint32_t end_x = std::min<float>(std::max<float>({ vertices[0].x, vertices[1].x , vertices[2].x })+1, m_width);
+			const std::uint32_t start_x = std::max<std::uint32_t>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1, 0);
+			const std::uint32_t end_x = std::min<std::uint32_t>(std::max<float>({ vertices[0].x, vertices[1].x , vertices[2].x })+1, m_width);
 
-			const std::uint32_t start_y = std::max<float>(std::min<float>({ vertices[0].y, vertices[1].y , vertices[2].y })-1, 0);
-			const std::uint32_t end_y = std::min<float>(std::max<float>({ vertices[0].y, vertices[1].y , vertices[2].y })+1, m_height);
+			const std::uint32_t start_y = std::max<std::uint32_t>(std::min<float>({ vertices[0].y, vertices[1].y , vertices[2].y })-1, 0);
+			const std::uint32_t end_y = std::min<std::uint32_t>(std::max<float>({ vertices[0].y, vertices[1].y , vertices[2].y })+1, m_height);
 
 			for(std::uint32_t x = start_x; x < end_x; ++x) {
 				for(std::uint32_t y = start_y; y < end_y; ++y) {

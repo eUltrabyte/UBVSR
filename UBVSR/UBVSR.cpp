@@ -129,7 +129,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 		ubv::Vertex c0c{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
 		ubv::Vertex c0d{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 1 } };
 
-		/* ubv::Vertex c1a{ projection.multiply(ubv::fvec3{ 0, 0, 1} + offset), ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c1a{ projection.multiply(ubv::fvec3{ 0, 0, 1} + offset), ubv::fvec2{ 0, 0 } };
 		ubv::Vertex c1b{ projection.multiply(ubv::fvec3{ 1, 0, 1} + offset), ubv::fvec2{ 1, 0 } };
 		ubv::Vertex c1c{ projection.multiply(ubv::fvec3{ 0, 1, 1} + offset), ubv::fvec2{ 0, 1 } };
 		ubv::Vertex c1d{ projection.multiply(ubv::fvec3{ 1, 1, 1} + offset), ubv::fvec2{ 1, 1 } };
@@ -152,12 +152,12 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 		ubv::Vertex c5a{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 0 } };
 		ubv::Vertex c5b{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 0 } };
 		ubv::Vertex c5c{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c5d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } }; */
+		ubv::Vertex c5d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
 
 		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
 		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };
 
-		/* const std::array<ubv::Vertex, 3> t1a{ c1b, c1c, c1a };
+		const std::array<ubv::Vertex, 3> t1a{ c1b, c1c, c1a };
 		const std::array<ubv::Vertex, 3> t1b{ c1b, c1c, c1d };
 
 		const std::array<ubv::Vertex, 3> t2a{ c2b, c2c, c2a };
@@ -170,14 +170,14 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 		const std::array<ubv::Vertex, 3> t4b{ c4b, c4c, c4d };
 
 		const std::array<ubv::Vertex, 3> t5a{ c5b, c5c, c5a };
-		const std::array<ubv::Vertex, 3> t5b{ c5b, c5c, c5d };*/
+		const std::array<ubv::Vertex, 3> t5b{ c5b, c5c, c5d };
 
 		std::vector<std::future<void>> tasks;
 
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0b, texture1));
 
-		/* tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a, texture1));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1b, texture1));
 
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2a, texture1));
@@ -190,7 +190,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4b, texture1));
 
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5b, texture1)); */
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5b, texture1));
 
 		/*const ubv::Vertex vertex_a{projection.multiply(ubv::fvec3(rotate(ubv::fvec2{0.5, -0.5}, ubv::fvec2{0.0, 0.0}, 0), 1.0F)), ubv::fvec2{-1, 0}}; // 1 0
 		const ubv::Vertex vertex_b{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{  0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ -1, -1 } };
