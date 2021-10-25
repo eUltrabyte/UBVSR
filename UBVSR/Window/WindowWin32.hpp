@@ -36,8 +36,10 @@ namespace ubv {
 
 		inline virtual void display(const FrameBuffer &t_frame_buffer) final {
 			static RECT rect;
+			HBRUSH brush = CreateDIBPatternBrushPt((void*)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS);
 			SetRect(&rect, 0, 0, t_frame_buffer.get_width(), t_frame_buffer.get_height());
-			FillRect(m_hdc, &rect, CreateDIBPatternBrushPt((void*)create_packed_dib(t_frame_buffer).data(), DIB_RGB_COLORS));
+			FillRect(m_hdc, &rect, brush);
+			DeleteObject(brush);
 		}
 
 		[[nodiscard]] constexpr HINSTANCE get_hinstance() const noexcept {
