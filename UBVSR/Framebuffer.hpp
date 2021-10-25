@@ -187,19 +187,16 @@ namespace ubv {
 			};
 
 
-			const std::uint32_t start_x = std::max<std::uint32_t>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1, 0);
+			const std::uint32_t start_x = std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1, 0);
 			const std::uint32_t end_x = std::min<std::uint32_t>(std::max<float>({ vertices[0].x, vertices[1].x , vertices[2].x })+1, m_width);
 
-			const std::uint32_t start_y = std::max<std::uint32_t>(std::min<float>({ vertices[0].y, vertices[1].y , vertices[2].y })-1, 0);
+			const std::uint32_t start_y = std::max<float>(std::min<float>({ vertices[0].y, vertices[1].y , vertices[2].y })-1, 0);
 			const std::uint32_t end_y = std::min<std::uint32_t>(std::max<float>({ vertices[0].y, vertices[1].y , vertices[2].y })+1, m_height);
 
 			for(std::uint32_t x = start_x; x < end_x; ++x) {
 				for(std::uint32_t y = start_y; y < end_y; ++y) {
 					const fvec2 p = fvec2{ static_cast<float>(x), static_cast<float>(y) };
 					if(is_point_inside_triangle(p, fvec2(vertices[0]), fvec2(vertices[1]), fvec2(vertices[2]))) {
-						//Pixel pixel;
-						ubv::fvec2 pos_uv;
-						float z_value = 0.0F;
 						std::array<float, 3> scales;
 						for(int i = 0; i < 3; ++i) {
 							auto point = line_intersection(fvec2(vertices[i]), p, fvec2(vertices[(i + 1) % 3]), fvec2(vertices[(i + 2) % 3]));
@@ -214,31 +211,32 @@ namespace ubv {
 						}
 	
 						const auto total_scale = scales[0] + scales[1] + scales[2];
-						pos_uv.x = (t_vertices[0].texture_uv.x * scales[0] +
-									t_vertices[1].texture_uv.x * scales[1] +
-									t_vertices[2].texture_uv.x * scales[2]) / total_scale;
-											 
-						pos_uv.y = (t_vertices[0].texture_uv.y * scales[0] +
-									t_vertices[1].texture_uv.y * scales[1] +
-									t_vertices[2].texture_uv.y * scales[2]) / total_scale;
 
-						z_value = (vertices[0].z * scales[0] +
+						const float z_value = (vertices[0].z * scales[0] +
 								   vertices[1].z * scales[1] +
 								   vertices[2].z * scales[2]) / total_scale;
 	
 						if(zbuffer_test_and_set(u16vec2(x, y), z_value)) {
-							set_pixel(x, y, t_texture.sample(pos_uv));
+							set_pixel(x, y, t_texture.sample(fvec2{ (t_vertices[0].texture_uv.x * scales[0] +
+								t_vertices[1].texture_uv.x * scales[1] +
+								t_vertices[2].texture_uv.x * scales[2]) / total_scale, (t_vertices[0].texture_uv.y * scales[0] +
+								t_vertices[1].texture_uv.y * scales[1] +
+								t_vertices[2].texture_uv.y * scales[2]) / total_scale } ));
 						}
-						//set z buffer
 					}
 				}
 			}
+
 		}
 	
 	private:
 		std::uint32_t m_width;
 		std::uint32_t m_height;
+
+		//color buffer
 		std::vector<Pixel> m_pixels_data;
+
+		//z buffer
 		std::vector<float> m_zbuffer;
 	};
 };

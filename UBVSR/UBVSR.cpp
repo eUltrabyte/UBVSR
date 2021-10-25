@@ -174,7 +174,20 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 
 		std::vector<std::future<void>> tasks;
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));
+		frame_buffer.draw_triangle(t0a, texture1);
+		frame_buffer.draw_triangle(t0b, texture1);
+		frame_buffer.draw_triangle(t1a, texture1);
+		frame_buffer.draw_triangle(t1b, texture1);
+		frame_buffer.draw_triangle(t2a, texture1);
+		frame_buffer.draw_triangle(t2b, texture1);
+		frame_buffer.draw_triangle(t3a, texture1);
+		frame_buffer.draw_triangle(t3b, texture1);
+		frame_buffer.draw_triangle(t4a, texture1);
+		frame_buffer.draw_triangle(t4b, texture1);
+		frame_buffer.draw_triangle(t5a, texture1);
+		frame_buffer.draw_triangle(t5b, texture1);
+
+		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0b, texture1));
 
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a, texture1));
@@ -190,7 +203,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4b, texture1));
 
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5b, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5b, texture1));*/
 
 		/*const ubv::Vertex vertex_a{projection.multiply(ubv::fvec3(rotate(ubv::fvec2{0.5, -0.5}, ubv::fvec2{0.0, 0.0}, 0), 1.0F)), ubv::fvec2{-1, 0}}; // 1 0
 		const ubv::Vertex vertex_b{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{  0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ -1, -1 } };

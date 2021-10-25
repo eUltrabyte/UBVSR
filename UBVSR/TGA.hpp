@@ -27,7 +27,7 @@ namespace ubv {
 	    } header;
 
 	    inline explicit TGA(std::string_view t_filename) {
-            std::ifstream file((std::string)t_filename, std::ios::in | std::ios::binary);
+            std::ifstream file(t_filename.data(), std::ios::in | std::ios::binary);
 
 		    if(!file.is_open()) {
 		    	std::abort();
@@ -51,11 +51,11 @@ namespace ubv {
             file.read(reinterpret_cast<char*>(m_pixel_data.data()), raw_data_size);
 	    }
 
-		inline Pixel& get_pixel(u16vec2 t_position) { //TODO: make it work on linux
+		inline Pixel& get_pixel(u16vec2 t_position) {
 			return (*reinterpret_cast<Pixel*>(m_pixel_data.data() + (static_cast<std::size_t>(t_position.y) * get_width() + t_position.x) * (header.bitsperpixel/8U)));
         }
 
-		inline const Pixel& get_pixel(u16vec2 t_position) const { //TODO: make it work on linux
+		inline const Pixel& get_pixel(u16vec2 t_position) const {
 			return (*reinterpret_cast<const Pixel*>(m_pixel_data.data() + (static_cast<std::size_t>(t_position.y) * get_width() + t_position.x) * (header.bitsperpixel/8U)));
         }
 
@@ -65,6 +65,30 @@ namespace ubv {
 
 		constexpr std::uint16_t get_height() const noexcept {
 			return header.height;
+		}
+
+		inline void to_file(std::string_view t_filename) const
+		{
+			std::ofstream file(t_filename.data(), std::ios::out | std::ios::binary);
+
+			if (!file.is_open()) {
+				std::abort();
+			}
+
+			file.write(reinterpret_cast<const char*>(&header.idlength), sizeof(header.idlength));
+			file.write(reinterpret_cast<const char*>(&header.colourmaptype), sizeof(header.colourmaptype));
+			file.write(reinterpret_cast<const char*>(&header.datatypecode), sizeof(header.datatypecode));
+			file.write(reinterpret_cast<const char*>(&header.colourmaporigin), sizeof(header.colourmaporigin));
+			file.write(reinterpret_cast<const char*>(&header.colourmaplength), sizeof(header.colourmaplength));
+			file.write(reinterpret_cast<const char*>(&header.colourmapdepth), sizeof(header.colourmapdepth));
+			file.write(reinterpret_cast<const char*>(&header.x_origin), sizeof(header.x_origin));
+			file.write(reinterpret_cast<const char*>(&header.y_origin), sizeof(header.y_origin));
+			file.write(reinterpret_cast<const char*>(&header.width), sizeof(header.width));
+			file.write(reinterpret_cast<const char*>(&header.height), sizeof(header.height));
+			file.write(reinterpret_cast<const char*>(&header.bitsperpixel), sizeof(header.bitsperpixel));
+			file.write(reinterpret_cast<const char*>(&header.imagedescriptor), sizeof(header.imagedescriptor));
+
+			file.write(reinterpret_cast<const char*>(m_pixel_data.data()), m_pixel_data.size());
 		}
 
 	private:

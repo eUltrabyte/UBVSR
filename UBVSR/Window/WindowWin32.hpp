@@ -28,8 +28,7 @@ namespace ubv {
 			pbi.biYPelsPerMeter = 2835;
 			pbi.biClrUsed = 3;
 			pbi.biClrImportant = 0;
-			LPVOID pvBits = (LPVOID)(t_frame_buffer.get_pixel_data().data()); // the raw bitmap bits
-			*((BITMAPINFOHEADER *)buffer.data()) = pbi;
+			*(reinterpret_cast<BITMAPINFOHEADER*>(buffer.data())) = pbi;
 			std::memcpy(buffer.data() + sizeof(BITMAPINFOHEADER), t_frame_buffer.get_pixel_data().data(),
 						t_frame_buffer.get_pixel_data().size() * 3U);
 			return buffer;

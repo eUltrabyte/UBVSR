@@ -5,7 +5,7 @@
 
 namespace ubv {
 	template<typename T> struct vec2 {
-		//static_assert(std::is_arithmetic_v(T), "Type must be arithmetic");
+		static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
 
 		T x;
 		T y;
@@ -13,13 +13,11 @@ namespace ubv {
 		constexpr explicit vec2() noexcept = default;
 		constexpr explicit vec2(T t_x, T t_y) noexcept : x{ t_x }, y{ t_y } { }
 		template<typename U>
-		constexpr explicit vec2(vec2<U> t_vec) noexcept : x{ }, y{ } { }
-		//template<typename U>
-		//constexpr explicit vec2(vec3<U> t_vec) : x{ t_vec.x }, y{ t_vec.y } {}
+		constexpr explicit vec2(vec2<U> t_vec) noexcept : x{ static_cast<T>(t_vec.x) }, y{static_cast<T>(t_vec.y)} { }
 	};
 
 	template<typename T> struct vec3 {
-		//static_assert(std::is_arithmetic_v(T), "Type must be arithmetic");
+		static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
 
 		T x;
 		T y;
@@ -57,9 +55,8 @@ namespace ubv {
 	using u32vec3 = vec3<std::uint32_t>;
 
 	template<typename T> struct mat4x4 {
-		//static_assert(std::is_arithmetic_v(T), "Type must be arithmetic");
+		static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
 
-		//T mat[4][4];
 		std::array<std::array<T, 4>, 4> matrix;
 
 		constexpr explicit mat4x4() noexcept = default;
@@ -87,7 +84,7 @@ namespace ubv {
 		}
 
 		fvec3 multiply(fvec3 t_input) const noexcept {
-			fvec3 output {
+			/*fvec3 output{
 				t_input.x * matrix[0][0] + t_input.y * matrix[1][0] + t_input.z * matrix[2][0] + matrix[3][0],
 				t_input.x * matrix[0][1] + t_input.y * matrix[1][1] + t_input.z * matrix[2][1] + matrix[3][1],
 				t_input.x * matrix[0][2] + t_input.y * matrix[1][2] + t_input.z * matrix[2][2] + matrix[3][2]
@@ -101,7 +98,11 @@ namespace ubv {
 				output.z /= w;
 			}
 			
-			return output;
+			return output;*/
+			const auto w{  t_input.x * matrix[0][3] + t_input.y * matrix[1][3] + t_input.z * matrix[2][3] + matrix[3][3] };
+			return fvec3{ (t_input.x * matrix[0][0] + t_input.y * matrix[1][0] + t_input.z * matrix[2][0] + matrix[3][0]) / w,
+				          (t_input.x * matrix[0][1] + t_input.y * matrix[1][1] + t_input.z * matrix[2][1] + matrix[3][1]) / w,
+				          (t_input.x * matrix[0][2] + t_input.y * matrix[1][2] + t_input.z * matrix[2][2] + matrix[3][2]) / w};
 		}
 	};
 

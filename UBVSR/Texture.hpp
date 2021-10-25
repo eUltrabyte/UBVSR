@@ -49,7 +49,7 @@ namespace ubv {
 		}
      
 		constexpr u16vec2 get_size() const noexcept {
-			return u16vec2((uint16_t)m_tga.get_width(), (uint16_t)m_tga.get_height());
+			return u16vec2(static_cast<uint16_t>(m_tga.get_width()), static_cast<uint16_t>(m_tga.get_height()));
 		}
 
 	private:

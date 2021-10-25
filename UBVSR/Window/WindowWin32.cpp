@@ -48,7 +48,7 @@ namespace ubv {
 		windowClassEx.hInstance = m_hinstance;
 		windowClassEx.hIcon = 0;
 		windowClassEx.hCursor = LoadCursor(0, IDC_ARROW);
-		windowClassEx.hbrBackground = (HBRUSH)10;
+		windowClassEx.hbrBackground = reinterpret_cast<HBRUSH>(10);
 		windowClassEx.lpszMenuName = 0;
 		windowClassEx.lpszClassName = "UBVSR Win32 Window Class";
 		windowClassEx.hIconSm = 0;
