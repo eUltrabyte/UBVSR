@@ -235,7 +235,6 @@ namespace ubv {
 	}
      
 	Sandbox::~Sandbox() {
-		delete this;
 	}
 
     void Sandbox::start() {
