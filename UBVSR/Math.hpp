@@ -57,7 +57,7 @@ namespace ubv {
 	template<typename T> struct mat4x4 {
 		static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
 
-		std::array<std::array<T, 4>, 4> matrix;
+		std::array<std::array<T, 4>, 4> matrix = { std::array<T, 4>{0,0,0,0},std::array<T, 4>{0,0,0,0},std::array<T, 4>{0,0,0,0},std::array<T, 4>{0,0,0,0} };
 
 		constexpr explicit mat4x4() noexcept = default;
 		constexpr explicit mat4x4(T t_value1, T t_value2, T t_value3, T t_value4, T t_value5, T t_value6) noexcept {
@@ -102,7 +102,7 @@ namespace ubv {
 			const auto w{  t_input.x * matrix[0][3] + t_input.y * matrix[1][3] + t_input.z * matrix[2][3] + matrix[3][3] };
 			return fvec3{ (t_input.x * matrix[0][0] + t_input.y * matrix[1][0] + t_input.z * matrix[2][0] + matrix[3][0]) / w,
 				          (t_input.x * matrix[0][1] + t_input.y * matrix[1][1] + t_input.z * matrix[2][1] + matrix[3][1]) / w,
-				          (t_input.x * matrix[0][2] + t_input.y * matrix[1][2] + t_input.z * matrix[2][2] + matrix[3][2]) / w};
+				          w};
 		}
 	};
 

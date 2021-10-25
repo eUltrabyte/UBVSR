@@ -186,12 +186,12 @@ namespace ubv {
 
 		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture& t_texture) {
 
-			std::array<fvec3, 3> vertices = { fvec3((t_vertices[0].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[0].position.y + 1.0F) / 2.0 * float(get_height()), 1.0F / t_vertices[0].position.z),
-											  fvec3((t_vertices[1].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[1].position.y + 1.0F) / 2.0 * float(get_height()), 1.0F / t_vertices[1].position.z),
-											  fvec3((t_vertices[2].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[2].position.y + 1.0F) / 2.0 * float(get_height()), 1.0F / t_vertices[2].position.z)
+			std::array<fvec3, 3> vertices = { fvec3((t_vertices[0].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[0].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[0].position.z),
+											  fvec3((t_vertices[1].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[1].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[1].position.z),
+											  fvec3((t_vertices[2].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[2].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[2].position.z)
 			};
 
-			std::cout << t_vertices[0].position.x << ", " << t_vertices[0].position.y << std::endl;
+			//std::cout << t_vertices[0].position.x << ", " << t_vertices[0].position.y << std::endl;
 
 			const std::uint32_t start_x = std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1, 0);
 			const std::uint32_t end_x = std::min<std::uint32_t>(std::max<float>({ vertices[0].x, vertices[1].x , vertices[2].x })+1, m_width);
@@ -250,15 +250,21 @@ namespace ubv {
 						const float z_value = 1.0F / ((1.0F / vertices[0].z * scales[0] +
 								   					   1.0F / vertices[1].z * scales[1] +
 								   					   1.0F / vertices[2].z * scales[2]) / total_scale);
-	
-						if(zbuffer_test_and_set(u16vec2(x, y), z_value)) {
+
+						const float old_z_value = ((vertices[0].z * scales[0] +
+							vertices[1].z * scales[1] +
+							vertices[2].z * scales[2]) / total_scale);
+
+						//const float diff = old_z_value / z_value;
+						const float zv = z_value;
+						if(zbuffer_test_and_set(u16vec2(x, y), zv)) {
 							set_pixel(x, y, t_texture.sample(fvec2{ (
 							    (t_vertices[0].texture_uv.x / vertices[0].z) * scales[0] +
 								(t_vertices[1].texture_uv.x / vertices[1].z) * scales[1] +
-								(t_vertices[2].texture_uv.x / vertices[2].z) * scales[2]) / total_scale / (1.0F / z_value), (
+								(t_vertices[2].texture_uv.x / vertices[2].z) * scales[2]) / total_scale / (1.0F / zv), (
 								(t_vertices[0].texture_uv.y / vertices[0].z) * scales[0] +
 								(t_vertices[1].texture_uv.y / vertices[1].z) * scales[1] +
-								(t_vertices[2].texture_uv.y / vertices[2].z) * scales[2]) / total_scale / (1.0F / z_value) } ));
+								(t_vertices[2].texture_uv.y / vertices[2].z) * scales[2]) / total_scale / (1.0F / zv) } ));
 						}
 					}
 				}

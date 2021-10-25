@@ -91,7 +91,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		projection.set_mat_at(ubv::u16vec2(2, 3), 1.0F);
 		projection.set_mat_at(ubv::u16vec2(3, 3), 0.0F);
 
-		static ubv::fvec3 offset{ 3.5F, 3.5F, 3.5F };
+		static ubv::fvec3 offset{ 0.0F, 0.0F, 2.0F };
 
 		if (GetAsyncKeyState(VK_LEFT))
 		{
