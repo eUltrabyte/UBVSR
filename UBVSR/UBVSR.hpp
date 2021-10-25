@@ -12,10 +12,6 @@
 #include "Vertex.hpp"
 #include "Texture.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #if defined(_WIN32)
     #include "Window/WindowWin32.hpp"
 #elif defined(__unix__)
@@ -34,7 +30,6 @@ namespace ubv {
         Texture texture1;
         //Texture texture2;
 
-        glm::mat4 projection;
-        glm::mat4 view;
+        fmat4x4 projection;
     };
 };
