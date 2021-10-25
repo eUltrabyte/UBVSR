@@ -4,6 +4,8 @@ project("UBVSR")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Release)
 
+find_package(glm REQUIRED)
+
 if(UNIX)
     find_package(X11 REQUIRED)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -26,6 +28,8 @@ add_executable(UBVSR
     "UBVSR/Framebuffer.hpp"
     "UBVSR/FpsCounter.hpp"
 )
+
+target_link_libraries(UBVSR glm::glm)
 
 if(UNIX)
 target_link_libraries(UBVSR X11 Threads::Threads)

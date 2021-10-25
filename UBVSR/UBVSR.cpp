@@ -20,7 +20,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture1, glm::mat4& projection, glm::mat4& view) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
@@ -79,18 +79,25 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}*/
 
-		const float uNear = 0.1F;
-		const float uFar = 1000.0F;
+		// const float uNear = 0.1F;
+		// const float uFar = 1000.0F;
 		const float uFov = 90.0F;
-		const float uAspect = static_cast<float>(frame_buffer.get_height()) / static_cast<float>(frame_buffer.get_width());
-		const float uFov_in_radians = 1.0F / std::tanf(uFov * 0.5F / 180.0F * 3.14159F);
+		const float uAspect = static_cast<float>(frame_buffer.get_width()) / static_cast<float>(frame_buffer.get_height());
+		// const float uFov_in_radians = 1.0F / std::tanf(uFov * 0.5F / 180.0F * 3.14159F);
+		// projection.set_mat_at(ubv::u16vec2(0, 0), uAspect * uFov_in_radians);
+		// projection.set_mat_at(ubv::u16vec2(1, 1), uFov_in_radians);
+		// projection.set_mat_at(ubv::u16vec2(2, 2), uFar / (uFar - uNear));
+		// projection.set_mat_at(ubv::u16vec2(3, 2), (-uFar * uNear) / (uFar - uNear));
+		// projection.set_mat_at(ubv::u16vec2(2, 3), 1.0F);
+		// projection.set_mat_at(ubv::u16vec2(3, 3), 0.0F);
+		
+		projection = glm::perspective(glm::radians(uFov), uAspect, 0.1F, 1000.0F);
 
-		projection.set_mat_at(ubv::u16vec2(0, 0), uAspect * uFov_in_radians);
-		projection.set_mat_at(ubv::u16vec2(1, 1), uFov_in_radians);
-		projection.set_mat_at(ubv::u16vec2(2, 2), uFar / (uFar - uNear));
-		projection.set_mat_at(ubv::u16vec2(3, 2), (-uFar * uNear) / (uFar - uNear));
-		projection.set_mat_at(ubv::u16vec2(2, 3), 1.0F);
-		projection.set_mat_at(ubv::u16vec2(3, 3), 0.0F);
+		glm::vec3 cameraPos = { 0.0f, 0.0f, 3.0f };
+		glm::vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
+		glm::vec3 cameraUp = { 0.0f, 1.0f, 0.0f };
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
 
 		static ubv::fvec3 offset{ 3.5F, 3.5F, 3.5F };
 
@@ -124,35 +131,48 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			offset.y += 0.1F;
 		}
 
-		ubv::Vertex c0a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c0b{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c0c{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c0d{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 1 } };
+		glm::mat4 transform = glm::mat4(1);
+		transform = glm::translate(transform, {0, 0, 0});
 
-		ubv::Vertex c1a{ projection.multiply(ubv::fvec3{ 0, 0, 1} + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c1b{ projection.multiply(ubv::fvec3{ 1, 0, 1} + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c1c{ projection.multiply(ubv::fvec3{ 0, 1, 1} + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c1d{ projection.multiply(ubv::fvec3{ 1, 1, 1} + offset), ubv::fvec2{ 1, 1 } };
-	
-		ubv::Vertex c2a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c2b{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c2c{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c2d{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
-	
-		ubv::Vertex c3a{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c3b{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c3c{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c3d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
-	
-		ubv::Vertex c4a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c4b{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c4c{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c4d{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 1, 1 } };
-	
-		ubv::Vertex c5a{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c5b{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c5c{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c5d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c0a{ /* projection.multiply( */ ubv::fvec3{ 0, 0, 0 } + offset /* ) */, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c0b{ /* projection.multiply( */ ubv::fvec3{ 1, 0, 0 } + offset /* ) */, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c0c{ /* projection.multiply( */ ubv::fvec3{ 0, 1, 0 } + offset /* ) */, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c0d{ /* projection.multiply( */ ubv::fvec3{ 1, 1, 0 } + offset /* ) */, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c1a{ /* projection.multiply( */ ubv::fvec3{ 0, 0, 1 } + offset /* ) */, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c1b{ /* projection.multiply( */ ubv::fvec3{ 1, 0, 1 } + offset /* ) */, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c1c{ /* projection.multiply( */ ubv::fvec3{ 0, 1, 1 } + offset /* ) */, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c1d{ /* projection.multiply( */ ubv::fvec3{ 1, 1, 1 } + offset /* ) */, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c2a{ /* projection.multiply( */ ubv::fvec3{ 0, 0, 0 } + offset /* ) */, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c2b{ /* projection.multiply( */ ubv::fvec3{ 0, 1, 0 } + offset /* ) */, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c2c{ /* projection.multiply( */ ubv::fvec3{ 0, 0, 1 } + offset /* ) */, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c2d{ /* projection.multiply( */ ubv::fvec3{ 0, 1, 1 } + offset /* ) */, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c3a{ /* projection.multiply( */ ubv::fvec3{ 1, 0, 0 } + offset /* ) */, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c3b{ /* projection.multiply( */ ubv::fvec3{ 1, 1, 0 } + offset /* ) */, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c3c{ /* projection.multiply( */ ubv::fvec3{ 1, 0, 1 } + offset /* ) */, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c3d{ /* projection.multiply( */ ubv::fvec3{ 1, 1, 1 } + offset /* ) */, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c4a{ /* projection.multiply( */ ubv::fvec3{ 0, 0, 0 } + offset /* ) */, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c4b{ /* projection.multiply( */ ubv::fvec3{ 0, 0, 1 } + offset /* ) */, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c4c{ /* projection.multiply( */ ubv::fvec3{ 1, 0, 0 } + offset /* ) */, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c4d{ /* projection.multiply( */ ubv::fvec3{ 1, 0, 1 } + offset /* ) */, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c5a{ /* projection.multiply( */ ubv::fvec3{ 0, 1, 0 } + offset /* ) */, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c5b{ /* projection.multiply( */ ubv::fvec3{ 0, 1, 1 } + offset /* ) */, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c5c{ /* projection.multiply( */ ubv::fvec3{ 1, 1, 0 } + offset /* ) */, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c5d{ /* projection.multiply( */ ubv::fvec3{ 1, 1, 1 } + offset /* ) */, ubv::fvec2{ 1, 1 } };
+
+		std::array<ubv::Vertex*, 24> wierzcholki = {&c0a, &c0b, &c0c, &c0d,
+													&c1a, &c1b, &c1c, &c1d,
+													&c2a, &c2b, &c2c, &c2d,
+													&c3a, &c3b, &c3c, &c3d,
+													&c4a, &c4b, &c4c, &c4d,
+													&c5a, &c5b, &c5c, &c5d
+		};
+
+		for (auto wierzcholek : wierzcholki) {
+			auto zzz = projection * view * transform * glm::vec4(glm::vec3(wierzcholek->position.x, wierzcholek->position.y, wierzcholek->position.z), 1.0F );
+			wierzcholek->position.x = zzz.x;
+			wierzcholek->position.y = zzz.y;
+			wierzcholek->position.z = zzz.z;
+		}
 
 		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
 		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };
@@ -240,7 +260,7 @@ namespace ubv {
     void Sandbox::start() {
 		std::cout << "Hello UBVSR.\n";
 
-		projection = fmat4x4{ };
+		projection = glm::mat4(1);
 
 		#if defined(_WIN32)
 			ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
@@ -249,7 +269,7 @@ namespace ubv {
 		#endif
 
 
-		draw_loop(&window, texture1, projection);
+		draw_loop(&window, texture1, projection, view);
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();
