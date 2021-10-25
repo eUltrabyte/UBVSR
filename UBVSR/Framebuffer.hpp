@@ -228,6 +228,25 @@ namespace ubv {
 			}
 
 		}
+
+		inline void draw_z_buffer() noexcept
+		{
+			const auto min = *std::min_element(m_zbuffer.begin(), m_zbuffer.end());
+			float max{min};
+			for (const float z_value : m_zbuffer)
+			{
+				if (z_value > max && z_value != std::numeric_limits<float>::infinity())
+				{
+					max = z_value;
+				}
+			}
+			const auto max_distance = max - min;
+			for (std::uint32_t i = 0; i < m_zbuffer.size(); ++i)
+			{
+				std::uint8_t color_value = std::clamp((m_zbuffer[i] - min) / max_distance * 255.0F, 0.0F, 255.0F);
+				m_pixels_data[i] = Pixel{ color_value, color_value, color_value };
+			}
+		}
 	
 	private:
 		std::uint32_t m_width;
