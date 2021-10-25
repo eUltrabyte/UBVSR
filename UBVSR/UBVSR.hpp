@@ -28,7 +28,7 @@ namespace ubv {
         virtual void start();
 
         Texture texture1;
-        Texture texture2;
+        //Texture texture2;
 
         fmat4x4 projection;
     };

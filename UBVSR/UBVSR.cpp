@@ -20,7 +20,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& texture2, ubv::fmat4x4& projection) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
@@ -228,7 +228,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::Texture& textur
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "test2.tga", Texture::FilteringType::NEAREST }, texture2{ "test2.tga", Texture::FilteringType::NEAREST } {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "box.tga", Texture::FilteringType::NEAREST } /*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}
@@ -249,7 +249,7 @@ namespace ubv {
 		#endif
 
 
-		draw_loop(&window, texture1, texture2, projection);
+		draw_loop(&window, texture1, projection);
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();

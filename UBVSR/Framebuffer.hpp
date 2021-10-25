@@ -178,7 +178,12 @@ namespace ubv {
 
 			return fvec2{float(x), float(y)};
 		}
-	
+		
+		inline float interpolate_z_value(float t_z1, float t_z2, float t_fraction)
+		{
+			return 1.0F / (1.0F / t_z1 + t_fraction * (1.0F / t_z2 - 1.0F / t_z1));
+		}
+
 		inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture& t_texture) {
 
 			std::array<fvec3, 3> vertices = { fvec3((t_vertices[0].position.x + 1.0F) / 2.0 * float(get_width()), (t_vertices[0].position.y + 1.0F) / 2.0 * float(get_height()), t_vertices[0].position.z),
@@ -198,6 +203,7 @@ namespace ubv {
 					const fvec2 p = fvec2{ static_cast<float>(x), static_cast<float>(y) };
 					if(is_point_inside_triangle(p, fvec2(vertices[0]), fvec2(vertices[1]), fvec2(vertices[2]))) {
 						std::array<float, 3> scales;
+						// float z_value;
 						for(int i = 0; i < 3; ++i) {
 							auto point = line_intersection(fvec2(vertices[i]), p, fvec2(vertices[(i + 1) % 3]), fvec2(vertices[(i + 2) % 3]));
 							const auto dx = vertices[i].x - point.x;
@@ -208,20 +214,50 @@ namespace ubv {
 							auto distance = std::sqrt(d2x * d2x + d2y * d2y);
 							auto fraction = distance / total_distance;
 							scales[i] = fraction;
+
+							//Z value interpolation
+							//if(i == 0) {
+								//auto dx = vertices[1].x - vertices[2].x;
+								//auto dy = vertices[1].y - vertices[2].y;
+
+								//auto dx2 = vertices[1].y - point.x;
+								//auto dy2 = vertices[1].y - point.y;
+
+								//auto d1 = std::sqrt(dx * dx + dy * dy);
+								//auto d2 = std::sqrt(dx2 * dx2 + dy2 * dy2);
+
+								//1 mozliwosc - nie dziala
+								//auto z_value1 = interpolate_z_value(vertices[1].z, vertices[2].z, d2 / d1);
+								//z_value = interpolate_z_value(z_value1, vertices[0].z, fraction);
+
+								//2 mozliwosc - nie dziala
+								//auto z_value1 = interpolate_z_value(vertices[2].z, vertices[1].z, d2 / d1);
+								//z_value = interpolate_z_value(z_value1, vertices[0].z, fraction);
+
+								//3 mozliwosc - nie dziala
+								//auto z_value1 = interpolate_z_value(vertices[1].z, vertices[2].z, d2 / d1);
+								//z_value = interpolate_z_value(vertices[0].z, z_value1, fraction);
+
+								//4 mozliwosc - 
+								//auto z_value1 = interpolate_z_value(vertices[2].z, vertices[1].z, d2 / d1);
+								//z_value = interpolate_z_value(vertices[0].z, z_value1, fraction);
+							//}
 						}
-	
+
 						const auto total_scale = scales[0] + scales[1] + scales[2];
 
-						const float z_value = (vertices[0].z * scales[0] +
-								   vertices[1].z * scales[1] +
-								   vertices[2].z * scales[2]) / total_scale;
+						const float z_value = 1.0F / ((1.0F / vertices[0].z * scales[0] +
+								   					   1.0F / vertices[1].z * scales[1] +
+								   					   1.0F / vertices[2].z * scales[2]) / total_scale);
 	
 						if(zbuffer_test_and_set(u16vec2(x, y), z_value)) {
-							set_pixel(x, y, t_texture.sample(fvec2{ (t_vertices[0].texture_uv.x * scales[0] +
-								t_vertices[1].texture_uv.x * scales[1] +
-								t_vertices[2].texture_uv.x * scales[2]) / total_scale, (t_vertices[0].texture_uv.y * scales[0] +
-								t_vertices[1].texture_uv.y * scales[1] +
-								t_vertices[2].texture_uv.y * scales[2]) / total_scale } ));
+							set_pixel(x, y, t_texture.sample(fvec2{ (
+							    (t_vertices[0].texture_uv.x / t_vertices[0].position.z) * scales[0] +
+								(t_vertices[1].texture_uv.x / t_vertices[1].position.z) * scales[1] +
+								(t_vertices[2].texture_uv.x / t_vertices[2].position.z) * scales[2]) / total_scale / (1.0F / z_value), (
+								(t_vertices[0].texture_uv.y / t_vertices[0].position.z) * scales[0] +
+								(t_vertices[1].texture_uv.y / t_vertices[1].position.z) * scales[1] +
+								(t_vertices[2].texture_uv.y / t_vertices[2].position.z) * scales[2]) / total_scale / (1.0F / z_value) } ));
 						}
 					}
 				}
