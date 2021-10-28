@@ -1,6 +1,20 @@
 ﻿#include "UBVSR.hpp"
 
 #include "FpsCounter.hpp"
+#include "Buffer.hpp"
+
+void zzz()
+{
+	ubv::StencilBuffer color_buffer(640, 480);
+	color_buffer.at(40, 50) = true;
+	const auto& bb = color_buffer;
+	auto& z = bb.at(40, 50);
+	color_buffer.clear();
+	//ubv::DepthBuffer depth_buffer(ubv::u16vec2{640,480});
+	//ubv::StencilBuffer stencil_buffer(ubv::u16vec2{640,480});
+	//stencil_buffer.at(ubv::u16vec2{ 3,4 }) = true;
+	//std::vector<float> yaa{std::size_t(5000) * uint16_t(3), std::numeric_limits<float>::infinity() };
+}
 
 ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	float s = sin(t_angle);
@@ -24,7 +38,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
-		frame_buffer.clear(ubv::Pixel(0, 0, 0));
+		frame_buffer.clear();
 		static FpsCounter fps_counter;
 
 		const Timepoint t2;

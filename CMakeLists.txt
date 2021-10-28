@@ -25,7 +25,7 @@ add_executable(UBVSR
     "UBVSR/Window/WindowX11.hpp"
     "UBVSR/Framebuffer.hpp"
     "UBVSR/FpsCounter.hpp"
-)
+    "UBVSR/Buffer.hpp")
 
 if(UNIX)
 target_link_libraries(UBVSR X11 Threads::Threads)

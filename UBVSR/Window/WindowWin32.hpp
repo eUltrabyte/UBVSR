@@ -15,7 +15,7 @@ namespace ubv {
 		void destroy() noexcept final;
 
 		[[nodiscard]] inline std::vector<std::byte> create_packed_dib(const FrameBuffer &t_frame_buffer) {
-			static std::vector<std::byte> buffer{ sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_pixel_data().size() * 3U };
+			static std::vector<std::byte> buffer{ sizeof(BITMAPINFOHEADER) + t_frame_buffer.get_color_buffer().data().size() * 3U };
 			static BITMAPINFOHEADER pbi;
 			pbi.biSize = sizeof(BITMAPINFOHEADER);
 			pbi.biWidth = (LONG)t_frame_buffer.get_width();
@@ -29,8 +29,8 @@ namespace ubv {
 			pbi.biClrUsed = 3;
 			pbi.biClrImportant = 0;
 			*(reinterpret_cast<BITMAPINFOHEADER*>(buffer.data())) = pbi;
-			std::memcpy(buffer.data() + sizeof(BITMAPINFOHEADER), t_frame_buffer.get_pixel_data().data(),
-						t_frame_buffer.get_pixel_data().size() * 3U);
+			std::memcpy(buffer.data() + sizeof(BITMAPINFOHEADER), t_frame_buffer.get_color_buffer().data().data(),
+						t_frame_buffer.get_color_buffer().data().size() * 3U);
 			return buffer;
 		}
 
