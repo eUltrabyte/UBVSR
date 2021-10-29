@@ -209,7 +209,7 @@ namespace ubv {
 	using u32mat4x4 = mat4x4<std::uint16_t>;
 
 	template<typename T> 
-	inline fmat4x4 projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) {
+	[[nodiscard]] constexpr fmat4x4 projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept {
 		fmat4x4 matrix;
 
 		const T fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
@@ -223,7 +223,7 @@ namespace ubv {
 	}
 
 	template<typename T>
-	inline fmat4x4 ortho2d(T t_left, T t_right, T t_bottom, T t_top, T t_near_z, T t_far_z) {
+	[[nodiscard]] constexpr fmat4x4 ortho2d(T t_left, T t_right, T t_bottom, T t_top, T t_near_z, T t_far_z) noexcept {
 		fmat4x4 matrix;
 
 		matrix[0][0] = 2.0F / (t_right - t_left);
@@ -235,4 +235,17 @@ namespace ubv {
 
 		return matrix;
 	}
+
+	template<typename T>
+	[[nodiscard]] constexpr T dot_product(const vec3<T>& t_vec1, const vec3<T>& t_vec2) noexcept {
+		return t_vec1.x * t_vec2.x + t_vec1.y * t_vec2.y + t_vec1.z * t_vec2.z;
+	}
+
+	template<typename T>
+	[[nodiscard]] constexpr vec3<T> cross_product(const vec3<T>& t_vec1, const vec3<T>& t_vec2) noexcept {
+		return vec3<T>{ t_vec1.y * t_vec2.z - t_vec1.z * t_vec2.y,
+						t_vec1.z * t_vec2.x - t_vec1.x * t_vec2.z,
+						t_vec1.x * t_vec2.y - t_vec1.y * t_vec2.x };
+	}
+
 };
