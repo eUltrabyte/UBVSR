@@ -17,7 +17,7 @@ namespace ubv {
 
     
     struct Vertex {
-    	fvec3 position;
+    	fvec4 position;
     	fvec2 texture_uv;
     };
 };

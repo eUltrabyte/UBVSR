@@ -93,18 +93,6 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}*/
 
-		const float uNear = 0.1F;
-		const float uFar = 1000.0F;
-		const float uFov = 90.0F;
-		const float uAspect = static_cast<float>(frame_buffer.get_height()) / static_cast<float>(frame_buffer.get_width());
-		const float uFov_in_radians = 1.0F / std::tanf(uFov * 0.5F / 180.0F * 3.14159F);
-		projection.set_mat_at(ubv::u16vec2(0, 0), uAspect * uFov_in_radians);
-		projection.set_mat_at(ubv::u16vec2(1, 1), uFov_in_radians);
-		projection.set_mat_at(ubv::u16vec2(2, 2), uFar / (uFar - uNear));
-		projection.set_mat_at(ubv::u16vec2(3, 2), (-uFar * uNear) / (uFar - uNear));
-		projection.set_mat_at(ubv::u16vec2(2, 3), 1.0F);
-		projection.set_mat_at(ubv::u16vec2(3, 3), 0.0F);
-
 		static ubv::fvec3 offset{ 0.0F, 0.0F, 2.0F };
 
 		if (GetAsyncKeyState(VK_LEFT))
@@ -137,30 +125,30 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			offset.y += 0.1F;
 		}
 
-		ubv::Vertex c0a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c0b{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c0c{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c0d{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c1a{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c1b{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c1c{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c1d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c2a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c2b{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c2c{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c2d{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c3a{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c3b{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c3c{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c3d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c4a{ projection.multiply(ubv::fvec3{ 0, 0, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c4b{ projection.multiply(ubv::fvec3{ 0, 0, 1 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c4c{ projection.multiply(ubv::fvec3{ 1, 0, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c4d{ projection.multiply(ubv::fvec3{ 1, 0, 1 } + offset), ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c5a{ projection.multiply(ubv::fvec3{ 0, 1, 0 } + offset), ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c5b{ projection.multiply(ubv::fvec3{ 0, 1, 1 } + offset), ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c5c{ projection.multiply(ubv::fvec3{ 1, 1, 0 } + offset), ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c5d{ projection.multiply(ubv::fvec3{ 1, 1, 1 } + offset), ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c0a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c0b{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 0) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c0c{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 0) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c0d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 0) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c1a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 1) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c1b{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 1) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c1c{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 1) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c1d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c2a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c2b{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 0) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c2c{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 1) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c2d{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c3a{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c3b{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 0) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c3c{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 1) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c3d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c4a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c4b{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 1) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c4c{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c4d{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c5a{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c5b{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c5c{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 0) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c5d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
 
 		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
 		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };
@@ -254,6 +242,7 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
+		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 1000.0F);
 
 		draw_loop(&window, texture1, projection);
 
