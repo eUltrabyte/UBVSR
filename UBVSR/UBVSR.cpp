@@ -231,7 +231,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "box.tga", Texture::FilteringType::LINEAR } /*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "small_box.tga", Texture::FilteringType::LINEAR } /*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}
