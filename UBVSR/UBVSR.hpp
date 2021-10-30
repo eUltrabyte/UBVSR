@@ -9,8 +9,7 @@
 #include <set>
 
 #include "Pixel.hpp"
-#include "Vertex.hpp"
-#include "Texture.hpp"
+#include "Model.hpp"
 
 #if defined(_WIN32)
     #include "Window/WindowWin32.hpp"
@@ -28,6 +27,7 @@ namespace ubv {
         virtual void start();
 
         Texture texture1;
+        Model model;
         //Texture texture2;
 
         fmat4x4 projection;

@@ -65,15 +65,27 @@ namespace ubv {
 					//TODO: INTERPOLATE
 					const auto interpolated_pixel_r1 = std::lerp(pixel11.r, pixel21.r, 1.0F - fraction_x);
 					const auto interpolated_pixel_r2 = std::lerp(pixel12.r, pixel22.r, 1.0F - fraction_x);
-					const auto interpolated_pixel_r = std::lerp(interpolated_pixel_r1, interpolated_pixel_r2, 1.0F - fraction_y);
+					const auto interpolated_pixel_r3 = std::lerp(pixel11.r, pixel12.r, 1.0F - fraction_x);
+					const auto interpolated_pixel_r4 = std::lerp(pixel21.r, pixel22.r, 1.0F - fraction_x);
+					const auto interpolated_pixel_rl1 = std::lerp(interpolated_pixel_r1, interpolated_pixel_r3, 1.0F - fraction_y);
+					const auto interpolated_pixel_rl2 = std::lerp(interpolated_pixel_r2, interpolated_pixel_r4, 1.0F - fraction_y);
+					const auto interpolated_pixel_r = std::lerp(interpolated_pixel_rl1, interpolated_pixel_rl2,  1.0F - std::abs(fraction_x - fraction_y) / 2.0F);
 
 					const auto interpolated_pixel_g1 = std::lerp(pixel11.g, pixel21.g, 1.0F - fraction_x);
 					const auto interpolated_pixel_g2 = std::lerp(pixel12.g, pixel22.g, 1.0F - fraction_x);
-					const auto interpolated_pixel_g = std::lerp(interpolated_pixel_g1, interpolated_pixel_g2, 1.0F - fraction_y);
+					const auto interpolated_pixel_g3 = std::lerp(pixel11.g, pixel12.g, 1.0F - fraction_x);
+					const auto interpolated_pixel_g4 = std::lerp(pixel21.g, pixel22.g, 1.0F - fraction_x);
+					const auto interpolated_pixel_gl1 = std::lerp(interpolated_pixel_g1, interpolated_pixel_g3, 1.0F - fraction_y);
+					const auto interpolated_pixel_gl2 = std::lerp(interpolated_pixel_g2, interpolated_pixel_g4, 1.0F - fraction_y);
+					const auto interpolated_pixel_g = std::lerp(interpolated_pixel_gl1, interpolated_pixel_gl2, 1.0F - std::abs(fraction_x - fraction_y) / 2.0F);
 
 					const auto interpolated_pixel_b1 = std::lerp(pixel11.b, pixel21.b, 1.0F - fraction_x);
 					const auto interpolated_pixel_b2 = std::lerp(pixel12.b, pixel22.b, 1.0F - fraction_x);
-					const auto interpolated_pixel_b = std::lerp(interpolated_pixel_b1, interpolated_pixel_b2, 1.0F - fraction_y);
+					const auto interpolated_pixel_b3 = std::lerp(pixel11.b, pixel12.b, 1.0F - fraction_x);
+					const auto interpolated_pixel_b4 = std::lerp(pixel21.b, pixel22.b, 1.0F - fraction_x);
+					const auto interpolated_pixel_bl1 = std::lerp(interpolated_pixel_b1, interpolated_pixel_b3, 1.0F - fraction_y);
+					const auto interpolated_pixel_bl2 = std::lerp(interpolated_pixel_b2, interpolated_pixel_b4, 1.0F - fraction_y);
+					const auto interpolated_pixel_b = std::lerp(interpolated_pixel_bl1, interpolated_pixel_bl2,  1.0F - std::abs(fraction_x - fraction_y) / 2.0F);
 
 					//std::abort(); // no i chuj
 					return Pixel( interpolated_pixel_r, interpolated_pixel_g, interpolated_pixel_b );

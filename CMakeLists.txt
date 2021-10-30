@@ -2,7 +2,7 @@
 project("UBVSR")
 
 set(CMAKE_CXX_STANDARD 20)
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 if(UNIX)
     find_package(X11 REQUIRED)
@@ -25,7 +25,9 @@ add_executable(UBVSR
     "UBVSR/Window/WindowX11.hpp"
     "UBVSR/Framebuffer.hpp"
     "UBVSR/FpsCounter.hpp"
-    "UBVSR/Buffer.hpp")
+    "UBVSR/Buffer.hpp"
+    "UBVSR/Model.hpp"
+)
 
 if(UNIX)
 target_link_libraries(UBVSR X11 Threads::Threads)

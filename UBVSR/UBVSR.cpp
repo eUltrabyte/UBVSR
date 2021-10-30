@@ -34,7 +34,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, ubv::Model& model) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	while(true) {
@@ -43,7 +43,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		static Timepoint t3 = t1;
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1) * 2.0L;
-		float delta_time = t2 - t3;
+		float delta_time = (t2 - t3) * 32.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
 		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-2.0F };
@@ -132,7 +132,13 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		auto view = ubv::look_at(camera_position, camera_position + camera_front, camera_up);
 		auto MVP = view * projection;
 
-		ubv::Vertex c0a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::fvec3 light_direction = ubv::fvec3{ 0.0F, 0.0F, -1.0F };
+		float l = std::sqrt(light_direction.x * light_direction.x + light_direction.y * light_direction.y + light_direction.z * light_direction.z);
+		light_direction.x /= l;
+		light_direction.y /= l;
+		light_direction.z /= l;
+
+		/*ubv::Vertex c0a{MVP * ubv::fvec4{ubv::fvec3(0, 0, 0), 1.0F}, ubv::fvec2{0, 0}};
 		ubv::Vertex c0b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
 		ubv::Vertex c0c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
 		ubv::Vertex c0d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 1 } };
@@ -188,7 +194,19 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		frame_buffer.draw_triangle(t4a, texture1);
 		frame_buffer.draw_triangle(t4b, texture1);
 		frame_buffer.draw_triangle(t5a, texture1);
-		frame_buffer.draw_triangle(t5b, texture1);
+		frame_buffer.draw_triangle(t5b, texture1);*/
+
+		std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
+		//std::cout << triangles_to_draw.size() << std::endl; 
+		for (auto &triangle : triangles_to_draw)
+		{
+			for (auto& vertex : triangle)
+			{
+				vertex.position = MVP * vertex.position;
+				// std::cout << vertex.position.x << ", " << vertex.position.y << ", " << vertex.position.z << '\n';
+			}
+			frame_buffer.draw_triangle(triangle, texture1);
+		}
 
 		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));
 		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0b, texture1));
@@ -219,9 +237,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture1));
 		//tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture1));
 
-		for(const auto& task : tasks) {
-			task.wait();
-		}
+		//for(const auto& task : tasks) {
+		//	task.wait();
+		//}
 
 		if (GetAsyncKeyState(0x5A))
 			frame_buffer.draw_z_buffer();
@@ -231,7 +249,8 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "small_box.tga", Texture::FilteringType::LINEAR } /*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "box.tga", Texture::FilteringType::NEAREST }, model{ "Dorrie.obj" }
+	/*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}
@@ -249,9 +268,9 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
-		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 4.0F);
+		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 4000.0F);
 
-		draw_loop(&window, texture1, projection);
+		draw_loop(&window, texture1, projection, model);
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();
