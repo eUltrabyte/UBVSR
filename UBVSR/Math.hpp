@@ -5,6 +5,19 @@
 
 namespace ubv
 {
+
+constexpr long double pi = 3.14159265359L;
+
+template <typename T> [[nodiscard]] constexpr T degrees_to_radians(T t_degrees) noexcept
+{
+	return t_degrees / 180.0F * static_cast<T>(pi);
+}
+
+template <typename T> [[nodiscard]] constexpr T radians_to_degrees(T t_radians) noexcept
+{
+	return t_radians * 180.0F / static_cast<T>(pi);
+}
+
 template <typename T> struct vec2
 {
 	static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
@@ -61,17 +74,17 @@ template <typename T> struct vec3
 		return vec3<T>{x + t_vec.x, y + t_vec.y, z + t_vec.z};
 	}
 
-	constexpr vec3<T> operator-(const vec3<T>& t_vec) const noexcept
+	constexpr vec3<T> operator-(const vec3<T> &t_vec) const noexcept
 	{
 		return vec3<T>{x - t_vec.x, y - t_vec.y, z - t_vec.z};
 	}
 
-	constexpr vec3<T> operator*(const vec3<T>& t_vec) const noexcept
+	constexpr vec3<T> operator*(const vec3<T> &t_vec) const noexcept
 	{
 		return vec3<T>{x * t_vec.x, y * t_vec.y, z * t_vec.z};
 	}
 
-	constexpr vec3<T> operator/(const vec3<T>& t_vec) const noexcept
+	constexpr vec3<T> operator/(const vec3<T> &t_vec) const noexcept
 	{
 		return vec3<T>{x / t_vec.x, y / t_vec.y, z / t_vec.z};
 	}
@@ -178,7 +191,7 @@ template <typename T> struct mat4x4
 	// perspective matrix
 	inline explicit mat4x4(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
 	{
-		const T tan_half_fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
+		const T tan_half_fov_radians = 1.0F / std::tan(0.5F * degrees_to_radians(t_fov));
 		matrix[0][0] = 1.0F / t_aspect_ratio * tan_half_fov_radians;
 		matrix[1][1] = 1.0F / tan_half_fov_radians;
 		matrix[2][2] = t_far_z / (t_far_z - t_near_z);
@@ -197,9 +210,9 @@ template <typename T> struct mat4x4
 		matrix[3][2] = -(t_far_z + t_near_z) / (t_far_z - t_near_z);
 	}
 
-	[[nodiscard]] constexpr mat4x4<T> operator*(const mat4x4<T>& t_matrix) const noexcept
+	[[nodiscard]] constexpr mat4x4<T> operator*(const mat4x4<T> &t_matrix) const noexcept
 	{
-		//TODO: Does it work correctly???
+		// TODO: Does it work correctly???
 		mat4x4<T> result;
 		for (std::uint_fast8_t x = 0; x < 4; ++x)
 		{
@@ -223,21 +236,21 @@ template <typename T> struct mat4x4
 			t_vec.x * matrix[0][3] + t_vec.y * matrix[1][3] + t_vec.z * matrix[2][3] + t_vec.w * matrix[3][3]};
 	}
 
-	constexpr void translate(const vec3<T>& t_vec) noexcept = delete;
-		/* {
-			//TODO: Verify it's correct...
-			matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
-			matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
-			matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
-			matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
-		}*/
+	constexpr void translate(const vec3<T> &t_vec) noexcept = delete;
+	/* {
+		//TODO: Verify it's correct...
+		matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
+		matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
+		matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
+		matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
+	}*/
 
-	constexpr void scale(const vec3<T>&t_vec) noexcept = delete;
-		/* {
-			std::abort();
-		}*/
+	constexpr void scale(const vec3<T> &t_vec) noexcept = delete;
+	/* {
+		std::abort();
+	}*/
 
-	constexpr void rotate(T t_angle, const vec3<T>&t_vec) noexcept = delete;
+	constexpr void rotate(T t_angle, const vec3<T> &t_vec) noexcept = delete;
 	/* {
 		std::abort();
 	}*/
@@ -324,7 +337,7 @@ template <typename T>
 }
 
 template <typename T>
-[[nodiscard]] inline mat4x4<T> look_at(const vec3<T>& t_eye, const vec3<T>& t_center, const vec3<T>& t_up) noexcept
+[[nodiscard]] inline mat4x4<T> look_at(const vec3<T> &t_eye, const vec3<T> &t_center, const vec3<T> &t_up) noexcept
 {
 	const vec3<T> f(normalize(t_center - t_eye));
 	const vec3<T> s(normalize(cross_product(f, t_up)));
@@ -358,21 +371,18 @@ template <typename T>
 				   t_vec1.x * t_vec2.y - t_vec1.y * t_vec2.x};
 }
 
-template <typename T>
-[[nodiscard]] inline T length(const vec3<T>& t_vec) noexcept
+template <typename T> [[nodiscard]] inline T length(const vec3<T> &t_vec) noexcept
 {
 	return std::sqrt((t_vec.x * t_vec.x) + (t_vec.y * t_vec.y) + (t_vec.z * t_vec.z));
 }
 
-template <typename T>
-[[nodiscard]] inline vec3<T> normalize(const vec3<T>& t_vec) noexcept
+template <typename T> [[nodiscard]] inline vec3<T> normalize(const vec3<T> &t_vec) noexcept
 {
-	const T vec_length{ length(t_vec) };
+	const T vec_length{length(t_vec)};
 	return vec3<T>{t_vec.x / vec_length, t_vec.y / vec_length, t_vec.z / vec_length};
 }
 
-template<typename T>
-[[nodiscard]] constexpr mat4x4<T> identity() noexcept
+template <typename T> [[nodiscard]] constexpr mat4x4<T> identity() noexcept
 {
 	mat4x4<T> matrix;
 	matrix.matrix[0][0] = 1.0F;
@@ -382,4 +392,82 @@ template<typename T>
 	return matrix;
 }
 
+/*template <typename T> [[nodiscard]] constexpr vec3<T> intersect_plane(const vec3<T>& t_plane_p, const vec3<T>& t_plane_n, const vec3<T>& t_line_start, const vec3<T>& t_line_end)
+{
+	t_plane_n = normalize(plane_n);
+	const T plane_d = -dot_product(plane_n, plane_p);
+	const T ad = -dot_product(t_line_start, t_);
+	const T bd = -dot_product(t_line_end, plane_n);
+	const T t = (-plane_d - ad) / (bd - ad);
+	const vec3<T> line_start_to_end = t_line_end - t_line_start;
+	const vec3<T> line_to_intersect = line_start_to_end * t;
+	return t_line_start + line_to_intersect;
+}
+
+template<typename T> [[nodiscard]] constexpr std::uint8_t triangle_clip_against_plane(vec3<T> t_plane_p, vec3<T> t_plane_n, const std::array<Vertex, 3>& t_input_triangle, const std::array<Vertex, 3>& t_output_triangle1, const std::array<Vertex, 3>& t_output_triangle2)
+{
+	t_plane_n = normalize(t_plane_n);
+
+	auto dist = [&](vec3<T>& t_point)
+	{
+		vec3<T> normal = normalize(t_point);
+		return (t_plane_n.x * t_point.x + t_plane_n.y * t_point.y + t_plane_n.z * t_point.z - dot_product(t_plane_n, t_plane_p));
+	};
+
+	vec3<T>* inside_points[3] = { };
+	std::uint8_t inside_point_count = 0;
+	vec3<T>* outside_points[3] = { };
+	std::uint8_t outside_point_count = 0;
+	
+	T d0 = dist(t_input_triangle[0]);
+	T d1 = dist(t_input_triangle[1]);
+	T d2 = dist(t_input_triangle[2]);
+
+	if (d0 >= 0) { inside_points[++inside_point_count] = &t_input_triangle[0]; }
+	else { outside_points[++outside_point_count] = &t_input_triangle[0]; }
+	if (d1 >= 0) { inside_points[++inside_point_count] = &t_input_triangle[1]; }
+	else { outside_points[++outside_point_count] = &t_input_triangle[1]; }
+	if (d2 >= 0) { inside_points[++inside_point_count] = &t_input_triangle[2]; }
+	else { outside_points[++outside_point_count] = &t_input_triangle[2]; }
+
+	if (inside_point_count == 0)
+	{
+		return 0;
+	}
+
+	if (inside_point_count == 3)
+	{
+		t_output_triangle1 = t_input_triangle;
+		return 1;
+	}
+
+	if (inside_point_count == 1 && outside_point_count == 2)
+	{
+		t_output_triangle1[0] = t_input_triangle;
+
+		t_output_triangle1[0].position = *inside_points[0];
+
+		t_output_triangle1[1].position = intersect_plane(t_plane_p, t_plane_n, *inside_points[0], *outside_points[0]);
+		t_output_triangle1[2].position = intersect_plane(t_plane_p, t_plane_n, *inside_points[0], *outside_points[0]);
+
+		return 1;
+	}
+
+	if (inside_point_count == 2 && outside_point_count == 1)
+	{
+		t_output_triangle1 = t_input_triangle;
+		t_output_triangle2 = t_input_triangle;
+
+		t_output_triangle1[0].position = *inside_points[0];
+		t_output_triangle1[1].position = *inside_points[1];
+		t_output_triangle1[2].position = intersect_plane(t_plane_p, t_plane_n, *inside_points[0], *outside_points[0]);
+
+		t_output_triangle2[0].position = *inside_points[1];
+		t_output_triangle2[1].position = t_output_triangle1[2].position;
+		t_output_triangle2[2].position = intersect_plane(t_plane_p, t_plane_n, *inside_points[1], *outside_points[1]);
+
+		return 2;
+	}
+}*/
+	
 }; // namespace ubv

@@ -63,9 +63,20 @@ namespace ubv {
 					const auto pixel22 = m_tga.get_pixel(ubv::u16vec2( x_texture_position2, y_texture_position2 ));
 
 					//TODO: INTERPOLATE
+					const auto interpolated_pixel_r1 = std::lerp(pixel11.r, pixel21.r, fraction_x);
+					const auto interpolated_pixel_r2 = std::lerp(pixel12.r, pixel22.r, fraction_x);
+					const auto interpolated_pixel_r = std::lerp(interpolated_pixel_r1, interpolated_pixel_r2, fraction_y);
 
-					std::abort(); // no i chuj
-					return Pixel{ };
+					const auto interpolated_pixel_g1 = std::lerp(pixel11.g, pixel21.g, fraction_x);
+					const auto interpolated_pixel_g2 = std::lerp(pixel12.g, pixel22.g, fraction_x);
+					const auto interpolated_pixel_g = std::lerp(interpolated_pixel_g1, interpolated_pixel_g2, fraction_y);
+
+					const auto interpolated_pixel_b1 = std::lerp(pixel11.b, pixel21.b, fraction_x);
+					const auto interpolated_pixel_b2 = std::lerp(pixel12.b, pixel22.b, fraction_x);
+					const auto interpolated_pixel_b = std::lerp(interpolated_pixel_b1, interpolated_pixel_b2, fraction_y);
+
+					//std::abort(); // no i chuj
+					return Pixel( interpolated_pixel_r, interpolated_pixel_g, interpolated_pixel_b );
 				}
 				break;
 				case FilteringType::BILINEAR:

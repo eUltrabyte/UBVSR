@@ -95,6 +95,7 @@ class FrameBuffer
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
 	{
 
+		
 		std::array<fvec3, 3> vertices = {
 			fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
 				  (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[0].position.z / t_vertices[0].position.w),
@@ -102,6 +103,14 @@ class FrameBuffer
 				  (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[1].position.z / t_vertices[1].position.w),
 			fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
 				  (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[2].position.z / t_vertices[2].position.w)};
+
+		for (const auto& vertex : t_vertices)
+		{
+			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < -1.0F )
+			{
+				return;
+			}
+		}
 
 		const std::uint32_t start_x =
 			std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1.0F, 0.0F);

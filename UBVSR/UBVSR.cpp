@@ -17,8 +17,8 @@ void zzz()
 }
 
 ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
-	float s = sin(t_angle);
-	float c = cos(t_angle);
+	float s = std::sin(t_angle);
+	float c = std::cos(t_angle);
 
 	//translate point back to origin
 	t_point.x -= t_origin.x;
@@ -46,8 +46,8 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		float delta_time = t2 - t3;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
-		static ubv::fvec3 camera_position{ 0.0F,0.0F,-2.0F };
-		static ubv::fvec3 camera_pitch_yaw_roll{ 0.0F,0.0F,0.0F };
+		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-2.0F };
+		static ubv::fvec3 camera_pitch_yaw_roll{ 0.0F,ubv::degrees_to_radians(-90.0F),0.0F };
 
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
@@ -136,11 +136,26 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		ubv::Vertex c0b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
 		ubv::Vertex c0c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
 		ubv::Vertex c0d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 1 } };
-
-		ubv::Vertex c1a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 1,0 } };
-		ubv::Vertex c1b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 2,0 } };
-		ubv::Vertex c1c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1,1 } };
-		ubv::Vertex c1d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 2,1 } };
+		ubv::Vertex c1a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c1b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c1c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c1d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c2a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c2b{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c2c{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c2d{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c3a{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c3b{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c3c{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c3d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c4a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c4b{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c4c{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c4d{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c5a{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c5b{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c5c{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c5d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
 
 		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
 		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };
@@ -148,17 +163,17 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		const std::array<ubv::Vertex, 3> t1a{ c1b, c1c, c1a };
 		const std::array<ubv::Vertex, 3> t1b{ c1b, c1c, c1d };
 
-		const std::array<ubv::Vertex, 3> t2a{ c0c, c1a, c0a };
-		const std::array<ubv::Vertex, 3> t2b{ c0c, c1a, c1c };
+		const std::array<ubv::Vertex, 3> t2a{ c2b, c2c, c2a };
+		const std::array<ubv::Vertex, 3> t2b{ c2b, c2c, c2d };
 
-		const std::array<ubv::Vertex, 3> t3a{ c0d, c1b, c0b };
-		const std::array<ubv::Vertex, 3> t3b{ c0d, c1b, c1d };
+		const std::array<ubv::Vertex, 3> t3a{ c3b, c3c, c3a };
+		const std::array<ubv::Vertex, 3> t3b{ c3b, c3c, c3d };
 
-		const std::array<ubv::Vertex, 3> t4a{ c1a, c0b, c0a };
-		const std::array<ubv::Vertex, 3> t4b{ c1a, c0b, c1b };
+		const std::array<ubv::Vertex, 3> t4a{ c4b, c4c, c4a };
+		const std::array<ubv::Vertex, 3> t4b{ c4b, c4c, c4d };
 
-		const std::array<ubv::Vertex, 3> t5a{ c1c, c0d, c0c };
-		const std::array<ubv::Vertex, 3> t5b{ c1c, c0d, c1d };
+		const std::array<ubv::Vertex, 3> t5a{ c5b, c5c, c5a };
+		const std::array<ubv::Vertex, 3> t5b{ c5b, c5c, c5d };
 
 		std::vector<std::future<void>> tasks;
 
@@ -216,7 +231,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "box.tga", Texture::FilteringType::NEAREST } /*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "box.tga", Texture::FilteringType::LINEAR } /*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}
@@ -234,7 +249,7 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
-		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 1000.0F);
+		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 4.0F);
 
 		draw_loop(&window, texture1, projection);
 
