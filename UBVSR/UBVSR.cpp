@@ -43,7 +43,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		static Timepoint t3 = t1;
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1) * 2.0L;
-		float delta_time = (t2 - t3) * 32.0F;
+		float delta_time = (t2 - t3);
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
 		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-2.0F };
@@ -196,16 +196,19 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		frame_buffer.draw_triangle(t5a, texture1);
 		frame_buffer.draw_triangle(t5b, texture1);*/
 
-		std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
+		//std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
 		//std::cout << triangles_to_draw.size() << std::endl; 
-		for (auto &triangle : triangles_to_draw)
+		for (const auto& [texture, triangles] : model.m_triangles)
 		{
-			for (auto& vertex : triangle)
+			auto triangles_to_draw = triangles;
+			for (auto& triangle : triangles_to_draw)
 			{
-				vertex.position = MVP * vertex.position;
-				// std::cout << vertex.position.x << ", " << vertex.position.y << ", " << vertex.position.z << '\n';
+				for (auto& vertex : triangle)
+				{
+					vertex.position = MVP * vertex.position;
+				}
+				frame_buffer.draw_triangle(triangle, *model.m_textures[texture]);
 			}
-			frame_buffer.draw_triangle(triangle, texture1);
 		}
 
 		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));

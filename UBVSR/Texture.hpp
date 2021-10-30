@@ -19,6 +19,10 @@ namespace ubv {
 		Pixel sample(fvec2 pos_uv) const noexcept {
 			pos_uv.x = std::fmod(pos_uv.x, 1.0F);
 			pos_uv.y = std::fmod(pos_uv.y, 1.0F);
+			if (pos_uv.x < 0.0F)
+				pos_uv.x += 1.0F;
+			if (pos_uv.y < 0.0F)
+				pos_uv.y += 1.0F;
 			switch (m_filtering_type) {
 				case FilteringType::NEAREST:
 				{
@@ -101,7 +105,9 @@ namespace ubv {
 			return Pixel{ };
 		}
 
-		inline Texture(std::string_view t_tga_filename, FilteringType t_filtering_type = FilteringType::LINEAR) 
+		//Texture() = default;
+
+		inline Texture(std::string_view t_tga_filename, FilteringType t_filtering_type = FilteringType::NEAREST) 
 			: m_tga{ t_tga_filename }, m_filtering_type{ t_filtering_type } {
 			// cos
 		}

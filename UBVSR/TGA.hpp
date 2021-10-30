@@ -26,6 +26,8 @@ namespace ubv {
 	    	std::uint8_t imagedescriptor;
 	    } header;
 
+		//TGA() = default;
+
 	    inline explicit TGA(std::string_view t_filename) {
             std::ifstream file(t_filename.data(), std::ios::in | std::ios::binary);
 
