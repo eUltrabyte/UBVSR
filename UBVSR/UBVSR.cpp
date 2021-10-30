@@ -40,115 +40,114 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 	while(true) {
 		frame_buffer.clear();
 		static FpsCounter fps_counter;
-
+		static Timepoint t3 = t1;
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1) * 2.0L;
+		float delta_time = t2 - t3;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
-
-		const float angle = sin(elapsed_time) * 0.25F;
-
-		/*const ubv::Vertex vertex_a{ubv::fvec2{0, 0}, ubv::Pixel{255, 0, 0}};
-		const ubv::Vertex vertex_b{ ubv::fvec2{ 1280, 0 }, ubv::Pixel{ 0, 255, 0 } };
-		const ubv::Vertex vertex_c{ ubv::fvec2{ 1280, 720 }, ubv::Pixel{ 0, 0, 255 } };
-		const ubv::Vertex vertex_d{ ubv::fvec2{ 0, 720 }, ubv::Pixel{ 255, 255, 0 } };
-		const ubv::Vertex vertex_e{ rotate(ubv::fvec2{ 110, 207 }, ubv::fvec2{ 640, 360 }, angle), ubv::Pixel{ 255, 0, 255 } };
-		const ubv::Vertex vertex_f{ rotate(ubv::fvec2{ 870, 342 }, ubv::fvec2{ 640, 360 }, angle), ubv::Pixel{ 0, 255, 255 } };
-		const ubv::Vertex vertex_g{ rotate(ubv::fvec2{ 909, 585 }, ubv::fvec2{ 640, 360 }, angle), ubv::Pixel{ 63, 63, 63 } };
-		const ubv::Vertex vertex_h{ rotate(ubv::fvec2{ 487, 513 }, ubv::fvec2{ 640, 360 }, angle), ubv::Pixel{ 255, 255, 255 } };
-
-		const std::array<ubv::Vertex, 3> triangle1{	vertex_a,vertex_b,vertex_e };
-		const std::array<ubv::Vertex, 3> triangle2{	vertex_f,vertex_b,vertex_e };
-		const std::array<ubv::Vertex, 3> triangle3{	vertex_f,vertex_b,vertex_c };
-		const std::array<ubv::Vertex, 3> triangle4{	vertex_a,vertex_e,vertex_d };
-		const std::array<ubv::Vertex, 3> triangle5{	vertex_d,vertex_e,vertex_h };
-		const std::array<ubv::Vertex, 3> triangle6{ vertex_f,vertex_h,vertex_e };
-		const std::array<ubv::Vertex, 3> triangle7{ vertex_f,vertex_h,vertex_g };
-		const std::array<ubv::Vertex, 3> triangle8{ vertex_d,vertex_h,vertex_g };
-		const std::array<ubv::Vertex, 3> triangle9{ vertex_f,vertex_c,vertex_g };
-		const std::array<ubv::Vertex, 3> triangle10{ vertex_c,vertex_d,vertex_g };
-
-		ubv::vec2<float> point_a = rotate(ubv::fvec2{ 640.0F - 400.0F, 360.0F + 346.0F }, ubv::fvec2{ 640.0F, 360.0F }, angle);
-		ubv::vec2<float> point_b = rotate(ubv::fvec2{ 640.0F - 400.0F, 360.0F - 346.0F }, ubv::fvec2{ 640.0F, 360.0F }, angle);
-		ubv::vec2<float> point_c = rotate(ubv::fvec2{ 640.0F + 400.0F, 360.0F + 346.0F }, ubv::fvec2{ 640.0F, 360.0F }, angle);
-
-		std::vector<std::future<void>> tasks;
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle3));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle4));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle5));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle6));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle7));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle8));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle9));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle10));
-
-		for(const auto& task : tasks) {
-			task.wait();
-		}
-
-		for (unsigned x = 0; x < tga_file.get_width(); ++x) {
-			for (unsigned y = 0; y < tga_file.get_height(); ++y) {
-				frame_buffer.at(x, y) = tga_file.get_pixel(ubv::u16vec2{uint16_t(x),uint16_t(y)});
-			}
-		}*/
-
-		static ubv::fvec3 offset{ 0.0F, 0.0F, 2.0F };
+		t3 = t2;
+		static ubv::fvec3 camera_position{ 0.0F,0.0F,0.0F };
+		static ubv::fvec3 camera_pitch_yaw_roll{ 0.0F,0.0F,0.0F };
 
 		if (GetAsyncKeyState(VK_LEFT))
 		{
-			offset.x -= 0.1F;
+			if (GetAsyncKeyState(VK_RETURN))
+			{
+				camera_pitch_yaw_roll.x -= delta_time;
+			}
+			else
+			{
+				camera_position.x -= delta_time;
+			}
 		}
 
 		if (GetAsyncKeyState(VK_RIGHT))
 		{
-			offset.x += 0.1F;
+			if (GetAsyncKeyState(VK_RETURN))
+			{
+				camera_pitch_yaw_roll.x += delta_time;
+			}
+			else
+			{
+				camera_position.x += delta_time;
+			}
 		}
 
 		if (GetAsyncKeyState(VK_UP))
 		{
-			offset.z -= 0.1F;
+			if (GetAsyncKeyState(VK_RETURN))
+			{
+				camera_pitch_yaw_roll.y -= delta_time;
+			}
+			else
+			{
+				camera_position.y -= delta_time;
+			}
 		}
 
 		if (GetAsyncKeyState(VK_DOWN))
 		{
-			offset.z += 0.1F;
+			if (GetAsyncKeyState(VK_RETURN))
+			{
+				camera_pitch_yaw_roll.y += delta_time;
+			}
+			else
+			{
+				camera_position.y += delta_time;
+			}
 		}
 
-		if (GetAsyncKeyState(0x41))
+		if (GetAsyncKeyState(VK_SPACE))
 		{
-			offset.y -= 0.1F;
+			if (GetAsyncKeyState(VK_RETURN))
+			{
+				camera_pitch_yaw_roll.z -= delta_time;
+			}
+			else
+			{
+				camera_position.z -= delta_time;
+			}
 		}
 
-		if (GetAsyncKeyState(0x44))
+		if (GetAsyncKeyState(VK_SHIFT))
 		{
-			offset.y += 0.1F;
+			if (GetAsyncKeyState(VK_RETURN))
+			{
+				camera_pitch_yaw_roll.z += delta_time;
+			}
+			else
+			{
+				camera_position.z += delta_time;
+			}
 		}
 
-		ubv::Vertex c0a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c0b{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 0) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c0c{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 0) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c0d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 0) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c1a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 1) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c1b{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 1) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c1c{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 1) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c1d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c2a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c2b{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 0) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c2c{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 1) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c2d{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c3a{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c3b{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 0) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c3c{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 1) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c3d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c4a{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c4b{ projection * ubv::fvec4{ ubv::fvec3(0, 0, 1) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c4c{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 0) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c4d{ projection * ubv::fvec4{ ubv::fvec3(1, 0, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c5a{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 0) + offset, 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c5b{ projection * ubv::fvec4{ ubv::fvec3(0, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c5c{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 0) + offset, 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c5d{ projection * ubv::fvec4{ ubv::fvec3(1, 1, 1) + offset, 1.0F }, ubv::fvec2{ 1, 1 } };
+		auto view = ubv::identity<float>();
+		auto MVP = projection * view;
+
+		ubv::Vertex c0a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c0b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c0c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c0d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c1a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c1b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c1c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c1d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c2a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c2b{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c2c{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c2d{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c3a{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c3b{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c3c{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c3d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c4a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c4b{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c4c{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c4d{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		ubv::Vertex c5a{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
+		ubv::Vertex c5b{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
+		ubv::Vertex c5c{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
+		ubv::Vertex c5d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
 
 		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
 		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };

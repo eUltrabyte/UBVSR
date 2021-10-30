@@ -40,7 +40,7 @@ namespace ubv {
 					int x_texture_position = std::clamp<std::uint16_t>(std::uint16_t(pos_uv.x * get_size().x), 0, get_size().x - 1);
 					int y_texture_position = std::clamp<std::uint16_t>(std::uint16_t(pos_uv.y * get_size().y), 0, get_size().y - 1);
 					int x_texture_position2 = x_texture_position;
-					int y_texture_position2 = y_texture_position2;
+					int y_texture_position2 = y_texture_position;
 					if (pos_x_mod > half_section_x)
 					{
 						x_texture_position2 = ((x_texture_position2) + 1) % int(get_size().x);

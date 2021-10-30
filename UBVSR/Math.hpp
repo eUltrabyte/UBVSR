@@ -60,6 +60,21 @@ template <typename T> struct vec3
 	{
 		return vec3<T>{x + t_vec.x, y + t_vec.y, z + t_vec.z};
 	}
+
+	constexpr vec3<T> operator-(const vec3<T>& t_vec) const noexcept
+	{
+		return vec3<T>{x - t_vec.x, y - t_vec.y, z - t_vec.z};
+	}
+
+	constexpr vec3<T> operator*(const vec3<T>& t_vec) const noexcept
+	{
+		return vec3<T>{x * t_vec.x, y * t_vec.y, z * t_vec.z};
+	}
+
+	constexpr vec3<T> operator/(const vec3<T>& t_vec) const noexcept
+	{
+		return vec3<T>{x / t_vec.x, y / t_vec.y, z / t_vec.z};
+	}
 };
 
 template <typename T> struct vec4
@@ -161,11 +176,11 @@ template <typename T> struct mat4x4
 	constexpr explicit mat4x4() noexcept = default;
 
 	// perspective matrix
-	constexpr explicit mat4x4(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
+	inline explicit mat4x4(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
 	{
-		const T fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
-		matrix[0][0] = 1.0F / t_aspect_ratio * fov_radians;
-		matrix[1][1] = 1.0F / fov_radians;
+		const T tan_half_fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
+		matrix[0][0] = 1.0F / t_aspect_ratio * tan_half_fov_radians;
+		matrix[1][1] = 1.0F / tan_half_fov_radians;
 		matrix[2][2] = t_far_z / (t_far_z - t_near_z);
 		matrix[2][3] = 1.0F;
 		matrix[3][2] = -(2.0F * t_far_z * t_near_z) / (t_far_z - t_near_z);
@@ -182,6 +197,23 @@ template <typename T> struct mat4x4
 		matrix[3][2] = -(t_far_z + t_near_z) / (t_far_z - t_near_z);
 	}
 
+	[[nodiscard]] constexpr mat4x4<T> operator*(const mat4x4<T>& t_matrix) const noexcept
+	{
+		//TODO: Does it work correctly???
+		mat4x4<T> result;
+		for (std::uint_fast8_t x = 0; x < 4; ++x)
+		{
+			for (std::uint_fast8_t y = 0; y < 4; ++y)
+			{
+				for (std::uint_fast8_t z = 0; z < 4; ++z)
+				{
+					result.matrix[x][y] += matrix[x][z] * t_matrix.matrix[z][y];
+				}
+			}
+		}
+		return result;
+	}
+
 	[[nodiscard]] constexpr vec4<T> operator*(const vec4<T> &t_vec) const noexcept
 	{
 		return vec4<T>{
@@ -190,6 +222,25 @@ template <typename T> struct mat4x4
 			t_vec.x * matrix[0][2] + t_vec.y * matrix[1][2] + t_vec.z * matrix[2][2] + t_vec.w * matrix[3][2],
 			t_vec.x * matrix[0][3] + t_vec.y * matrix[1][3] + t_vec.z * matrix[2][3] + t_vec.w * matrix[3][3]};
 	}
+
+	constexpr void translate(const vec3<T>& t_vec) noexcept = delete;
+		/* {
+			//TODO: Verify it's correct...
+			matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
+			matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
+			matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
+			matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
+		}*/
+
+	constexpr void scale(const vec3<T>&t_vec) noexcept = delete;
+		/* {
+			std::abort();
+		}*/
+
+	constexpr void rotate(T t_angle, const vec3<T>&t_vec) noexcept = delete;
+	/* {
+		std::abort();
+	}*/
 
 	/*constexpr explicit mat4x4(T t_value1, T t_value2, T t_value3, T t_value4, T t_value5, T t_value6) noexcept {
 		matrix[0][0] = t_value1;
@@ -241,9 +292,9 @@ using u16mat4x4 = mat4x4<std::uint16_t>;
 using u32mat4x4 = mat4x4<std::uint32_t>;
 
 template <typename T>
-[[nodiscard]] constexpr mat4x4<T> projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
+[[nodiscard]] inline mat4x4<T> projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
 {
-	return mat4xt<T>{t_fov, t_aspect_ratio, t_near_z, t_far_z};
+	return mat4x4<T>{t_fov, t_aspect_ratio, t_near_z, t_far_z};
 	/*fmat4x4 matrix;
 
 	const T fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
@@ -273,14 +324,26 @@ template <typename T>
 }
 
 template <typename T>
-[[nodiscard]] constexpr mat4x4<T> look_at(const vec3<T>& t_eye, const vec3<T>& t_center, const vec3<T>& t_up) noexcept
+[[nodiscard]] inline mat4x4<T> look_at(const vec3<T>& t_eye, const vec3<T>& t_center, const vec3<T>& t_up) noexcept
 {
-	while (true)
-	{
-		0 / 0;
-	}
-	//mat4x4<T> matrix;
-	//vec<T> x, y, z;
+	const vec3<T> f(normalize(t_center - t_eye));
+	const vec3<T> s(normalize(cross_product(f, t_up)));
+	const vec3<T> u(cross_product(s, f));
+
+	mat4x4<T> matrix{identity<T>()};
+	matrix.matrix[0][0] = s.x;
+	matrix.matrix[1][0] = s.y;
+	matrix.matrix[2][0] = s.z;
+	matrix.matrix[0][1] = u.x;
+	matrix.matrix[1][1] = u.y;
+	matrix.matrix[2][1] = u.z;
+	matrix.matrix[0][2] = -f.x;
+	matrix.matrix[1][2] = -f.y;
+	matrix.matrix[2][2] = -f.z;
+	matrix.matrix[3][0] = -dot_product(s, t_eye);
+	matrix.matrix[3][1] = -dot_product(u, t_eye);
+	matrix.matrix[3][2] = dot_product(f, t_eye);
+	return matrix;
 }
 
 template <typename T> [[nodiscard]] constexpr T dot_product(const vec3<T> &t_vec1, const vec3<T> &t_vec2) noexcept
@@ -293,6 +356,30 @@ template <typename T>
 {
 	return vec3<T>{t_vec1.y * t_vec2.z - t_vec1.z * t_vec2.y, t_vec1.z * t_vec2.x - t_vec1.x * t_vec2.z,
 				   t_vec1.x * t_vec2.y - t_vec1.y * t_vec2.x};
+}
+
+template <typename T>
+[[nodiscard]] inline T length(const vec3<T>& t_vec) noexcept
+{
+	return std::sqrt((t_vec.x * t_vec.x) + (t_vec.y * t_vec.y) + (t_vec.z * t_vec.z));
+}
+
+template <typename T>
+[[nodiscard]] inline vec3<T> normalize(const vec3<T>& t_vec) noexcept
+{
+	const T vec_length{ length(t_vec) };
+	return vec3<T>{t_vec.x / vec_length, t_vec.y / vec_length, t_vec.z / vec_length};
+}
+
+template<typename T>
+[[nodiscard]] constexpr mat4x4<T> identity() noexcept
+{
+	mat4x4<T> matrix;
+	matrix.matrix[0][0] = 1.0F;
+	matrix.matrix[1][1] = 1.0F;
+	matrix.matrix[2][2] = 1.0F;
+	matrix.matrix[3][3] = 1.0F;
+	return matrix;
 }
 
 }; // namespace ubv
