@@ -249,6 +249,8 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		frame_buffer.sample();
 		window->display(frame_buffer);
 		window->update();
+
+		frame_buffer.render_to_file("test.tga");
 	}
 }
 
