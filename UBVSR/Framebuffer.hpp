@@ -257,19 +257,19 @@ class FrameBuffer
 			std::uint8_t color_value = std::clamp((z_buffer[i] - min) / max_distance * 255.0F, 0.0F, 255.0F);
 			if (z_buffer[i] <= -1.0F)
 			{
-				m_color_buffer.data()[i] = Pixel{color_value, 0, 0};
+				m_ms_color_buffer.data()[i] = Pixel{color_value, 0, 0};
 			}
 			else if (z_buffer[i] <= 0.0F)
 			{
-				m_color_buffer.data()[i] = Pixel{color_value, color_value, 0};
+				m_ms_color_buffer.data()[i] = Pixel{color_value, color_value, 0};
 			}
 			else if (z_buffer[i] <= 1.0F)
 			{
-				m_color_buffer.data()[i] = Pixel{0, color_value, 0};
+				m_ms_color_buffer.data()[i] = Pixel{0, color_value, 0};
 			}
 			else
 			{
-				m_color_buffer.data()[i] = Pixel{0, 0, color_value};
+				m_ms_color_buffer.data()[i] = Pixel{0, 0, color_value};
 			}
 		}
 	}

@@ -43,7 +43,6 @@ namespace ubv {
 			switch(m_event.type) {
 				case KeyPress:
 				case KeyRelease: [[fallthrough]]
-					printf( KeyPress ? "KeyPress: %i\n" : "KeyRelease: %i\n", m_event.xkey.keycode );
 					if (m_event.xkey.keycode == keycode) {
 						m_event.xkey.keycode = 0;
 						return true;
@@ -56,7 +55,6 @@ namespace ubv {
 					return false;
 					break;
 			}
-			XUngrabKeyboard(m_display, time(0));
 		}
 
 		XEvent* get_event();
