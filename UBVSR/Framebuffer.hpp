@@ -92,10 +92,10 @@ class FrameBuffer
 		return fvec2{float(x), float(y)};
 	}
 
+	std::uint8_t multisample = 2U;
+
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
 	{
-
-		
 		std::array<fvec3, 3> vertices = {
 			fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
 				  (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[0].position.z / t_vertices[0].position.w),
@@ -104,6 +104,7 @@ class FrameBuffer
 			fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
 				  (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[2].position.z / t_vertices[2].position.w)};
 
+		//Najlepszy clipping trojkatow ever by Volian0 2021
 		for (const auto& vertex : t_vertices)
 		{
 			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < 0.0F )
