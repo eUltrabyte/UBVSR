@@ -94,6 +94,15 @@ class FrameBuffer
 		return fvec2{float(x), float(y)};
 	}
 
+	struct FogParams
+	{
+		float start = 0.1F;
+		float end = 50.0F;
+		Pixel color = Pixel{255, 47, 99};
+		float destiny = 1.0F;
+		bool enable = false;
+	} fog_params;
+
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
 	{
 		std::array<fvec3, 3> vertices = {fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
@@ -176,7 +185,8 @@ class FrameBuffer
 
 					if (zbuffer_test_and_set(x, y, z_ndc_value))
 					{
-						m_ms_color_buffer.at(x, y) = t_texture.sample(
+						//m_ms_color_buffer.at(x, y)
+						auto pixel = t_texture.sample(
 							fvec2{((t_vertices[0].texture_uv.x / t_vertices[0].position.w) * scales[0] +
 								   (t_vertices[1].texture_uv.x / t_vertices[1].position.w) * scales[1] +
 								   (t_vertices[2].texture_uv.x / t_vertices[2].position.w) * scales[2]) /
@@ -185,6 +195,12 @@ class FrameBuffer
 								   (t_vertices[1].texture_uv.y / t_vertices[1].position.w) * scales[1] +
 								   (t_vertices[2].texture_uv.y / t_vertices[2].position.w) * scales[2]) /
 									  total_scale / z_value});
+						if (fog_params.enable)
+						{
+							auto fraction = std::clamp((1.0F / z_value - fog_params.start) / (fog_params.end - fog_params.start), 0.0F, 1.0F) * fog_params.destiny;
+							pixel = Pixel(std::lerp(pixel.r, fog_params.color.r, fraction), std::lerp(pixel.g, fog_params.color.g, fraction), std::lerp(pixel.b, fog_params.color.b, fraction));
+						}
+						m_ms_color_buffer.at(x, y) = pixel;
 					}
 				}
 			}

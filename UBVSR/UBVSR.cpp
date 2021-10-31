@@ -266,7 +266,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::BILINEAR }, model{ "res/Dorrie.obj" }
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/Dorrie.obj" }
 	/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
@@ -285,7 +285,7 @@ namespace ubv {
 			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 		#endif
 
-		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 4000.0F);
+		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 50.0F);
 
 		draw_loop(&window, texture1, projection, model);
 
