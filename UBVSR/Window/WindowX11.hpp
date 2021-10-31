@@ -45,8 +45,8 @@ namespace ubv {
 				case KeyRelease: [[fallthrough]]
 					printf( KeyPress ? "KeyPress: %i\n" : "KeyRelease: %i\n", m_event.xkey.keycode );
 					if (m_event.xkey.keycode == keycode) {
-						XSendEvent(m_display, m_window, 0, ExposureMask, &m_event);
 						XNextEvent(m_display, &m_event);
+						XSendEvent(m_display, m_window, 0, ExposureMask, &m_event);
 						return true;
 					} else {
 						return false;
