@@ -40,16 +40,10 @@ namespace ubv {
 		}
 
 		[[nodiscard]] inline bool IsKeyPressed(int keycode) noexcept {
+			XNextEvent(m_display, &m_event);
 			switch(m_event.type) {
 				case KeyPress:
 					printf( "KeyPress: %x\n", m_event.xkey.keycode );
-					if (m_event.xkey.keycode == keycode) {
-						return true;
-					}
-					break;
-
-				case KeyRelease:
-					printf( "KeyRelease: %x\n", m_event.xkey.keycode );
 					if (m_event.xkey.keycode == keycode) {
 						return true;
 					}
