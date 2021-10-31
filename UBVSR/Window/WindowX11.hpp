@@ -45,21 +45,18 @@ namespace ubv {
 					printf( "KeyPress: %x\n", m_event.xkey.keycode );
 					if (m_event.xkey.keycode == keycode) {
 						return true;
-					} else {
-						return false;
-					}
+					} else { break; }
 					break;
 
 				case KeyRelease:
 					printf( "KeyRelease: %x\n", m_event.xkey.keycode );
 					if (m_event.xkey.keycode == keycode) {
 						return true;
-					} else {
-						return false;
-					}
+					} else { break; }
 					break;
 
 				default:
+					return false;
 					break;
 			}
 		}
