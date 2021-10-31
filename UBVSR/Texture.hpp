@@ -4,13 +4,33 @@
 
 #include <cmath>
 
+namespace std {
+	template<typename T>
+	[[nodiscard]] constexpr float blerp(ubv::vec2<T> t_vec0, ubv::vec2<T> t_vec1, ubv::vec2<T> t_fraction_vec) {
+		return lerp(lerp(t_vec0.x, t_vec0.y, t_fraction_vec.x), lerp(t_vec1.x, t_vec1.y, t_fraction_vec.x), t_fraction_vec.y);
+	}
+
+	template<typename T>
+	[[nodiscard]] constexpr float blerp(ubv::vec4<T> t_vec, ubv::vec2<T> t_fraction_vec) {
+		return lerp(lerp(t_vec.x, t_vec.y, t_fraction_vec.x), lerp(t_vec.z, t_vec.w, t_fraction_vec.x), t_fraction_vec.y);
+	}
+
+	template<typename T, typename U>
+	[[nodiscard]] constexpr uint32_t get_byte(const T& t_value, U t_offset) {
+		if(is_arithmetic_v<decltype(t_offset)>) {
+			return uint32_t(t_value & 255);
+		} else {
+			abort();
+		}
+	}
+};
+
 namespace ubv {
 	class Texture {
 	public:
 		enum class FilteringType : std::uint8_t {
 			NEAREST,
-			LINEAR,
-			BILINEAR
+			LINEAR
 		} m_filtering_type;
 
 		bool clamp_x = false;
@@ -66,25 +86,11 @@ namespace ubv {
 					const auto pixel12 = m_tga.get_pixel(ubv::u16vec2( x_texture_position, y_texture_position2 ));
 					const auto pixel22 = m_tga.get_pixel(ubv::u16vec2( x_texture_position2, y_texture_position2 ));
 
-					//fraction_x = 1.0 - fraction_x;
-					//fraction_y = 1.0 - fraction_y;
+					Pixel p(std::blerp(fvec4(pixel11.r, pixel21.r, pixel12.r, pixel22.r), fvec2(fraction_x, fraction_y)),
+							std::blerp(fvec4(pixel11.g, pixel21.g, pixel12.g, pixel22.g), fvec2(fraction_x, fraction_y)),
+							std::blerp(fvec4(pixel11.b, pixel21.b, pixel12.b, pixel22.b), fvec2(fraction_x, fraction_y)));
 
-					Pixel p1(std::lerp(pixel11.r, pixel21.r, fraction_x), std::lerp(pixel11.g, pixel21.g, fraction_x), std::lerp(pixel11.b, pixel21.b, fraction_x));
-					Pixel p2(std::lerp(pixel12.r, pixel22.r, fraction_x), std::lerp(pixel12.g, pixel22.g, fraction_x), std::lerp(pixel12.b, pixel22.b, fraction_x));
-
-					Pixel p3(std::lerp(p1.r, p2.r, fraction_y), std::lerp(p1.g, p2.g, fraction_y), std::lerp(p1.b, p2.b, fraction_y));
-
-					//TODO: INTERPOLATE
-					
-
-					//std::abort(); // no i chuj
-					return p3;
-				}
-				break;
-				case FilteringType::BILINEAR:
-				{
-					std::abort(); // no i chuj v2
-					return Pixel{ };
+					return p;
 				}
 				break;
 			}
