@@ -11,10 +11,55 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <map>
 
 #include "Framebuffer.hpp"
 
 namespace ubv {
+	
+	enum Keys
+	{
+		Escape,
+		W,
+		S,
+		A,
+		D,
+		Up,
+		Down,
+		Left,
+		Right,
+		Z,
+		Enter
+	};
+
+	const static inline std::map<Keys, unsigned> keys_linux = {
+		{ Keys::Escape, 0x00 },
+		{ Keys::W, 0x00 },
+		{ Keys::S, 0x00 },
+		{ Keys::A, 0x00 },
+		{ Keys::D, 0x00 },
+		{ Keys::Up, 0x00 },
+		{ Keys::Down, 0x00 },
+		{ Keys::Left, 0x00 },
+		{ Keys::Right, 0x00 },
+		{ Keys::Z, 44 },
+		{ Keys::Enter, 0x00 }
+	};
+
+	const static inline std::map<Keys, unsigned> keys_windows = {
+		{ Keys::Escape, 0x1B },
+		{ Keys::Up, 0x26 },
+		{ Keys::Down, 0x28 },
+		{ Keys::Left, 0x25 },
+		{ Keys::Right, 0x27 },
+		{ Keys::Z, 0x5A },
+		{ Keys::Enter, 0x0D },
+		{ Keys::W, 0x57 },
+		{ Keys::S, 0x53 },
+		{ Keys::A, 0x41 },
+		{ Keys::D, 0x44 }
+	};
+
 	struct WindowProps {
 		std::uint16_t width;
 		std::uint16_t height;
