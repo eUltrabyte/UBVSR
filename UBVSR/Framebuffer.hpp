@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <future>
 #include <map>
+#include <numeric>
 #include <set>
 #include <vector>
 
@@ -21,8 +22,8 @@ class FrameBuffer
 {
   public:
 	inline explicit FrameBuffer(std::uint16_t t_width, std::uint16_t t_height) noexcept
-		: m_width{t_width}, m_height{t_height}, m_color_buffer{m_width, m_height}, m_depth_buffer{m_width, m_height},
-		  m_stencil_buffer{m_width, m_height}
+		: m_width{t_width}, m_height{t_height}, m_color_buffer{m_width, m_height}, m_ms_color_buffer{m_width, m_height},
+		  m_ms_depth_buffer{m_width, m_height}, m_ms_stencil_buffer{m_width, m_height}
 	{
 	}
 
@@ -39,13 +40,14 @@ class FrameBuffer
 	inline void clear() noexcept
 	{
 		m_color_buffer.clear();
-		m_depth_buffer.clear();
-		m_stencil_buffer.clear();
+		m_ms_color_buffer.clear();
+		m_ms_depth_buffer.clear();
+		m_ms_stencil_buffer.clear();
 	}
 
 	inline bool zbuffer_test_and_set(std::uint16_t t_x, std::uint16_t t_y, float t_depth)
 	{
-		float &existing_depth = m_depth_buffer.at(t_x, t_y);
+		float &existing_depth = m_ms_depth_buffer.at(t_x, t_y);
 		if (t_depth < existing_depth)
 		{
 			existing_depth = t_depth;
@@ -92,36 +94,45 @@ class FrameBuffer
 		return fvec2{float(x), float(y)};
 	}
 
-	std::uint8_t multisample = 2U;
-
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
 	{
-		std::array<fvec3, 3> vertices = {
-			fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
-				  (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[0].position.z / t_vertices[0].position.w),
-			fvec3((t_vertices[1].position.x / t_vertices[1].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
-				  (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[1].position.z / t_vertices[1].position.w),
-			fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F * static_cast<float>(m_width),
-				  (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F * static_cast<float>(m_height), t_vertices[2].position.z / t_vertices[2].position.w)};
+		std::array<fvec3, 3> vertices = {fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
+											   (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
+											   t_vertices[0].position.z / t_vertices[0].position.w),
+										 fvec3((t_vertices[1].position.x / t_vertices[1].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
+											   (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
+											   t_vertices[1].position.z / t_vertices[1].position.w),
+										 fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
+											   (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
+											   t_vertices[2].position.z / t_vertices[2].position.w)};
 
-		//Najlepszy clipping trojkatow ever by Volian0 2021
-		for (const auto& vertex : t_vertices)
+		// Najlepszy clipping trojkatow ever by Volian0 2021
+		for (const auto &vertex : t_vertices)
 		{
-			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < 0.0F )
+			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < 0.0F)
 			{
 				return;
 			}
 		}
 
-		const std::uint32_t start_x =
+		std::uint32_t start_x =
 			std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1.0F, 0.0F);
-		const std::uint32_t end_x =
+		std::uint32_t end_x =
 			std::min<std::uint32_t>(std::max<float>({vertices[0].x, vertices[1].x, vertices[2].x}) + 1, m_width);
 
-		const std::uint32_t start_y =
+		std::uint32_t start_y =
 			std::max<float>(std::min<float>({vertices[0].y, vertices[1].y, vertices[2].y}) - 1.0F, 0.0F);
-		const std::uint32_t end_y =
+		std::uint32_t end_y =
 			std::min<std::uint32_t>(std::max<float>({vertices[0].y, vertices[1].y, vertices[2].y}) + 1, m_height);
+
+		end_x *= m_multisample;
+		end_y *= m_multisample;
 
 		for (std::uint32_t x = start_x; x < end_x; ++x)
 		{
@@ -147,16 +158,16 @@ class FrameBuffer
 
 					const auto total_scale = scales[0] + scales[1] + scales[2];
 
-					const float z_value = ((1.0F / t_vertices[0].position.w * scales[0] + 1.0F / t_vertices[1].position.w * scales[1] +
-												   1.0F / t_vertices[2].position.w * scales[2]) /
-												  total_scale);
+					const float z_value =
+						((1.0F / t_vertices[0].position.w * scales[0] + 1.0F / t_vertices[1].position.w * scales[1] +
+						  1.0F / t_vertices[2].position.w * scales[2]) /
+						 total_scale);
 
-					const float z_ndc_value = (((vertices[0].z) * scales[0] +
-						(vertices[1].z) * scales[1] +
-						(vertices[2].z) * scales[2]) /
-						total_scale);
+					const float z_ndc_value =
+						(((vertices[0].z) * scales[0] + (vertices[1].z) * scales[1] + (vertices[2].z) * scales[2]) /
+						 total_scale);
 
-					//std::cout << z_ndc_value << "\n";
+					// std::cout << z_ndc_value << "\n";
 
 					if (z_ndc_value < 0.0F || z_ndc_value > 1.0F)
 					{
@@ -165,24 +176,72 @@ class FrameBuffer
 
 					if (zbuffer_test_and_set(x, y, z_ndc_value))
 					{
-						m_color_buffer.at(x, y) =
-							t_texture.sample(fvec2{((t_vertices[0].texture_uv.x / t_vertices[0].position.w) * scales[0] +
-													(t_vertices[1].texture_uv.x / t_vertices[1].position.w) * scales[1] +
-													(t_vertices[2].texture_uv.x / t_vertices[2].position.w) * scales[2]) /
-													   total_scale / z_value,
-												   ((t_vertices[0].texture_uv.y / t_vertices[0].position.w) * scales[0] +
-													(t_vertices[1].texture_uv.y / t_vertices[1].position.w) * scales[1] +
-													(t_vertices[2].texture_uv.y / t_vertices[2].position.w) * scales[2]) /
-													   total_scale / z_value});
+						m_ms_color_buffer.at(x, y) = t_texture.sample(
+							fvec2{((t_vertices[0].texture_uv.x / t_vertices[0].position.w) * scales[0] +
+								   (t_vertices[1].texture_uv.x / t_vertices[1].position.w) * scales[1] +
+								   (t_vertices[2].texture_uv.x / t_vertices[2].position.w) * scales[2]) /
+									  total_scale / z_value,
+								  ((t_vertices[0].texture_uv.y / t_vertices[0].position.w) * scales[0] +
+								   (t_vertices[1].texture_uv.y / t_vertices[1].position.w) * scales[1] +
+								   (t_vertices[2].texture_uv.y / t_vertices[2].position.w) * scales[2]) /
+									  total_scale / z_value});
 					}
 				}
 			}
 		}
 	}
 
+	inline void sample() noexcept
+	{
+		if (m_multisample == 1)
+		{
+			m_color_buffer = m_ms_color_buffer;
+			return;
+		}
+		std::vector<float> r_values(std::size_t(m_multisample) * m_multisample);
+		std::vector<float> g_values(std::size_t(m_multisample) * m_multisample);
+		std::vector<float> b_values(std::size_t(m_multisample) * m_multisample);
+		for (std::uint32_t x = 0; x < m_width; ++x)
+		{
+			for (std::uint32_t y = 0; y < m_height; ++y)
+			{
+				for (std::uint32_t mx = 0; mx < m_multisample; ++mx)
+				{
+					for (std::uint32_t my = 0; my < m_multisample; ++my)
+					{
+						r_values[my * m_multisample + mx] =
+							m_ms_color_buffer.at(x * m_multisample + mx, y * m_multisample + my).r;
+						g_values[my * m_multisample + mx] =
+							m_ms_color_buffer.at(x * m_multisample + mx, y * m_multisample + my).g;
+						b_values[my * m_multisample + mx] =
+							m_ms_color_buffer.at(x * m_multisample + mx, y * m_multisample + my).b;
+					}
+				}
+				const Pixel pixel(
+					std::accumulate(r_values.begin(), r_values.end(), 0.0F) / static_cast<float>(r_values.size()),
+					std::accumulate(g_values.begin(), g_values.end(), 0.0F) / static_cast<float>(g_values.size()),
+					std::accumulate(b_values.begin(), b_values.end(), 0.0F) / static_cast<float>(b_values.size()));
+				m_color_buffer.at(x, y) = pixel;
+			}
+		}
+	}
+
+	inline void render_to_file(std::string_view t_tga_filename) const
+	{
+		TGA t_tga(m_width, m_height);
+		for (std::uint16_t x = 0; x < m_width; ++x)
+		{
+			for (std::uint16_t y = 0; y < m_height; ++y)
+			{
+				t_tga.get_pixel(u16vec2{x, y}) = m_color_buffer.at(x, y);
+			}
+		}
+		t_tga.to_file(t_tga_filename);
+	}
+
 	inline void draw_z_buffer() noexcept
 	{
-		auto& z_buffer = m_depth_buffer.data();
+		auto &z_buffer = m_ms_depth_buffer.data();
 		const auto min = *std::min_element(z_buffer.begin(), z_buffer.end());
 		float max{min};
 		for (const float z_value : z_buffer)
@@ -198,26 +257,39 @@ class FrameBuffer
 			std::uint8_t color_value = std::clamp((z_buffer[i] - min) / max_distance * 255.0F, 0.0F, 255.0F);
 			if (z_buffer[i] <= -1.0F)
 			{
-				m_color_buffer.data()[i] = Pixel{ color_value, 0, 0 };
+				m_color_buffer.data()[i] = Pixel{color_value, 0, 0};
 			}
 			else if (z_buffer[i] <= 0.0F)
 			{
-				m_color_buffer.data()[i] = Pixel{ color_value, color_value, 0 };
+				m_color_buffer.data()[i] = Pixel{color_value, color_value, 0};
 			}
 			else if (z_buffer[i] <= 1.0F)
 			{
-				m_color_buffer.data()[i] = Pixel{ 0, color_value, 0 };
+				m_color_buffer.data()[i] = Pixel{0, color_value, 0};
 			}
 			else
 			{
-				m_color_buffer.data()[i] = Pixel{ 0, 0, color_value };
+				m_color_buffer.data()[i] = Pixel{0, 0, color_value};
 			}
 		}
 	}
 
-	[[nodiscard]] inline const ColorBuffer& get_color_buffer() const noexcept
+	[[nodiscard]] inline const ColorBuffer &get_color_buffer() const noexcept
 	{
 		return m_color_buffer;
+	}
+
+	[[nodiscard]] constexpr std::uint8_t get_multisample() const noexcept
+	{
+		return m_multisample;
+	}
+
+	void set_multisample(std::uint8_t t_multisample) noexcept
+	{
+		m_multisample = t_multisample;
+		m_ms_depth_buffer = DepthBuffer(m_width * m_multisample, m_height * m_multisample);
+		m_ms_color_buffer = ColorBuffer(m_width * m_multisample, m_height * m_multisample);
+		m_ms_stencil_buffer = StencilBuffer(m_width * m_multisample, m_height * m_multisample);
 	}
 
   private:
@@ -225,13 +297,17 @@ class FrameBuffer
 	std::uint16_t m_width;
 	std::uint16_t m_height;
 
+	std::uint8_t m_multisample{1};
+
 	// color buffer
 	ColorBuffer m_color_buffer;
 
 	// depth buffer
-	DepthBuffer m_depth_buffer;
+	ColorBuffer m_ms_color_buffer;
+
+	DepthBuffer m_ms_depth_buffer;
 
 	// stencil buffer
-	StencilBuffer m_stencil_buffer;
+	StencilBuffer m_ms_stencil_buffer;
 };
 }; // namespace ubv

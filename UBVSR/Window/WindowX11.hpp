@@ -39,6 +39,16 @@ namespace ubv {
 			);
 		}
 
+		[[nodiscard]] inline bool IsKeyPressed(int keycode) noexcept {
+			if (m_event.type == KeyPress || m_event.type == KeyRelease) {
+				if (m_event.xkey.keycode == keycode) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+
 		XEvent* get_event();
 
 	private:

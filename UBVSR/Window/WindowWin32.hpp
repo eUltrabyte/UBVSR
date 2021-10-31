@@ -42,6 +42,10 @@ namespace ubv {
 			DeleteObject(brush);
 		}
 
+		[[nodiscard]] bool IsKeyPressed(int keycode) noexcept {
+			return GetAsyncKeyState(keycode);
+		}
+
 		[[nodiscard]] constexpr HINSTANCE get_hinstance() const noexcept {
 			return m_hinstance;
 		}

@@ -43,7 +43,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		static Timepoint t3 = t1;
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1) * 2.0L;
-		float delta_time = (t2 - t3);
+		float delta_time = (t2 - t3) * 20.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
 		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-2.0F };
@@ -52,11 +52,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
 
-		if (GetAsyncKeyState(VK_LEFT))
+		if (window->IsKeyPressed(VK_LEFT))
 		{
-			if (GetAsyncKeyState(VK_RETURN))
+			if (window->IsKeyPressed(VK_RETURN))
 			{
-				camera_pitch_yaw_roll.x -= delta_time;
+				camera_pitch_yaw_roll.x -= delta_time / 20.0F;
 			}
 			else
 			{
@@ -64,11 +64,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (GetAsyncKeyState(VK_RIGHT))
+		if (window->IsKeyPressed(VK_RIGHT))
 		{
-			if (GetAsyncKeyState(VK_RETURN))
+			if (window->IsKeyPressed(VK_RETURN))
 			{
-				camera_pitch_yaw_roll.x += delta_time;
+				camera_pitch_yaw_roll.x += delta_time / 20.0F;
 			}
 			else
 			{
@@ -76,11 +76,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (GetAsyncKeyState(VK_UP))
+		if (window->IsKeyPressed(VK_UP))
 		{
-			if (GetAsyncKeyState(VK_RETURN))
+			if (window->IsKeyPressed(VK_RETURN))
 			{
-				camera_pitch_yaw_roll.z += delta_time;
+				camera_pitch_yaw_roll.z += delta_time / 20.0F;
 			}
 			else
 			{
@@ -88,11 +88,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (GetAsyncKeyState(VK_DOWN))
+		if (window->IsKeyPressed(VK_DOWN))
 		{
-			if (GetAsyncKeyState(VK_RETURN))
+			if (window->IsKeyPressed(VK_RETURN))
 			{
-				camera_pitch_yaw_roll.z -= delta_time;
+				camera_pitch_yaw_roll.z -= delta_time / 20.0F;
 			}
 			else
 			{
@@ -100,11 +100,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (GetAsyncKeyState(VK_SPACE))
+		if (window->IsKeyPressed(VK_SPACE))
 		{
-			if (GetAsyncKeyState(VK_RETURN))
+			if (window->IsKeyPressed(VK_RETURN))
 			{
-				camera_pitch_yaw_roll.y += delta_time;
+				camera_pitch_yaw_roll.y += delta_time / 20.0F;
 			}
 			else
 			{
@@ -112,11 +112,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (GetAsyncKeyState(VK_SHIFT))
+		if (window->IsKeyPressed(VK_SHIFT))
 		{
-			if (GetAsyncKeyState(VK_RETURN))
+			if (window->IsKeyPressed(VK_RETURN))
 			{
-				camera_pitch_yaw_roll.y -= delta_time;
+				camera_pitch_yaw_roll.y -= delta_time / 20.0F;
 			}
 			else
 			{
@@ -246,14 +246,15 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		if (GetAsyncKeyState(0x5A))
 			frame_buffer.draw_z_buffer();
+		frame_buffer.sample();
 		window->display(frame_buffer);
 		window->update();
 	}
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "box.tga", Texture::FilteringType::LINEAR }, model{ "Dorrie.obj" }
-	/*, texture2{ "test2.tga", Texture::FilteringType::NEAREST }*/ {
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/Dorrie.obj" }
+	/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
 		}

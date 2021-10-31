@@ -10,7 +10,9 @@
 
 namespace ubv {
     class TGA {
-    public:
+		friend class FrameBuffer;
+
+	public:
         struct Header {
 	    	std::uint8_t idlength;
 	    	std::uint8_t colourmaptype;
@@ -26,7 +28,20 @@ namespace ubv {
 	    	std::uint8_t imagedescriptor;
 	    } header;
 
-		//TGA() = default;
+		inline TGA(std::uint16_t t_width, std::uint16_t t_height)
+		{
+			header.idlength = 0;
+			header.colourmaptype = 0;
+			header.datatypecode = 2;
+			header.x_origin = 0;
+			header.y_origin = 0;
+			header.width = t_width;
+			header.height = t_height;
+			header.bitsperpixel = 24;
+			const auto raw_data_size = (static_cast<std::size_t>(get_width()) * get_height() * (header.bitsperpixel / 8U));
+	    	m_pixel_data.resize(raw_data_size);
+		}
+
 
 	    inline explicit TGA(std::string_view t_filename) {
             std::ifstream file(t_filename.data(), std::ios::in | std::ios::binary);

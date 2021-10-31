@@ -67,13 +67,12 @@ class Model
 			{
 				current_texture = strings.at(1);
 				std::cout << "Changing texture to: " << current_texture << "..." << std::flush;
-				m_textures[current_texture] = std::make_unique<Texture>( current_texture + ".tga", Texture::FilteringType::LINEAR);
+				m_textures[current_texture] = std::make_unique<Texture>( "res/" + current_texture + ".tga", Texture::FilteringType::LINEAR);
 				std::cout << " Done!" << std::endl;
 				
 			}
 			else if (strings[0] == "f")
 			{
-				std::cout << strings.size() << std::endl;
 				std::array<Vertex, 3> face_verts;
 				for (std::uint8_t i = 0; i < 3; ++i)
 				{

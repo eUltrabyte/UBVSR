@@ -39,6 +39,8 @@ namespace ubv {
 			virtual void display(const FrameBuffer& t_framebuffer) = 0;
 			virtual void destroy() = 0;
 
+			virtual bool IsKeyPressed(int keycode) = 0;
+
 			[[nodiscard]] constexpr std::uint16_t get_win_width() const noexcept {
 				return m_win_props.width;
 			}
