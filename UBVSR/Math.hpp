@@ -305,6 +305,16 @@ using fmat4x4 = mat4x4<float>;
 using u16mat4x4 = mat4x4<std::uint16_t>;
 using u32mat4x4 = mat4x4<std::uint32_t>;
 
+template <typename T> [[nodiscard]] constexpr mat4x4<T> identity() noexcept
+{
+	mat4x4<T> matrix;
+	matrix.matrix[0][0] = 1.0F;
+	matrix.matrix[1][1] = 1.0F;
+	matrix.matrix[2][2] = 1.0F;
+	matrix.matrix[3][3] = 1.0F;
+	return matrix;
+}
+
 template <typename T>
 [[nodiscard]] inline mat4x4<T> projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
 {
@@ -381,16 +391,6 @@ template <typename T> [[nodiscard]] inline vec3<T> normalize(const vec3<T> &t_ve
 {
 	const T vec_length{length(t_vec)};
 	return vec3<T>{t_vec.x / vec_length, t_vec.y / vec_length, t_vec.z / vec_length};
-}
-
-template <typename T> [[nodiscard]] constexpr mat4x4<T> identity() noexcept
-{
-	mat4x4<T> matrix;
-	matrix.matrix[0][0] = 1.0F;
-	matrix.matrix[1][1] = 1.0F;
-	matrix.matrix[2][2] = 1.0F;
-	matrix.matrix[3][3] = 1.0F;
-	return matrix;
 }
 
 /*template <typename T> [[nodiscard]] constexpr vec3<T> intersect_plane(const vec3<T>& t_plane_p, const vec3<T>& t_plane_n, const vec3<T>& t_line_start, const vec3<T>& t_line_end)
