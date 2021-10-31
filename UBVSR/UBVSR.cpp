@@ -37,6 +37,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, ubv::Model& model) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
+	bool rotateMode = false;
 	while(true) {
 		frame_buffer.clear();
 		static FpsCounter fps_counter;
@@ -52,9 +53,14 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
 
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+		{
+			rotateMode = !rotateMode;
+		}
+
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Left)))
 		{
-			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+			if (rotateMode)
 			{
 				camera_pitch_yaw_roll.x -= delta_time / 20.0F;
 			}
@@ -66,7 +72,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Right)))
 		{
-			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+			if (rotateMode)
 			{
 				camera_pitch_yaw_roll.x += delta_time / 20.0F;
 			}
@@ -78,7 +84,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Up)))
 		{
-			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+			if (rotateMode)
 			{
 				camera_pitch_yaw_roll.z += delta_time / 20.0F;
 			}
@@ -90,7 +96,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Down)))
 		{
-			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+			if (rotateMode)
 			{
 				camera_pitch_yaw_roll.z -= delta_time / 20.0F;
 			}
@@ -102,7 +108,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::W)))
 		{
-			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+			if (rotateMode)
 			{
 				camera_pitch_yaw_roll.y += delta_time / 20.0F;
 			}
@@ -114,7 +120,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::S)))
 		{
-			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+			if (rotateMode)
 			{
 				camera_pitch_yaw_roll.y -= delta_time / 20.0F;
 			}
