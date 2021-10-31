@@ -208,6 +208,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		for (const auto& [texture, triangles] : model.m_triangles)
 		{
 			auto triangles_to_draw = triangles;
+			//std::cout << triangles_to_draw.size() << std::endl;
 			for (auto& triangle : triangles_to_draw)
 			{
 				for (auto& vertex : triangle)
@@ -261,12 +262,12 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		window->display(frame_buffer);
 		window->update();
 
-		frame_buffer.render_to_file("test.tga");
+		//frame_buffer.render_to_file("test.tga");
 	}
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/Dorrie.obj" }
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/aqua.obj" }
 	/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
