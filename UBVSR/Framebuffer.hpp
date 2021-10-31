@@ -103,9 +103,11 @@ class FrameBuffer
 		bool enable = false;
 	} fog_params;
 
-	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
+	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture, bool t_dont_recalculate = false)
 	{
-		std::array<fvec3, 3> vertices = {fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
+		std::array<fvec3, 3> vertices = { fvec3(t_vertices[0].position), fvec3(t_vertices[1].position), fvec3(t_vertices[2].position) };
+		if(!t_dont_recalculate) {
+			vertices = {fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
 												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
 											   (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F *
 												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
@@ -120,14 +122,71 @@ class FrameBuffer
 											   (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F *
 												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
 											   t_vertices[2].position.z / t_vertices[2].position.w)};
+		}
 
 		// Najlepszy clipping trojkatow ever by Volian0 2021
 		for (const auto &vertex : t_vertices)
 		{
-			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < 0.0F)
+			if ((vertex.position.z / vertex.position.w) > 1.0F)
 			{
-				return;
+				//return;
 			}
+		}
+
+
+		std::vector<std::uint8_t> indexes_of_negative;
+		for (std::uint8_t i = 0; i < 3; ++i)
+		{
+			if (vertices[i].z >= 1.0F)
+				indexes_of_negative.push_back(i);
+		}
+		
+		if (indexes_of_negative.size() == 3)
+		{
+			//no need to draw anything
+			return;
+		}
+		if (indexes_of_negative.size() == 2)
+		{
+			//we need to clip the triangle
+			return;
+		}
+		if (indexes_of_negative.size() == 1)
+		{
+			//we need to clip the triangle
+
+			//let's find the intersection points
+			auto negative_vertex_index = indexes_of_negative[0];
+			auto vertex1_index = negative_vertex_index + 1 % 3;
+			auto vertex2_index = negative_vertex_index + 2 % 3;
+
+			const auto& vertex_negative = vertices[negative_vertex_index];
+			const auto& vertex1 = vertices[vertex1_index];
+			const auto& vertex2 = vertices[vertex2_index];
+
+			const auto total_length1 = std::sqrt((vertex_negative.x - vertex1.x) * (vertex_negative.x - vertex1.x) + (vertex_negative.y - vertex1.y) * (vertex_negative.y - vertex1.y));
+			const auto z_difference1 = vertex1.z - vertex_negative.z;
+
+			const auto fraction1 = vertex1.z / z_difference1;
+
+			fvec2 zero_point1(std::lerp(vertex1.x, vertex_negative.x, fraction1), std::lerp(vertex1.y, vertex_negative.y, fraction1));
+
+			const auto total_length2 = std::sqrt((vertex_negative.x - vertex2.x) * (vertex_negative.x - vertex2.x) + (vertex_negative.y - vertex2.y) * (vertex_negative.y - vertex2.y));
+			const auto z_difference2 = vertex2.z - vertex_negative.z;
+
+			const auto fraction2 = vertex2.z / z_difference2;
+
+			fvec2 zero_point2(std::lerp(vertex2.x, vertex_negative.x, fraction2), std::lerp(vertex2.y, vertex_negative.y, fraction2));
+
+			float zero_point1_w = 1.0F / std::lerp(1.0F / t_vertices[vertex1_index].position.w, 1.0F / t_vertices[negative_vertex_index].position.w, fraction1);
+			float zero_point2_w = 1.0F / std::lerp(1.0F / t_vertices[vertex2_index].position.w, 1.0F / t_vertices[negative_vertex_index].position.w, fraction2);
+
+			//draw triangle 1: vertex1, zero_point2, zero_point1
+			//draw triangle 2: vertex1, vertex2, zero_point2
+			draw_triangle({ Vertex{ fvec4(fvec3(vertex1), t_vertices[vertex1_index].position.w), fvec2(0, 0) }, Vertex{ fvec4(fvec3(zero_point2, 1.0F), zero_point2_w), fvec2(0, 0) }, Vertex{ fvec4(fvec3(zero_point1, 1.0F), zero_point1_w), fvec2(0, 0) } }, t_texture, true);
+			draw_triangle({ Vertex{ fvec4(fvec3(vertex1), t_vertices[vertex1_index].position.w), fvec2(0, 0) }, Vertex{ fvec4(fvec3(vertex2), t_vertices[vertex2_index].position.w), fvec2(0, 0) }, Vertex{ fvec4(fvec3(zero_point2, 1.0F), zero_point2_w), fvec2(0, 0) } }, t_texture, true);
+
+			return;
 		}
 
 		std::uint32_t start_x =
@@ -176,9 +235,7 @@ class FrameBuffer
 						(((vertices[0].z) * scales[0] + (vertices[1].z) * scales[1] + (vertices[2].z) * scales[2]) /
 						 total_scale);
 
-					// std::cout << z_ndc_value << "\n";
-
-					if (z_ndc_value < 0.0F || z_ndc_value > 1.0F)
+					if (z_ndc_value <= 0.0F || z_ndc_value >= 1.0F)
 					{
 						continue;
 					}
