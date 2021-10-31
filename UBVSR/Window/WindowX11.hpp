@@ -45,7 +45,7 @@ namespace ubv {
 				case KeyRelease: [[fallthrough]]
 					printf( KeyPress ? "KeyPress: %s\n" : "KeyRelease: %s\n", XKeysymToString(XKeycodeToKeysym(m_display, m_event.xkey.keycode, 0)) );
 					if (XLookupKeysym(&m_event.xkey, 0) == keycode) {
-						m_event.xkey = 0;
+						m_event.xkey.keycode = 0;
 						return true;
 					} else {
 						return false;
