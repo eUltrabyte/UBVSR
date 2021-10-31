@@ -244,7 +244,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//	task.wait();
 		//}
 
-		if (GetAsyncKeyState(0x5A))
+		if (window->IsKeyPressed(0x5A))
 			frame_buffer.draw_z_buffer();
 		frame_buffer.sample();
 		window->display(frame_buffer);
