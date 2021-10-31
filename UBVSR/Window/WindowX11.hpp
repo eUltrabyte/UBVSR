@@ -42,7 +42,8 @@ namespace ubv {
 		[[nodiscard]] inline bool IsKeyPressed(int keycode) noexcept {
 			switch(m_event.type) {
 				case KeyPress:
-					printf( "KeyPress: %i\n", m_event.xkey.keycode );
+				case KeyRelease: [[fallthrough]]
+					printf( "KeyPress / KeyRelease: %i\n", m_event.xkey.keycode );
 					if (m_event.xkey.keycode == keycode) {
 						XSendEvent(m_display, m_window, 0, ExposureMask, &m_event);
 						XNextEvent(m_display, &m_event);
