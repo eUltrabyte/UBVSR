@@ -37,6 +37,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, ubv::Model& model) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
+	frame_buffer.set_multisample(1);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
 	while(true) {
@@ -45,7 +46,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		static Timepoint t3 = t1;
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1) * 2.0L;
-		float delta_time = (t2 - t3) * 20.0F;
+		float delta_time = (t2 - t3) * 2.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
 		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-2.0F };
@@ -267,7 +268,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/aqua.obj" }
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/Dorrie.obj" }
 	/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";

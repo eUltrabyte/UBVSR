@@ -35,6 +35,33 @@ template <typename T> struct vec2
 	constexpr explicit vec2(const vec2<U> &t_vec) noexcept : x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}
 	{
 	}
+	constexpr vec2<T> operator*(T t_value) const noexcept
+	{
+		return vec2<T>{x* t_value, y* t_value};
+	}
+
+	constexpr vec2<T> operator/(T t_value) const noexcept
+	{
+		return vec2<T>{x / t_value, y / t_value};
+	}
+	constexpr vec2<T> operator+(T t_value) const noexcept
+	{
+		return vec2<T>{x+ t_value, y+ t_value};
+	}
+
+	constexpr vec2<T> operator-(T t_value) const noexcept
+	{
+		return vec2<T>{x - t_value, y - t_value};
+	}
+
+	constexpr vec2<T> operator-(const vec2<T>& t_vec) const noexcept
+	{
+		return vec2<T>{x - t_vec.x, y - t_vec.y};
+	}
+	constexpr vec2<T> operator+(const vec2<T>& t_vec) const noexcept
+	{
+		return vec2<T>{x + t_vec.x, y + t_vec.y};
+	}
 };
 
 template <typename T> struct vec3
@@ -89,6 +116,11 @@ template <typename T> struct vec3
 	constexpr vec3<T> operator/(const vec3<T> &t_vec) const noexcept
 	{
 		return vec3<T>{x / t_vec.x, y / t_vec.y, z / t_vec.z};
+	}
+
+	constexpr vec3<T> operator/(T t_value) const noexcept
+	{
+		return vec3<T>{x / t_value, y / t_value, z / t_value};
 	}
 };
 
