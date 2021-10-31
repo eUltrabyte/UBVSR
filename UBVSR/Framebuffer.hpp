@@ -106,7 +106,7 @@ class FrameBuffer
 
 		for (const auto& vertex : t_vertices)
 		{
-			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < -1.0F )
+			if ((vertex.position.z / vertex.position.w) > 1.0F || (vertex.position.z / vertex.position.w) < 0.0F )
 			{
 				return;
 			}
@@ -146,21 +146,33 @@ class FrameBuffer
 
 					const auto total_scale = scales[0] + scales[1] + scales[2];
 
-					const float z_value = 1.0F / ((1.0F / t_vertices[0].position.w * scales[0] + 1.0F / t_vertices[1].position.w * scales[1] +
+					const float z_value = ((1.0F / t_vertices[0].position.w * scales[0] + 1.0F / t_vertices[1].position.w * scales[1] +
 												   1.0F / t_vertices[2].position.w * scales[2]) /
 												  total_scale);
 
-					if (zbuffer_test_and_set(x, y, z_value))
+					const float z_ndc_value = (((vertices[0].z) * scales[0] +
+						(vertices[1].z) * scales[1] +
+						(vertices[2].z) * scales[2]) /
+						total_scale);
+
+					//std::cout << z_ndc_value << "\n";
+
+					if (z_ndc_value < 0.0F || z_ndc_value > 1.0F)
+					{
+						continue;
+					}
+
+					if (zbuffer_test_and_set(x, y, z_ndc_value))
 					{
 						m_color_buffer.at(x, y) =
 							t_texture.sample(fvec2{((t_vertices[0].texture_uv.x / t_vertices[0].position.w) * scales[0] +
 													(t_vertices[1].texture_uv.x / t_vertices[1].position.w) * scales[1] +
 													(t_vertices[2].texture_uv.x / t_vertices[2].position.w) * scales[2]) /
-													   total_scale / (1.0F / z_value),
+													   total_scale / z_value,
 												   ((t_vertices[0].texture_uv.y / t_vertices[0].position.w) * scales[0] +
 													(t_vertices[1].texture_uv.y / t_vertices[1].position.w) * scales[1] +
 													(t_vertices[2].texture_uv.y / t_vertices[2].position.w) * scales[2]) /
-													   total_scale / (1.0F / z_value)});
+													   total_scale / z_value});
 					}
 				}
 			}
@@ -183,7 +195,22 @@ class FrameBuffer
 		for (std::uint32_t i = 0; i < z_buffer.size(); ++i)
 		{
 			std::uint8_t color_value = std::clamp((z_buffer[i] - min) / max_distance * 255.0F, 0.0F, 255.0F);
-			m_color_buffer.data()[i] = Pixel{color_value, color_value, color_value};
+			if (z_buffer[i] <= -1.0F)
+			{
+				m_color_buffer.data()[i] = Pixel{ color_value, 0, 0 };
+			}
+			else if (z_buffer[i] <= 0.0F)
+			{
+				m_color_buffer.data()[i] = Pixel{ color_value, color_value, 0 };
+			}
+			else if (z_buffer[i] <= 1.0F)
+			{
+				m_color_buffer.data()[i] = Pixel{ 0, color_value, 0 };
+			}
+			else
+			{
+				m_color_buffer.data()[i] = Pixel{ 0, 0, color_value };
+			}
 		}
 	}
 

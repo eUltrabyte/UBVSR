@@ -67,7 +67,7 @@ class Model
 			{
 				current_texture = strings.at(1);
 				std::cout << "Changing texture to: " << current_texture << "..." << std::flush;
-				m_textures[current_texture] = std::make_unique<Texture>( current_texture + ".tga");
+				m_textures[current_texture] = std::make_unique<Texture>( current_texture + ".tga", Texture::FilteringType::LINEAR);
 				std::cout << " Done!" << std::endl;
 				
 			}
