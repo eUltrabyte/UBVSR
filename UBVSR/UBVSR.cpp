@@ -38,6 +38,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	bool rotateMode = false;
+	bool renderZBuffer = false;
 	while(true) {
 		frame_buffer.clear();
 		static FpsCounter fps_counter;
@@ -251,7 +252,11 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//}
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
+			renderZBuffer = !renderZBuffer;
+
+		if(renderZBuffer)
 			frame_buffer.draw_z_buffer();
+			
 		frame_buffer.sample();
 		window->display(frame_buffer);
 		window->update();
