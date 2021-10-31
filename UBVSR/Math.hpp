@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <cmath>
 
 namespace ubv
 {
