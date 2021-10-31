@@ -28,37 +28,40 @@ namespace ubv {
 		Down,
 		Left,
 		Right,
-		Z,
+		Space,
 		Enter
 	};
 
-	const static inline std::map<Keys, unsigned> keys_linux = {
-		{ Keys::Escape, 0x00 },
-		{ Keys::W, 0x00 },
-		{ Keys::S, 0x00 },
-		{ Keys::A, 0x00 },
-		{ Keys::D, 0x00 },
-		{ Keys::Up, 0x00 },
-		{ Keys::Down, 0x00 },
-		{ Keys::Left, 0x00 },
-		{ Keys::Right, 0x00 },
-		{ Keys::Z, 44 },
-		{ Keys::Enter, 0x00 }
-	};
+	#if defined(_WIN32)
+		const static inline std::map<Keys, unsigned> keys = {
+			{ Keys::Escape, 0x1B },
+			{ Keys::Up, 0x26 },
+			{ Keys::Down, 0x28 },
+			{ Keys::Left, 0x25 },
+			{ Keys::Right, 0x27 },
+			{ Keys::W, 0x57 },
+			{ Keys::S, 0x53 },
+			{ Keys::A, 0x41 },
+			{ Keys::D, 0x44 },
+			{ Keys::Space, 0x20 },
+			{ Keys::Enter, 0x0D }
+		};
+	#else
+		const static inline std::map<Keys, unsigned> keys = {
+			{ Keys::Escape, 9 },
+			{ Keys::W, 25 },
+			{ Keys::S, 39 },
+			{ Keys::A, 38 },
+			{ Keys::D, 40 },
+			{ Keys::Up, 111 },
+			{ Keys::Down, 116 },
+			{ Keys::Left, 113 },
+			{ Keys::Right, 114 },
+			{ Keys::Space, 65 },
+			{ Keys::Enter, 36 }
+		};
+	#endif
 
-	const static inline std::map<Keys, unsigned> keys_windows = {
-		{ Keys::Escape, 0x1B },
-		{ Keys::Up, 0x26 },
-		{ Keys::Down, 0x28 },
-		{ Keys::Left, 0x25 },
-		{ Keys::Right, 0x27 },
-		{ Keys::Z, 0x5A },
-		{ Keys::Enter, 0x0D },
-		{ Keys::W, 0x57 },
-		{ Keys::S, 0x53 },
-		{ Keys::A, 0x41 },
-		{ Keys::D, 0x44 }
-	};
 
 	struct WindowProps {
 		std::uint16_t width;

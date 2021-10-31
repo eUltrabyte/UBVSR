@@ -52,9 +52,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
 
-		if (window->IsKeyPressed(0x25))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Left)))
 		{
-			if (window->IsKeyPressed(0x0D))
+			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 			{
 				camera_pitch_yaw_roll.x -= delta_time / 20.0F;
 			}
@@ -64,9 +64,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (window->IsKeyPressed(0x27))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Right)))
 		{
-			if (window->IsKeyPressed(0x0D))
+			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 			{
 				camera_pitch_yaw_roll.x += delta_time / 20.0F;
 			}
@@ -76,9 +76,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (window->IsKeyPressed(0x26))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Up)))
 		{
-			if (window->IsKeyPressed(0x0D))
+			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 			{
 				camera_pitch_yaw_roll.z += delta_time / 20.0F;
 			}
@@ -88,9 +88,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (window->IsKeyPressed(0x28))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Down)))
 		{
-			if (window->IsKeyPressed(0x0D))
+			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 			{
 				camera_pitch_yaw_roll.z -= delta_time / 20.0F;
 			}
@@ -100,9 +100,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (window->IsKeyPressed(0x20))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::W)))
 		{
-			if (window->IsKeyPressed(0x0D))
+			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 			{
 				camera_pitch_yaw_roll.y += delta_time / 20.0F;
 			}
@@ -112,9 +112,9 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		if (window->IsKeyPressed(0x10))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::S)))
 		{
-			if (window->IsKeyPressed(0x0D))
+			if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 			{
 				camera_pitch_yaw_roll.y -= delta_time / 20.0F;
 			}
@@ -244,7 +244,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//	task.wait();
 		//}
 
-		if (window->IsKeyPressed(0x5A))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
 			frame_buffer.draw_z_buffer();
 		frame_buffer.sample();
 		window->display(frame_buffer);
