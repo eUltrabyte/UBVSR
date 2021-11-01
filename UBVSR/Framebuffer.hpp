@@ -42,7 +42,7 @@ class FrameBuffer
 		m_color_buffer.clear();
 		m_ms_color_buffer.clear();
 		m_ms_depth_buffer.clear();
-		//m_ms_stencil_buffer.clear();
+		// m_ms_stencil_buffer.clear();
 	}
 
 	inline bool zbuffer_test_and_set(std::uint16_t t_x, std::uint16_t t_y, float t_depth)
@@ -56,7 +56,8 @@ class FrameBuffer
 		return false;
 	}
 
-	constexpr bool is_point_inside_triangle(const fvec2& s, const fvec2& a, const fvec2& b, const fvec2& c) const noexcept
+	constexpr bool is_point_inside_triangle(const fvec2 &s, const fvec2 &a, const fvec2 &b,
+											const fvec2 &c) const noexcept
 	{
 		const auto as_x = s.x - a.x;
 		const auto as_y = s.y - a.y;
@@ -76,7 +77,7 @@ class FrameBuffer
 		return true;
 	}
 
-	constexpr fvec2 line_intersection(const fvec2& A, const fvec2& B, const fvec2& C, const fvec2& D) const noexcept
+	constexpr fvec2 line_intersection(const fvec2 &A, const fvec2 &B, const fvec2 &C, const fvec2 &D) const noexcept
 	{
 		const float a1 = B.y - A.y;
 		const float b1 = A.x - B.x;
@@ -91,7 +92,7 @@ class FrameBuffer
 		const float x = (b2 * c1 - b1 * c2) / determinant;
 		const float y = (a1 * c2 - a2 * c1) / determinant;
 
-		return fvec2{x,y};
+		return fvec2{x, y};
 	}
 
 	struct FogParams
@@ -143,7 +144,7 @@ class FrameBuffer
 	}
 
 	constexpr std::array<Vertex, 3> clip_with_two_wrong_vertices(const std::array<Vertex, 2> &t_wrong_vertices,
-															  const Vertex &t_correct_vertex)
+																 const Vertex &t_correct_vertex)
 	{
 		const auto fraction0 =
 			(-t_wrong_vertices[0].position.z) / (t_correct_vertex.position.z - t_wrong_vertices[0].position.z);
@@ -292,7 +293,8 @@ class FrameBuffer
 											  fvec2(ndc_vertices[(i + 2) % 3]));
 						const auto d1 = fvec2(ndc_vertices[i]) - point;
 						const auto d2 = fvec2(ndc_position) - point;
-						const auto fraction = std::sqrt(d2.x * d2.x + d2.y * d2.y) / std::sqrt(d1.x * d1.x + d1.y * d1.y);
+						const auto fraction =
+							std::sqrt(d2.x * d2.x + d2.y * d2.y) / std::sqrt(d1.x * d1.x + d1.y * d1.y);
 						scales[i] = fraction;
 					}
 
@@ -347,9 +349,9 @@ class FrameBuffer
 			m_color_buffer = m_ms_color_buffer;
 			return;
 		}
-		std::vector<float> r_values(std::size_t(m_multisample) * m_multisample);
-		std::vector<float> g_values(std::size_t(m_multisample) * m_multisample);
-		std::vector<float> b_values(std::size_t(m_multisample) * m_multisample);
+		std::vector<std::uint32_t> r_values(std::size_t(m_multisample) * m_multisample);
+		std::vector<std::uint32_t> g_values(std::size_t(m_multisample) * m_multisample);
+		std::vector<std::uint32_t> b_values(std::size_t(m_multisample) * m_multisample);
 		for (std::uint32_t x = 0; x < m_width; ++x)
 		{
 			for (std::uint32_t y = 0; y < m_height; ++y)
@@ -366,11 +368,10 @@ class FrameBuffer
 							m_ms_color_buffer.at(x * m_multisample + mx, y * m_multisample + my).b;
 					}
 				}
-				const Pixel pixel(
-					std::accumulate(r_values.begin(), r_values.end(), 0.0F) / static_cast<float>(r_values.size()),
-					std::accumulate(g_values.begin(), g_values.end(), 0.0F) / static_cast<float>(g_values.size()),
-					std::accumulate(b_values.begin(), b_values.end(), 0.0F) / static_cast<float>(b_values.size()));
-				m_color_buffer.at(x, y) = pixel;
+				m_color_buffer.at(x, y) =
+					Pixel(std::accumulate(r_values.begin(), r_values.end(), 0) / (r_values.size()),
+						  std::accumulate(g_values.begin(), g_values.end(), 0) / (g_values.size()),
+						  std::accumulate(b_values.begin(), b_values.end(), 0) / (b_values.size()));
 			}
 		}
 	}
