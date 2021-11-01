@@ -49,7 +49,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		float delta_time = (t2 - t3) * 2.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
-		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-2.0F };
+		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-40.0F };
 		static ubv::fvec3 camera_pitch_yaw_roll{ 0.0F,ubv::degrees_to_radians(-90.0F),0.0F };
 
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);

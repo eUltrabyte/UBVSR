@@ -100,7 +100,7 @@ class FrameBuffer
 		float end = 50.0F;
 		Pixel color = Pixel{255, 0, 0};
 		float destiny = 1.0F;
-		bool enable = true;
+		bool enable = false;
 	} fog_params;
 
 	constexpr bool cull_test(const std::array<Vertex, 3> &t_vertices)
@@ -207,9 +207,35 @@ class FrameBuffer
 			static_cast<fvec3>(t_vertices[1].position) / t_vertices[1].position.w,
 			static_cast<fvec3>(t_vertices[2].position) / t_vertices[2].position.w};
 
-		for (std::uint32_t x = 0; x < m_width * m_multisample; ++x)
+		std::array<fvec3,3> vertices = { fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
+								  static_cast<float>(m_width) * static_cast<float>(m_multisample),
+							  (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F *
+								  static_cast<float>(m_height) * static_cast<float>(m_multisample),
+							  t_vertices[0].position.z / t_vertices[0].position.w),
+						fvec3((t_vertices[1].position.x / t_vertices[1].position.w + 1.0F) / 2.0F *
+								  static_cast<float>(m_width) * static_cast<float>(m_multisample),
+							  (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F *
+								  static_cast<float>(m_height) * static_cast<float>(m_multisample),
+							  t_vertices[1].position.z / t_vertices[1].position.w),
+						fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F *
+								  static_cast<float>(m_width) * static_cast<float>(m_multisample),
+							  (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F *
+								  static_cast<float>(m_height) * static_cast<float>(m_multisample),
+							  t_vertices[2].position.z / t_vertices[2].position.w) };
+
+		std::uint32_t start_x =
+			std::max<float>(std::min<float>({ vertices[0].x, vertices[1].x, vertices[2].x }) - 1.0F, 0.0F);
+		std::uint32_t end_x =
+			std::min<std::uint32_t>(std::max<float>({ vertices[0].x, vertices[1].x, vertices[2].x }) + 1, m_width * m_multisample);
+
+		std::uint32_t start_y =
+			std::max<float>(std::min<float>({ vertices[0].y, vertices[1].y, vertices[2].y }) - 1.0F, 0.0F);
+		std::uint32_t end_y =
+			std::min<std::uint32_t>(std::max<float>({ vertices[0].y, vertices[1].y, vertices[2].y }) + 1, m_height * m_multisample);
+
+		for (std::uint32_t x = start_x; x < end_x; ++x)
 		{
-			for (std::uint32_t y = 0; y < m_height * m_multisample; ++y)
+			for (std::uint32_t y = start_y; y < end_y; ++y)
 			{
 				const fvec2 ndc_position = fvec2{static_cast<float>(x) / static_cast<float>(m_width),
 												 static_cast<float>(y) / static_cast<float>(m_height)} /
