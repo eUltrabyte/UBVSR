@@ -1,65 +1,69 @@
 ﻿#include "UBVSR.hpp"
 
-#include "FpsCounter.hpp"
 #include "Buffer.hpp"
+#include "FpsCounter.hpp"
 
 void zzz()
 {
 	ubv::StencilBuffer color_buffer(640, 480);
 	color_buffer.at(40, 50) = true;
-	const auto& bb = color_buffer;
-	auto& z = bb.at(40, 50);
+	const auto &bb = color_buffer;
+	auto &z = bb.at(40, 50);
 	color_buffer.clear();
-	//ubv::DepthBuffer depth_buffer(ubv::u16vec2{640,480});
-	//ubv::StencilBuffer stencil_buffer(ubv::u16vec2{640,480});
-	//stencil_buffer.at(ubv::u16vec2{ 3,4 }) = true;
-	//std::vector<float> yaa{std::size_t(5000) * uint16_t(3), std::numeric_limits<float>::infinity() };
+	// ubv::DepthBuffer depth_buffer(ubv::u16vec2{640,480});
+	// ubv::StencilBuffer stencil_buffer(ubv::u16vec2{640,480});
+	// stencil_buffer.at(ubv::u16vec2{ 3,4 }) = true;
+	// std::vector<float> yaa{std::size_t(5000) * uint16_t(3), std::numeric_limits<float>::infinity() };
 }
 
-ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
+ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle)
+{
 	float s = std::sin(t_angle);
 	float c = std::cos(t_angle);
 
-	//translate point back to origin
+	// translate point back to origin
 	t_point.x -= t_origin.x;
 	t_point.y -= t_origin.y;
 
-	//rotate point
+	// rotate point
 	float xnew = t_point.x * c - t_point.y * s;
 	float ynew = t_point.x * s + t_point.y * c;
 
-	//translate point back
+	// translate point back
 	t_point.x = xnew + t_origin.x;
 	t_point.y = ynew + t_origin.y;
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, std::vector<ubv::Model*> models) noexcept {
+void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projection,
+			   std::vector<ubv::Model *> models) noexcept
+{
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	frame_buffer.set_multisample(1);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
-	while(true) {
+	while (true)
+	{
 		frame_buffer.clear();
 		static FpsCounter fps_counter;
 		static Timepoint t3 = t1;
 		const Timepoint t2;
-		float elapsed_time = (t2 - t1) * 2.0L;
+		float elapsed_time = (t2 - t1);
 		float delta_time = (t2 - t3) * 2.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
-		static ubv::fvec3 camera_position{ 0.0F,0.5F,0.0F };
-		static ubv::fvec3 camera_pitch_yaw_roll{ ubv::degrees_to_radians(10.0F),ubv::degrees_to_radians(-90.0F),0.0F };
+		ubv::fvec3 camera_position{ std::sin(elapsed_time) * 2.0F, (std::cos(elapsed_time / 3.0F)) * 0.5F, 0.0F };
+		static ubv::fvec3 camera_pitch_yaw_roll{ubv::degrees_to_radians(10.0F), ubv::degrees_to_radians(-90.0F), 0.0F};
 
 		static unsigned frame_number = 0;
 
-		camera_pitch_yaw_roll.y = ubv::degrees_to_radians(static_cast<float>(frame_number) * 2.0F);
+		camera_pitch_yaw_roll.y = ubv::degrees_to_radians(elapsed_time * 60.0F * 1.0F);
 
-		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
+		// static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
 
-		static uint16_t stencil_value_u16 = 0;
+		/*static uint16_t stencil_value_u16 = 0;
 		stencil_value_u16 += 10;
 		stencil_value_u16 %= 512;
 		unsigned wartosc = stencil_value_u16;
@@ -68,7 +72,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			wartosc = 256 - stencil_value_u16;
 		}
 		frame_buffer.stencil_value = wartosc;
-		std::cout << unsigned(frame_buffer.stencil_value) << std::endl;
+		std::cout << unsigned(frame_buffer.stencil_value) << std::endl;*/
 
 		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 		{
@@ -147,7 +151,8 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}*/
 
-		camera_pitch_yaw_roll.x = std::clamp(camera_pitch_yaw_roll.x, ubv::degrees_to_radians(-89.0F), ubv::degrees_to_radians(89.0F));
+		camera_pitch_yaw_roll.x =
+			std::clamp(camera_pitch_yaw_roll.x, ubv::degrees_to_radians(-89.0F), ubv::degrees_to_radians(89.0F));
 
 		ubv::fvec3 front;
 		front.x = std::cos((camera_pitch_yaw_roll.y)) * std::cos((camera_pitch_yaw_roll.x));
@@ -217,17 +222,17 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		frame_buffer.draw_triangle(t5a, texture1);
 		frame_buffer.draw_triangle(t5b, texture1);*/
 
-		//std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
-		//std::cout << triangles_to_draw.size() << std::endl; 
-		for (const auto& model : models)
+		// std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
+		// std::cout << triangles_to_draw.size() << std::endl;
+		for (const auto &model : models)
 		{
-			for (const auto& [texture, triangles] : model->m_triangles)
+			for (const auto &[texture, triangles] : model->m_triangles)
 			{
 				auto triangles_to_draw = triangles;
-				//std::cout << triangles_to_draw.size() << std::endl;
-				for (auto& triangle : triangles_to_draw)
+				// std::cout << triangles_to_draw.size() << std::endl;
+				for (auto &triangle : triangles_to_draw)
 				{
-					for (auto& vertex : triangle)
+					for (auto &vertex : triangle)
 					{
 						vertex.position = MVP * vertex.position;
 					}
@@ -236,43 +241,54 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
-		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0b, texture1));
+		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a,
+		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
+		t0b, texture1));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1b, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a,
+		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
+		t1b, texture1));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2b, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2a,
+		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
+		t2b, texture1));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t3a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t3b, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t3a,
+		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
+		t3b, texture1));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4b, texture1));
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4a,
+		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
+		t4b, texture1));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5a, texture1));
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5b, texture1));*/
+		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5a,
+		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
+		t5b, texture1));*/
 
-		/*const ubv::Vertex vertex_a{projection.multiply(ubv::fvec3(rotate(ubv::fvec2{0.5, -0.5}, ubv::fvec2{0.0, 0.0}, 0), 1.0F)), ubv::fvec2{-1, 0}}; // 1 0
-		const ubv::Vertex vertex_b{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{  0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ -1, -1 } };
-		const ubv::Vertex vertex_c{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ 0, -1 } };
-		const ubv::Vertex vertex_d{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5, -0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ 0, 0 } };*/
+		/*const ubv::Vertex vertex_a{projection.multiply(ubv::fvec3(rotate(ubv::fvec2{0.5, -0.5}, ubv::fvec2{0.0, 0.0},
+		0), 1.0F)), ubv::fvec2{-1, 0}}; // 1 0 const ubv::Vertex vertex_b{
+		projection.multiply(ubv::fvec3(rotate(ubv::fvec2{  0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{
+		-1, -1 } }; const ubv::Vertex vertex_c{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5,  0.5 },
+		ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ 0, -1 } }; const ubv::Vertex vertex_d{
+		projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5, -0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{
+		0, 0 } };*/
 
-		//const std::array<ubv::Vertex, 3> triangle1{ vertex_b, vertex_d, vertex_c };
-		//const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_a };
+		// const std::array<ubv::Vertex, 3> triangle1{ vertex_b, vertex_d, vertex_c };
+		// const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_a };
 
-		//tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1, texture1));
-		//tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle2, texture1));
+		// tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1,
+		// texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle,
+		// &frame_buffer, triangle2, texture1));
 
-		//for(const auto& task : tasks) {
+		// for(const auto& task : tasks) {
 		//	task.wait();
-		//}
+		// }
 
 		if (frame_number == 0)
 		{
-			frame_buffer.draw_to_stencil_buffer();
-			frame_buffer.stencil_test = true;
+			// frame_buffer.draw_z_buffer();
+			// frame_buffer.draw_to_stencil_buffer();
+			// frame_buffer.stencil_test = true;
 		}
 
 		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
@@ -285,41 +301,59 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		window->display(frame_buffer);
 		window->update();
 
-		//frame_buffer.render_to_file("test.tga");
+		// frame_buffer.render_to_file("test.tga");
+		/*frame_buffer.render_to_file([&]() {
+			std::stringstream ss_frame_number;
+			ss_frame_number << std::setfill('0') << std::setw(10) << frame_number;
+			static std::string filename;
+			filename = "frames/video_ms5_" + ss_frame_number.str() + ".tga";
+			return filename;
+		}());
 		++frame_number;
+		if (frame_number == 420)
+		{
+			std::quick_exit(0);
+		}*/
 	}
 }
 
-namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model_akwarium{ "res/aqua.obj" }, model_rekin{"res/Dorrie.obj"}
-	/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
-		for(auto i = 0; i < t_argc; ++i) {
-			std::cout << "Program Input: " << t_argv[i] << "\n";
-		}
+namespace ubv
+{
+Sandbox::Sandbox(int t_argc, char **t_argv)
+	: texture1{"res/box.tga", Texture::FilteringType::LINEAR}, model_akwarium{"res/aqua.obj"}, model_rekin{
+																								   "res/Dorrie.obj"}
+/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
+	for (auto i = 0; i < t_argc; ++i)
+	{
+		std::cout << "Program Input: " << t_argv[i] << "\n";
 	}
-     
-	Sandbox::~Sandbox() {
-	}
+}
 
-    void Sandbox::start() {
-		std::cout << "Hello UBVSR.\n";
+Sandbox::~Sandbox()
+{
+}
 
-		#if defined(_WIN32)
-			ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
-		#elif defined(__unix__)
-			ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
-		#endif
+void Sandbox::start()
+{
+	std::cout << "Hello UBVSR.\n";
 
-		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 50.0F);
+#if defined(_WIN32)
+	ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+#elif defined(__unix__)
+	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+#endif
 
-		draw_loop(&window, texture1, projection, {&model_akwarium, &model_rekin});
+	projection = fmat4x4(
+		90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 50.0F);
 
-		std::cout << "Goodbye UBVSR\n";
-		std::cin.get();
-	}
-};
+	draw_loop(&window, texture1, projection, {&model_akwarium, &model_rekin});
 
-int main(int argc, char** argv)
+	std::cout << "Goodbye UBVSR\n";
+	std::cin.get();
+}
+}; // namespace ubv
+
+int main(int argc, char **argv)
 try
 {
 	ubv::Sandbox app(argc, argv);
