@@ -56,10 +56,10 @@ class FrameBuffer
 		return false;
 	}
 
-	inline bool is_point_inside_triangle(fvec2 s, fvec2 a, fvec2 b, fvec2 c) const noexcept
+	constexpr bool is_point_inside_triangle(const fvec2& s, const fvec2& a, const fvec2& b, const fvec2& c) const noexcept
 	{
-		auto as_x = s.x - a.x;
-		auto as_y = s.y - a.y;
+		const auto as_x = s.x - a.x;
+		const auto as_y = s.y - a.y;
 
 		bool s_ab = (b.x - a.x) * as_y - (b.y - a.y) * as_x > 0.0F;
 
@@ -76,7 +76,7 @@ class FrameBuffer
 		return true;
 	}
 
-	inline fvec2 line_intersection(fvec2 A, fvec2 B, fvec2 C, fvec2 D) const noexcept
+	constexpr fvec2 line_intersection(const fvec2& A, const fvec2& B, const fvec2& C, const fvec2& D) const noexcept
 	{
 		const float a1 = B.y - A.y;
 		const float b1 = A.x - B.x;
@@ -91,7 +91,7 @@ class FrameBuffer
 		const float x = (b2 * c1 - b1 * c2) / determinant;
 		const float y = (a1 * c2 - a2 * c1) / determinant;
 
-		return fvec2{float(x), float(y)};
+		return fvec2{x,y};
 	}
 
 	struct FogParams
@@ -127,7 +127,7 @@ class FrameBuffer
 		return true;
 	}
 
-	inline std::array<std::array<Vertex, 3>, 2> clip_with_one_wrong_vertex(
+	constexpr std::array<std::array<Vertex, 3>, 2> clip_with_one_wrong_vertex(
 		const Vertex &t_wrong_vertex, const std::array<Vertex, 2> &t_correct_vertices)
 	{
 		const auto fraction0 =
@@ -142,7 +142,7 @@ class FrameBuffer
 				{vertex0, vertex1, t_correct_vertices[1]}};
 	}
 
-	inline std::array<Vertex, 3> clip_with_two_wrong_vertices(const std::array<Vertex, 2> &t_wrong_vertices,
+	constexpr std::array<Vertex, 3> clip_with_two_wrong_vertices(const std::array<Vertex, 2> &t_wrong_vertices,
 															  const Vertex &t_correct_vertex)
 	{
 		const auto fraction0 =
