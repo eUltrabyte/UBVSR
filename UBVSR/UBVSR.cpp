@@ -37,7 +37,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, std::vector<ubv::Model*> models) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
-	frame_buffer.set_multisample(1);
+	frame_buffer.set_multisample(32);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
 	while(true) {
@@ -49,13 +49,17 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		float delta_time = (t2 - t3) * 2.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
-		static ubv::fvec3 camera_position{ 0.0F,0.0F,0.0F };
-		static ubv::fvec3 camera_pitch_yaw_roll{ 0.0F,ubv::degrees_to_radians(-90.0F),0.0F };
+		static ubv::fvec3 camera_position{ 0.0F,0.5F,0.0F };
+		static ubv::fvec3 camera_pitch_yaw_roll{ ubv::degrees_to_radians(10.0F),ubv::degrees_to_radians(-90.0F),0.0F };
+
+		static unsigned frame_number = 0;
+
+		camera_pitch_yaw_roll.y = ubv::degrees_to_radians(static_cast<float>(frame_number) * 2.0F);
 
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
 
-		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 		{
 			rotateMode = !rotateMode;
 		}
@@ -130,7 +134,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			{
 				camera_position.y -= delta_time;
 			}
-		}
+		}*/
 
 		camera_pitch_yaw_roll.x = std::clamp(camera_pitch_yaw_roll.x, ubv::degrees_to_radians(-89.0F), ubv::degrees_to_radians(89.0F));
 
@@ -139,18 +143,10 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		front.y = std::sin((camera_pitch_yaw_roll.x));
 		front.z = std::sin((camera_pitch_yaw_roll.y)) * std::cos((camera_pitch_yaw_roll.x));
 
-
-
 		const auto camera_front = ubv::normalize(front);
 
 		auto view = ubv::look_at(camera_position, camera_position + camera_front, camera_up);
 		auto MVP = view * projection;
-
-		ubv::fvec3 light_direction = ubv::fvec3{ 0.0F, 0.0F, -1.0F };
-		float l = std::sqrt(light_direction.x * light_direction.x + light_direction.y * light_direction.y + light_direction.z * light_direction.z);
-		light_direction.x /= l;
-		light_direction.y /= l;
-		light_direction.z /= l;
 
 		/*ubv::Vertex c0a{MVP * ubv::fvec4{ubv::fvec3(0, 0, 0), 1.0F}, ubv::fvec2{0, 0}};
 		ubv::Vertex c0b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
@@ -273,6 +269,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		window->update();
 
 		//frame_buffer.render_to_file("test.tga");
+		++frame_number;
 	}
 }
 

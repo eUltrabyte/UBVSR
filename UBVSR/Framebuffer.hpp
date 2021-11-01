@@ -96,10 +96,10 @@ class FrameBuffer
 
 	struct FogParams
 	{
-		float start = 3.0F;
-		float end = 4.0F;
-		Pixel color = Pixel{0, 200, 220};
-		float destiny = 1.0F;
+		float start = 2.0F;
+		float end = 4.5F;
+		Pixel color = Pixel{0, 100, 220};
+		float destiny = 0.95F;
 		bool enable = true;
 	} fog_params;
 
