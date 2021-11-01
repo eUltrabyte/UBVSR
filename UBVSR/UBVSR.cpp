@@ -346,7 +346,7 @@ void Sandbox::start()
 	projection = fmat4x4(
 		90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 50.0F);
 
-	draw_loop(&window, texture1, projection, {&model_akwarium, &model_rekin});
+	draw_loop(&window, texture1, projection, {&model_akwarium});
 
 	std::cout << "Goodbye UBVSR\n";
 	std::cin.get();

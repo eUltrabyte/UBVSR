@@ -426,6 +426,15 @@ template <typename T> [[nodiscard]] inline vec3<T> normalize(const vec3<T> &t_ve
 	return vec3<T>{t_vec.x / vec_length, t_vec.y / vec_length, t_vec.z / vec_length};
 }
 
+[[nodiscard]] constexpr float fast_lerp(float t_value_a, float t_value_b, float t_fraction)
+{
+	return t_value_a + (t_value_b - t_value_a) * t_fraction;
+}
+
+[[nodiscard]] constexpr float fast_blerp(const fvec4& t_vec, const fvec2& t_fraction_vec) {
+	return fast_lerp(fast_lerp(t_vec.x, t_vec.y, t_fraction_vec.x), fast_lerp(t_vec.z, t_vec.w, t_fraction_vec.x), t_fraction_vec.y);
+}
+
 /*template <typename T> [[nodiscard]] constexpr vec3<T> intersect_plane(const vec3<T>& t_plane_p, const vec3<T>& t_plane_n, const vec3<T>& t_line_start, const vec3<T>& t_line_end)
 {
 	t_plane_n = normalize(plane_n);

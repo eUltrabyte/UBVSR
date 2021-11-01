@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-namespace std {
+/*namespace std {
 	template<typename T>
 	[[nodiscard]] constexpr float blerp(ubv::vec2<T> t_vec0, ubv::vec2<T> t_vec1, ubv::vec2<T> t_fraction_vec) {
 		return lerp(lerp(t_vec0.x, t_vec0.y, t_fraction_vec.x), lerp(t_vec1.x, t_vec1.y, t_fraction_vec.x), t_fraction_vec.y);
@@ -23,7 +23,7 @@ namespace std {
 			abort();
 		}
 	}
-};
+};*/
 
 namespace ubv {
 	class Texture {
@@ -53,19 +53,15 @@ namespace ubv {
 				break;
 				case FilteringType::LINEAR:
 				{
-					const float section_x = 1.0F / static_cast<float>(get_size().x);
-					const float section_y = 1.0F / static_cast<float>(get_size().y);
-					const float half_section_x = section_x / 2.0F;
-					const float half_section_y = section_y / 2.0F;
-					const float pos_x_mod = std::fmod(pos_uv.x, section_x);
-					const float pos_y_mod = std::fmod(pos_uv.y, section_y);
-					float fraction_x = std::abs(pos_x_mod - half_section_x) / section_x;
-					float fraction_y = std::abs(pos_y_mod - half_section_y) / section_y;
-					int x_texture_position = std::clamp<std::uint16_t>(std::uint16_t(pos_uv.x * get_size().x), 0, get_size().x - 1);
-					int y_texture_position = std::clamp<std::uint16_t>(std::uint16_t(pos_uv.y * get_size().y), 0, get_size().y - 1);
+					const fvec2 section{ 1.0F / static_cast<float>(get_size().x), 1.0F / static_cast<float>(get_size().y) };
+					const fvec2 half_section{ section / 2.0F };
+					const fvec2 pos_mod{ std::fmod(pos_uv.x, section.x), std::fmod(pos_uv.y, section.y) };
+					const fvec2 fraction{ std::abs(pos_mod.x - half_section.x) / section.x , std::abs(pos_mod.y - half_section.y) / section.y };
+					const int x_texture_position = std::clamp<std::uint16_t>(std::uint16_t(pos_uv.x * get_size().x), 0, get_size().x - 1);
+					const int y_texture_position = std::clamp<std::uint16_t>(std::uint16_t(pos_uv.y * get_size().y), 0, get_size().y - 1);
 					int x_texture_position2 = x_texture_position;
 					int y_texture_position2 = y_texture_position;
-					if (pos_x_mod > half_section_x)
+					if (pos_mod.x > half_section.x)
 					{
 						x_texture_position2 = ((x_texture_position2) + 1) % unsigned(get_size().x);
 					}
@@ -73,7 +69,7 @@ namespace ubv {
 					{
 						x_texture_position2 = ((x_texture_position2) - 1) % unsigned(get_size().x);
 					}
-					if (pos_y_mod > half_section_y)
+					if (pos_mod.y > half_section.y)
 					{
 						y_texture_position2 = ((y_texture_position2) + 1) % unsigned(get_size().y);
 					}
@@ -86,9 +82,9 @@ namespace ubv {
 					const auto pixel12 = m_tga.get_pixel(ubv::u16vec2( x_texture_position, y_texture_position2 ));
 					const auto pixel22 = m_tga.get_pixel(ubv::u16vec2( x_texture_position2, y_texture_position2 ));
 
-					Pixel p(std::blerp(fvec4(pixel11.r, pixel21.r, pixel12.r, pixel22.r), fvec2(fraction_x, fraction_y)),
-							std::blerp(fvec4(pixel11.g, pixel21.g, pixel12.g, pixel22.g), fvec2(fraction_x, fraction_y)),
-							std::blerp(fvec4(pixel11.b, pixel21.b, pixel12.b, pixel22.b), fvec2(fraction_x, fraction_y)));
+					Pixel p(fast_blerp(fvec4(pixel11.r, pixel21.r, pixel12.r, pixel22.r), fraction),
+							fast_blerp(fvec4(pixel11.g, pixel21.g, pixel12.g, pixel22.g), fraction),
+							fast_blerp(fvec4(pixel11.b, pixel21.b, pixel12.b, pixel22.b), fraction));
 
 					return p;
 				}

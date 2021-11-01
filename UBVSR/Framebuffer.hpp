@@ -100,7 +100,7 @@ class FrameBuffer
 		float end = 4.5F;
 		Pixel color = Pixel{0, 100, 220};
 		float destiny = 0.95F;
-		bool enable = true;
+		bool enable = false;
 	} fog_params;
 
 	constexpr bool cull_test(const std::array<Vertex, 3> &t_vertices)
@@ -329,9 +329,9 @@ class FrameBuffer
 								std::clamp((z_value - fog_params.start) / (fog_params.end - fog_params.start), 0.0F,
 										   1.0F) *
 								fog_params.destiny;
-							pixel = Pixel(std::lerp(pixel.r, fog_params.color.r, fraction),
-										  std::lerp(pixel.g, fog_params.color.g, fraction),
-										  std::lerp(pixel.b, fog_params.color.b, fraction));
+							pixel = Pixel(fast_lerp(pixel.r, fog_params.color.r, fraction),
+										  fast_lerp(pixel.g, fog_params.color.g, fraction),
+										  fast_lerp(pixel.b, fog_params.color.b, fraction));
 						}
 						m_ms_color_buffer.at(x, y) = pixel;
 					}
