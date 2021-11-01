@@ -42,7 +42,7 @@ class FrameBuffer
 		m_color_buffer.clear();
 		m_ms_color_buffer.clear();
 		m_ms_depth_buffer.clear();
-		m_ms_stencil_buffer.clear();
+		//m_ms_stencil_buffer.clear();
 	}
 
 	inline bool zbuffer_test_and_set(std::uint16_t t_x, std::uint16_t t_y, float t_depth)
@@ -156,7 +156,27 @@ class FrameBuffer
 		return {vertex0, vertex1, t_correct_vertex};
 	}
 
-	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture, bool t_force_draw = false)
+	bool stencil_test = false;
+	enum class StencilFunction : std::uint8_t
+	{
+		LESS,
+		GREATER
+	} stencil_function = StencilFunction::GREATER;
+	std::uint8_t stencil_value = 0x80;
+
+	inline void draw_to_stencil_buffer() noexcept
+	{
+		for (std::uint32_t i = 0; i < m_ms_color_buffer.data().size(); ++i)
+		{
+			m_ms_stencil_buffer.data()[i] =
+				(unsigned(m_ms_color_buffer.data()[i].r) + unsigned(m_ms_color_buffer.data()[i].g) +
+				 unsigned(m_ms_color_buffer.data()[i].b)) /
+				3U;
+		}
+	}
+
+	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture,
+							  bool t_force_draw = false)
 	{
 		if (!t_force_draw)
 		{
@@ -184,8 +204,8 @@ class FrameBuffer
 			{
 				const auto triangles = clip_with_one_wrong_vertex(
 					t_vertices[wrong_vertices_indexes[0]],
-					{ t_vertices[correct_vertices_indexes[0]], t_vertices[correct_vertices_indexes[1]] });
-				for (const auto& triangle : triangles)
+					{t_vertices[correct_vertices_indexes[0]], t_vertices[correct_vertices_indexes[1]]});
+				for (const auto &triangle : triangles)
 				{
 					draw_triangle(triangle, t_texture, true);
 				}
@@ -195,7 +215,7 @@ class FrameBuffer
 			if (wrong_vertices_indexes.size() == 2)
 			{
 				const auto triangle = clip_with_two_wrong_vertices(
-					{ t_vertices[wrong_vertices_indexes[0]], t_vertices[wrong_vertices_indexes[1]] },
+					{t_vertices[wrong_vertices_indexes[0]], t_vertices[wrong_vertices_indexes[1]]},
 					t_vertices[correct_vertices_indexes[0]]);
 				draw_triangle(triangle, t_texture, true);
 				return;
@@ -207,36 +227,56 @@ class FrameBuffer
 			static_cast<fvec3>(t_vertices[1].position) / t_vertices[1].position.w,
 			static_cast<fvec3>(t_vertices[2].position) / t_vertices[2].position.w};
 
-		std::array<fvec3,3> vertices = { fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
-								  static_cast<float>(m_width) * static_cast<float>(m_multisample),
-							  (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F *
-								  static_cast<float>(m_height) * static_cast<float>(m_multisample),
-							  t_vertices[0].position.z / t_vertices[0].position.w),
-						fvec3((t_vertices[1].position.x / t_vertices[1].position.w + 1.0F) / 2.0F *
-								  static_cast<float>(m_width) * static_cast<float>(m_multisample),
-							  (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F *
-								  static_cast<float>(m_height) * static_cast<float>(m_multisample),
-							  t_vertices[1].position.z / t_vertices[1].position.w),
-						fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F *
-								  static_cast<float>(m_width) * static_cast<float>(m_multisample),
-							  (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F *
-								  static_cast<float>(m_height) * static_cast<float>(m_multisample),
-							  t_vertices[2].position.z / t_vertices[2].position.w) };
+		std::array<fvec3, 3> vertices = {fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
+											   (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
+											   t_vertices[0].position.z / t_vertices[0].position.w),
+										 fvec3((t_vertices[1].position.x / t_vertices[1].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
+											   (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
+											   t_vertices[1].position.z / t_vertices[1].position.w),
+										 fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
+											   (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F *
+												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
+											   t_vertices[2].position.z / t_vertices[2].position.w)};
 
 		std::uint32_t start_x =
-			std::max<float>(std::min<float>({ vertices[0].x, vertices[1].x, vertices[2].x }) - 1.0F, 0.0F);
-		std::uint32_t end_x =
-			std::min<std::uint32_t>(std::max<float>({ vertices[0].x, vertices[1].x, vertices[2].x }) + 1, m_width * m_multisample);
+			std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1.0F, 0.0F);
+		std::uint32_t end_x = std::min<std::uint32_t>(
+			std::max<float>({vertices[0].x, vertices[1].x, vertices[2].x}) + 1, m_width * m_multisample);
 
 		std::uint32_t start_y =
-			std::max<float>(std::min<float>({ vertices[0].y, vertices[1].y, vertices[2].y }) - 1.0F, 0.0F);
-		std::uint32_t end_y =
-			std::min<std::uint32_t>(std::max<float>({ vertices[0].y, vertices[1].y, vertices[2].y }) + 1, m_height * m_multisample);
+			std::max<float>(std::min<float>({vertices[0].y, vertices[1].y, vertices[2].y}) - 1.0F, 0.0F);
+		std::uint32_t end_y = std::min<std::uint32_t>(
+			std::max<float>({vertices[0].y, vertices[1].y, vertices[2].y}) + 1, m_height * m_multisample);
 
 		for (std::uint32_t x = start_x; x < end_x; ++x)
 		{
 			for (std::uint32_t y = start_y; y < end_y; ++y)
 			{
+
+				if (stencil_test)
+				{
+					const auto stencil_pixel_value = m_ms_stencil_buffer.at(x, y);
+					if (stencil_function == StencilFunction::LESS)
+					{
+						if (stencil_pixel_value < stencil_value)
+						{
+							continue;
+						}
+					}
+					else
+					{
+						if (stencil_pixel_value > stencil_value)
+						{
+							continue;
+						}
+					}
+				}
+
 				const fvec2 ndc_position = fvec2{static_cast<float>(x) / static_cast<float>(m_width),
 												 static_cast<float>(y) / static_cast<float>(m_height)} /
 											   static_cast<float>(m_multisample) * 2.0F -
@@ -271,7 +311,6 @@ class FrameBuffer
 					{
 						// continue;
 					}*/
-
 					if (zbuffer_test_and_set(x, y, z_value))
 					{
 						// m_ms_color_buffer.at(x, y)
@@ -287,8 +326,8 @@ class FrameBuffer
 						if (fog_params.enable)
 						{
 							auto fraction =
-								std::clamp((z_value - fog_params.start) / (fog_params.end - fog_params.start),
-										   0.0F, 1.0F) *
+								std::clamp((z_value - fog_params.start) / (fog_params.end - fog_params.start), 0.0F,
+										   1.0F) *
 								fog_params.destiny;
 							pixel = Pixel(std::lerp(pixel.r, fog_params.color.r, fraction),
 										  std::lerp(pixel.g, fog_params.color.g, fraction),

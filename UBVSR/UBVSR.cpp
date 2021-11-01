@@ -37,7 +37,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, std::vector<ubv::Model*> models) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
-	frame_buffer.set_multisample(32);
+	frame_buffer.set_multisample(1);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
 	while(true) {
@@ -58,6 +58,17 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
+
+		static uint16_t stencil_value_u16 = 0;
+		stencil_value_u16 += 10;
+		stencil_value_u16 %= 512;
+		unsigned wartosc = stencil_value_u16;
+		if (stencil_value_u16 > 255)
+		{
+			wartosc = 256 - stencil_value_u16;
+		}
+		frame_buffer.stencil_value = wartosc;
+		std::cout << unsigned(frame_buffer.stencil_value) << std::endl;
 
 		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 		{
@@ -258,11 +269,17 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		//	task.wait();
 		//}
 
-		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
+		if (frame_number == 0)
+		{
+			frame_buffer.draw_to_stencil_buffer();
+			frame_buffer.stencil_test = true;
+		}
+
+		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
 			renderZBuffer = !renderZBuffer;
 
 		if(renderZBuffer)
-			frame_buffer.draw_z_buffer();
+			frame_buffer.draw_z_buffer();*/
 
 		frame_buffer.sample();
 		window->display(frame_buffer);
