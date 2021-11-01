@@ -34,7 +34,7 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle) {
 	return t_point;
 }
 
-void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, ubv::Model& model) noexcept {
+void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projection, std::vector<ubv::Model*> models) noexcept {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	frame_buffer.set_multisample(1);
@@ -49,7 +49,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 		float delta_time = (t2 - t3) * 2.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
-		static ubv::fvec3 camera_position{ 0.0F,-1.5F,-40.0F };
+		static ubv::fvec3 camera_position{ 0.0F,0.0F,0.0F };
 		static ubv::fvec3 camera_pitch_yaw_roll{ 0.0F,ubv::degrees_to_radians(-90.0F),0.0F };
 
 		//static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
@@ -132,11 +132,17 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 			}
 		}
 
+		camera_pitch_yaw_roll.x = std::clamp(camera_pitch_yaw_roll.x, ubv::degrees_to_radians(-89.0F), ubv::degrees_to_radians(89.0F));
+
 		ubv::fvec3 front;
 		front.x = std::cos((camera_pitch_yaw_roll.y)) * std::cos((camera_pitch_yaw_roll.x));
 		front.y = std::sin((camera_pitch_yaw_roll.x));
 		front.z = std::sin((camera_pitch_yaw_roll.y)) * std::cos((camera_pitch_yaw_roll.x));
+
+
+
 		const auto camera_front = ubv::normalize(front);
+
 		auto view = ubv::look_at(camera_position, camera_position + camera_front, camera_up);
 		auto MVP = view * projection;
 
@@ -206,17 +212,20 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 
 		//std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
 		//std::cout << triangles_to_draw.size() << std::endl; 
-		for (const auto& [texture, triangles] : model.m_triangles)
+		for (const auto& model : models)
 		{
-			auto triangles_to_draw = triangles;
-			//std::cout << triangles_to_draw.size() << std::endl;
-			for (auto& triangle : triangles_to_draw)
+			for (const auto& [texture, triangles] : model->m_triangles)
 			{
-				for (auto& vertex : triangle)
+				auto triangles_to_draw = triangles;
+				//std::cout << triangles_to_draw.size() << std::endl;
+				for (auto& triangle : triangles_to_draw)
 				{
-					vertex.position = MVP * vertex.position;
+					for (auto& vertex : triangle)
+					{
+						vertex.position = MVP * vertex.position;
+					}
+					frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
 				}
-				frame_buffer.draw_triangle(triangle, *model.m_textures[texture]);
 			}
 		}
 
@@ -268,7 +277,7 @@ void draw_loop(ubv::Window* window, ubv::Texture& texture1, ubv::fmat4x4& projec
 }
 
 namespace ubv {
-	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model{ "res/Dorrie.obj" }
+	Sandbox::Sandbox(int t_argc, char** t_argv) : texture1{ "res/box.tga", Texture::FilteringType::LINEAR }, model_akwarium{ "res/aqua.obj" }, model_rekin{"res/Dorrie.obj"}
 	/*, texture2{ "res/test2.tga", Texture::FilteringType::NEAREST }*/ {
 		for(auto i = 0; i < t_argc; ++i) {
 			std::cout << "Program Input: " << t_argv[i] << "\n";
@@ -289,7 +298,7 @@ namespace ubv {
 
 		projection = fmat4x4(90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 50.0F);
 
-		draw_loop(&window, texture1, projection, model);
+		draw_loop(&window, texture1, projection, {&model_akwarium, &model_rekin});
 
 		std::cout << "Goodbye UBVSR\n";
 		std::cin.get();

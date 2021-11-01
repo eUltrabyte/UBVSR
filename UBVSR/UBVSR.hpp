@@ -27,7 +27,8 @@ namespace ubv {
         virtual void start();
 
         Texture texture1;
-        Model model;
+        Model model_akwarium;
+        Model model_rekin;
         //Texture texture2;
 
         fmat4x4 projection;

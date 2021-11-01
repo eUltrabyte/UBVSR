@@ -96,11 +96,11 @@ class FrameBuffer
 
 	struct FogParams
 	{
-		float start = 0.1F;
-		float end = 50.0F;
-		Pixel color = Pixel{255, 0, 0};
+		float start = 3.0F;
+		float end = 4.0F;
+		Pixel color = Pixel{0, 200, 220};
 		float destiny = 1.0F;
-		bool enable = false;
+		bool enable = true;
 	} fog_params;
 
 	constexpr bool cull_test(const std::array<Vertex, 3> &t_vertices)
