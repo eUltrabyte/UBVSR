@@ -3,6 +3,8 @@
 #include "Buffer.hpp"
 #include "FpsCounter.hpp"
 
+#include <future>
+
 void zzz()
 {
 	ubv::StencilBuffer color_buffer(640, 480);
@@ -53,12 +55,12 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		float delta_time = (t2 - t3) * 2.0F;
 		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		t3 = t2;
-		ubv::fvec3 camera_position{ std::sin(elapsed_time) * 2.0F, (std::cos(elapsed_time / 3.0F)) * 0.5F, 0.0F };
+		static ubv::fvec3 camera_position{ std::sin(elapsed_time) * 2.0F, (std::cos(elapsed_time / 3.0F)) * 0.5F, 0.0F };
 		static ubv::fvec3 camera_pitch_yaw_roll{ubv::degrees_to_radians(10.0F), ubv::degrees_to_radians(-90.0F), 0.0F};
 
 		static unsigned frame_number = 0;
 
-		camera_pitch_yaw_roll.y = ubv::degrees_to_radians(elapsed_time * 60.0F * 1.0F);
+		//camera_pitch_yaw_roll.y = ubv::degrees_to_radians(elapsed_time * 60.0F * 1.0F);
 
 		// static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
 		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
@@ -74,7 +76,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		frame_buffer.stencil_value = wartosc;
 		std::cout << unsigned(frame_buffer.stencil_value) << std::endl;*/
 
-		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 		{
 			rotateMode = !rotateMode;
 		}
@@ -149,7 +151,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			{
 				camera_position.y -= delta_time;
 			}
-		}*/
+		}
 
 		camera_pitch_yaw_roll.x =
 			std::clamp(camera_pitch_yaw_roll.x, ubv::degrees_to_radians(-89.0F), ubv::degrees_to_radians(89.0F));
@@ -224,6 +226,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 
 		// std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
 		// std::cout << triangles_to_draw.size() << std::endl;
+		std::vector<std::future<void>> tasks;
 		for (const auto &model : models)
 		{
 			for (const auto &[texture, triangles] : model->m_triangles)
@@ -236,11 +239,15 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 					{
 						vertex.position = MVP * vertex.position;
 					}
-					frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
+					//frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
+					tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle, *model->m_textures[texture], false));
 				}
 			}
 		}
-
+		for (const auto& task : tasks)
+		{
+			task.wait();
+		}
 		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a,
 		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
 		t0b, texture1));
@@ -338,9 +345,9 @@ void Sandbox::start()
 	std::cout << "Hello UBVSR.\n";
 
 #if defined(_WIN32)
-	ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+	ubv::WindowWin32 window(ubv::WindowProps{640, 480, "Test UBVSR"});
 #elif defined(__unix__)
-	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+	ubv::WindowX11 window(ubv::WindowProps{640, 480, "Test UBVSR"});
 #endif
 
 	projection = fmat4x4(

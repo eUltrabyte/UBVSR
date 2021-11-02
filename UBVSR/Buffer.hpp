@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <limits>
 #include <vector>
+#include <atomic>
+#include <mutex>
 
 namespace ubv
 {
@@ -49,5 +51,6 @@ template <typename Type, Type DefaultValue = Type{}> class Buffer
 using ColorBuffer = Buffer<Pixel>;
 using DepthBuffer = Buffer<float, std::numeric_limits<float>::infinity()>;
 using StencilBuffer = Buffer<std::uint8_t, false>;
+using NDCBuffer = Buffer<fvec2>;;
 
 } // namespace ubv
