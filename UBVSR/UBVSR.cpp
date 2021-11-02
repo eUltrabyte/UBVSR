@@ -345,9 +345,9 @@ void Sandbox::start()
 	std::cout << "Hello UBVSR.\n";
 
 #if defined(_WIN32)
-	ubv::WindowWin32 window(ubv::WindowProps{640, 480, "Test UBVSR"});
+	ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 #elif defined(__unix__)
-	ubv::WindowX11 window(ubv::WindowProps{640, 480, "Test UBVSR"});
+	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 #endif
 
 	projection = fmat4x4(

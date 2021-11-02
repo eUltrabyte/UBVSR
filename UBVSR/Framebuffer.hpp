@@ -62,6 +62,11 @@ namespace ubv
 			// m_ms_stencil_buffer.clear();
 		}
 
+		inline bool zbuffer_test(std::uint16_t t_x, std::uint16_t t_y, float t_depth)
+		{
+			return (t_depth < m_ms_depth_buffer.at(t_x, t_y));
+		}
+
 		inline bool zbuffer_test_and_set(std::uint16_t t_x, std::uint16_t t_y, float t_depth)
 		{
 			float& existing_depth = m_ms_depth_buffer.at(t_x, t_y);
@@ -235,8 +240,7 @@ namespace ubv
 					const auto triangle = clip_with_two_wrong_vertices(
 						{ t_vertices[wrong_vertices_indexes[0]], t_vertices[wrong_vertices_indexes[1]] },
 						t_vertices[correct_vertices_indexes[0]]);
-					draw_triangle(triangle, t_texture, true);
-					return;
+					return draw_triangle(triangle, t_texture, true);
 				}
 			}
 
