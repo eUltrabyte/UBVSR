@@ -244,6 +244,54 @@ template <typename T> struct mat4x4
 		matrix[3][2] = -(t_far_z + t_near_z) / (t_far_z - t_near_z);
 	}
 
+	constexpr void translate(const vec3<T>& t_vec) noexcept
+	{
+		matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
+		matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
+		matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
+		matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
+	}
+
+	constexpr void rotate(T t_angle, const vec3<T>& t_vec) noexcept
+	{
+		const T a = t_angle;
+		const T c = std::cos(a);
+		const T s = std::sin(a);
+		mat4x4<T> result;
+
+		const vec3<T> axis = normalize(t_vec);
+
+		result.matrix[0][0] = c + (1.0F - c) * axis.x * axis.x;
+		result.matrix[0][1] = (1.0F - c) * axis.x * axis.y + s * axis.z;
+		result.matrix[0][2] = (1.0F - c) * axis.x * axis.z - s * axis.y;
+		result.matrix[0][3] = 0.0F;
+
+		result.matrix[1][0] = (1.0F - c) * axis.y * axis.x - s * axis.z;
+		result.matrix[1][1] = c + (1.0F - c) * axis.y * axis.y;
+		result.matrix[1][2] = (1.0F - c) * axis.y * axis.z + s * axis.x;
+		result.matrix[1][3] = 0.0F;
+
+		result.matrix[2][0] = (1.0F - c) * axis.z * axis.x + s * axis.y;
+		result.matrix[2][1] = (1.0F - c) * axis.z * axis.y - s * axis.x;
+		result.matrix[2][2] = c + (1.0F - c) * axis.z * axis.z;
+		result.matrix[2][3] = 0.0F;
+
+		result.matrix[3][0] = 0.0F;
+		result.matrix[3][1] = 0.0F;
+		result.matrix[3][2] = 0.0F;
+		result.matrix[3][3] = 1.0F;
+		*this = *this * result;
+	}
+
+	constexpr void scale(const vec3<T>& t_vec) noexcept
+	{
+		mat4x4<T> result = identity<T>();
+		result.matrix[0][0] = t_vec.x;
+		result.matrix[1][1] = t_vec.y;
+		result.matrix[2][2] = t_vec.z;
+		*this = *this * result;
+	}
+
 	[[nodiscard]] constexpr mat4x4<T> operator*(const mat4x4<T> &t_matrix) const noexcept
 	{
 		// TODO: Does it work correctly???
@@ -254,7 +302,8 @@ template <typename T> struct mat4x4
 			{
 				for (std::uint_fast8_t z = 0; z < 4; ++z)
 				{
-					result.matrix[x][y] += matrix[x][z] * t_matrix.matrix[z][y];
+					//result.matrix[x][y] += matrix[x][z] * t_matrix.matrix[z][y];
+					result.matrix[x][y] += t_matrix.matrix[x][z] * matrix[z][y];
 				}
 			}
 		}
@@ -269,25 +318,6 @@ template <typename T> struct mat4x4
 			t_vec.x * matrix[0][2] + t_vec.y * matrix[1][2] + t_vec.z * matrix[2][2] + t_vec.w * matrix[3][2],
 			t_vec.x * matrix[0][3] + t_vec.y * matrix[1][3] + t_vec.z * matrix[2][3] + t_vec.w * matrix[3][3]};
 	}
-
-	constexpr void translate(const vec3<T> &t_vec) noexcept = delete;
-	/* {
-		//TODO: Verify it's correct...
-		matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
-		matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
-		matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
-		matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
-	}*/
-
-	constexpr void scale(const vec3<T> &t_vec) noexcept = delete;
-	/* {
-		std::abort();
-	}*/
-
-	constexpr void rotate(T t_angle, const vec3<T> &t_vec) noexcept = delete;
-	/* {
-		std::abort();
-	}*/
 
 	/*constexpr explicit mat4x4(T t_value1, T t_value2, T t_value3, T t_value4, T t_value5, T t_value6) noexcept {
 		matrix[0][0] = t_value1;

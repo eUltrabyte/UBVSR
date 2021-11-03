@@ -19,6 +19,8 @@ namespace ubv
 class Model
 {
   public:
+	fmat4x4 model_matrix = identity<float>();
+
 	inline explicit Model(std::string_view t_filename) noexcept
 	{
 		std::vector<fvec3> vertices;

@@ -81,6 +81,43 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			rotateMode = !rotateMode;
 		}
 
+		static float scale_factor = 1.0F;
+		static float translation_factor = 0.0F;
+		static float rotation_angle = 0.0F;
+
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
+		{
+			for (auto& model : models)
+			{
+				rotation_angle += delta_time / 10.0F;
+			}
+		}
+
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Escape)))
+		{
+			for (auto& model : models)
+			{
+				scale_factor += delta_time / 2.0F;
+			}
+		}
+
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+		{
+			for (auto& model : models)
+			{
+				translation_factor += delta_time * 4.0F;
+			}
+		}
+
+		for (auto& model : models)
+		{
+			auto matrix = ubv::identity<float>();
+			matrix.scale(ubv::fvec3(scale_factor, scale_factor / 4.0F + 0.75F, scale_factor));
+			matrix.rotate(rotation_angle, ubv::fvec3(0.1F, 0.2F, 0.3F));
+			matrix.translate(ubv::fvec3{ 0.0F,translation_factor,0.0F });
+			model->model_matrix = matrix;
+		}
+
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Left)))
 		{
 			if (rotateMode)
@@ -164,7 +201,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		const auto camera_front = ubv::normalize(front);
 
 		auto view = ubv::look_at(camera_position, camera_position + camera_front, camera_up);
-		auto MVP = view * projection;
+		//auto VP = view * projection;
 
 		/*ubv::Vertex c0a{MVP * ubv::fvec4{ubv::fvec3(0, 0, 0), 1.0F}, ubv::fvec2{0, 0}};
 		ubv::Vertex c0b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
@@ -237,7 +274,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 				{
 					for (auto &vertex : triangle)
 					{
-						vertex.position = MVP * vertex.position;
+						vertex.position = projection * view * model->model_matrix * vertex.position;
 					}
 					//frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
 					tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle, *model->m_textures[texture], false));
