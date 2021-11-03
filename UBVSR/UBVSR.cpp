@@ -7,11 +7,11 @@
 
 void zzz()
 {
-    ubv::StencilBuffer color_buffer(640, 480);
-    color_buffer.at(40, 50) = true;
-    const auto &bb = color_buffer;
-    auto &z = bb.at(40, 50);
-    color_buffer.clear();
+    //ubv::StencilBuffer color_buffer(640, 480);
+    //color_buffer.at(40, 50) = true;
+   // const auto &bb = color_buffer;
+    //auto &z = bb.at(40, 50);
+    //color_buffer.clear();
     // ubv::DepthBuffer depth_buffer(ubv::u16vec2{640,480});
     // ubv::StencilBuffer stencil_buffer(ubv::u16vec2{640,480});
     // stencil_buffer.at(ubv::u16vec2{ 3,4 }) = true;
@@ -44,9 +44,9 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
     const Timepoint t1;
     ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
     frame_buffer.fog_params = ubv::FrameBuffer::FogParams{
-        0.1F,                    // fog start
-        40.0F,                   // fog end
-        ubv::Pixel{65, 115, 159}, // fog color
+        9.9F,                    // fog start
+        10.0F,                   // fog end
+        ubv::Pixel{255, 0, 0}, // fog color
         1.0F,                    // fog destiny
         true                     // fog enabled
     };
@@ -494,6 +494,8 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
         window->display(frame_buffer);
         window->update();
 
+       // frame_buffer.render_to_file("frames/bjutiful" + std::to_string(frame_number) + ".tga");
+            ++frame_number;
         // frame_buffer.render_to_file("test.tga");
         /*frame_buffer.render_to_file([&]() {
             std::stringstream ss_frame_number;
@@ -542,7 +544,7 @@ void Sandbox::start()
     std::cout << "Hello UBVSR.\n";
 
 #if defined(_WIN32)
-    ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+    ubv::WindowWin32 window(ubv::WindowProps{640, 720, "Test UBVSR"});
 #elif defined(__unix__)
     ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
 #endif

@@ -342,19 +342,35 @@ class FrameBuffer
 						scales[i] = fraction;
 					}
 
-					const float z_value = ndc_vertices[0].z * scales[0] + ndc_vertices[1].z * scales[1] + ndc_vertices[2].z * scales[2];
+					/*const float z_value = ndc_vertices[0].z * scales[0] + ndc_vertices[1].z * scales[1] + ndc_vertices[2].z * scales[2];
 					//far clipping
 					if (z_value > 1.0F || z_value < 0.0F)
+					{
+						continue;
+					}*/
+
+					const float w_value = 1.0F / ((1.0F / t_vertices[0].position.w * scales[0] +
+						1.0F / t_vertices[1].position.w * scales[1] +
+						1.0F / t_vertices[2].position.w * scales[2]));
+
+					const float x_value = (ndc_vertices[0].x * scales[0] +
+						ndc_vertices[1].x * scales[1] +
+						ndc_vertices[2].x * scales[2]) * w_value * float(m_width) / float(m_height);
+
+					const float y_value = (ndc_vertices[0].y * scales[0] +
+						ndc_vertices[1].y * scales[1] +
+						ndc_vertices[2].y * scales[2]) * w_value;
+
+					const float distance = std::sqrt(w_value * w_value + x_value * x_value + y_value * y_value);
+					if (fog_params.enable && distance > fog_params.end)
 					{
 						continue;
 					}
 
 					std::scoped_lock lock(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
-					if (!depth_test || zbuffer_test_and_set(x, y, z_value))
+					if (!depth_test || zbuffer_test_and_set(x, y, w_value))
 					{
-						const float w_value = 1.0F / ((1.0F / t_vertices[0].position.w * scales[0] +
-							1.0F / t_vertices[1].position.w * scales[1] +
-							1.0F / t_vertices[2].position.w * scales[2]));
+						
 						// m_ms_color_buffer.at(x, y)
 						auto pixel = t_texture.sample(
 							fvec2{((t_vertices[0].texture_uv.x / t_vertices[0].position.w) * scales[0] +
@@ -368,7 +384,7 @@ class FrameBuffer
 						if (fog_params.enable)
 						{
 							const auto fraction =
-								std::clamp((w_value - fog_params.start) / (fog_params.end - fog_params.start), 0.0F,
+								std::clamp((distance - fog_params.start) / (fog_params.end - fog_params.start), 0.0F,
 										   1.0F) *
 								fog_params.destiny;
 							pixel = Pixel(fast_lerp(pixel.r, fog_params.color.r, fraction),
