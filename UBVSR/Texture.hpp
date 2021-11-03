@@ -33,16 +33,18 @@ namespace ubv {
 			LINEAR
 		} m_filtering_type;
 
-		bool clamp_x = false;
-		bool clamp_y = false;
+		bool clamp = false;
 
 		Pixel sample(fvec2 pos_uv) const noexcept {
-			pos_uv.x = std::fmod(pos_uv.x, 1.0F);
-			pos_uv.y = std::fmod(pos_uv.y, 1.0F);
-			if (pos_uv.x < 0.0F)
-				pos_uv.x += 1.0F;
-			if (pos_uv.y < 0.0F)
-				pos_uv.y += 1.0F;
+			if (!clamp) [[likely]]
+			{
+				pos_uv.x = std::fmod(pos_uv.x, 1.0F);
+				pos_uv.y = std::fmod(pos_uv.y, 1.0F);
+				if (pos_uv.x < 0.0F)
+					pos_uv.x += 1.0F;
+				if (pos_uv.y < 0.0F)
+					pos_uv.y += 1.0F;
+			}
 			switch (m_filtering_type) {
 				case FilteringType::NEAREST:
 				{
@@ -63,19 +65,35 @@ namespace ubv {
 					int y_texture_position2 = y_texture_position;
 					if (pos_mod.x > half_section.x)
 					{
-						x_texture_position2 = ((x_texture_position2) + 1) % unsigned(get_size().x);
+						x_texture_position2 = (x_texture_position2)+1;
+						if (x_texture_position2 == get_size().x) [[unlikely]]
+						{
+							x_texture_position2 = clamp ? get_size().x - 1 : 0;
+						}
 					}
 					else
 					{
-						x_texture_position2 = ((x_texture_position2) - 1) % unsigned(get_size().x);
+						x_texture_position2 = (x_texture_position2)-1;
+						if (x_texture_position2 < 0) [[unlikely]]
+						{
+							x_texture_position2 = clamp ? 0 : get_size().x - 1;
+						}
 					}
 					if (pos_mod.y > half_section.y)
 					{
-						y_texture_position2 = ((y_texture_position2) + 1) % unsigned(get_size().y);
+						y_texture_position2 = (y_texture_position2)+1;
+						if (y_texture_position2 == get_size().y) [[unlikely]]
+						{
+							y_texture_position2 = clamp ? get_size().y - 1 : 0;
+						}
 					}
 					else
 					{
-						y_texture_position2 = ((y_texture_position2) - 1) % unsigned(get_size().y);
+						y_texture_position2 = (y_texture_position2-1);
+						if (y_texture_position2 < 0) [[unlikely]]
+						{
+							y_texture_position2 = clamp ? 0 : get_size().y - 1;
+						}
 					}
 					const auto pixel11 = m_tga.get_pixel(ubv::u16vec2( x_texture_position, y_texture_position ));
 					const auto pixel21 = m_tga.get_pixel(ubv::u16vec2( x_texture_position2, y_texture_position ));

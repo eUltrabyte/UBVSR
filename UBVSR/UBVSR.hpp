@@ -27,6 +27,7 @@ namespace ubv {
         virtual void start();
 
         Texture texture1;
+        Texture skybox1, skybox2, skybox3, skybox4, skybox_top, skybox_bottom;
         Model model_akwarium;
         Model model_rekin;
         //Texture texture2;
