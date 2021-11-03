@@ -197,6 +197,8 @@ class FrameBuffer
 		}
 	}
 
+	bool depth_test = true;
+
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture,
 							  bool t_force_draw = false)
 	{
@@ -242,8 +244,6 @@ class FrameBuffer
 				return draw_triangle(triangle, t_texture, true);
 			}
 		}
-
-		bool depth_test = true;
 
 		const std::array<fvec3, 3> ndc_vertices = {
 			static_cast<fvec3>(t_vertices[0].position) / t_vertices[0].position.w,
