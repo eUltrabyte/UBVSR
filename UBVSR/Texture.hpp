@@ -30,7 +30,7 @@ namespace ubv {
 	public:
 		enum class FilteringType : std::uint8_t {
 			NEAREST,
-			LINEAR
+			BILINEAR
 		} m_filtering_type;
 
 		bool clamp = false;
@@ -45,6 +45,7 @@ namespace ubv {
 				if (pos_uv.y < 0.0F)
 					pos_uv.y += 1.0F;
 			}
+			const auto  m_filtering_type = FilteringType::NEAREST;
 			switch (m_filtering_type) {
 				case FilteringType::NEAREST:
 				{
@@ -53,7 +54,7 @@ namespace ubv {
 					return m_tga.get_pixel(ubv::u16vec2{x_texture_position, y_texture_position});
 				}
 				break;
-				case FilteringType::LINEAR:
+				case FilteringType::BILINEAR:
 				{
 					const fvec2 section{ 1.0F / static_cast<float>(get_size().x), 1.0F / static_cast<float>(get_size().y) };
 					const fvec2 half_section{ section / 2.0F };
@@ -101,8 +102,8 @@ namespace ubv {
 					const auto pixel22 = m_tga.get_pixel(ubv::u16vec2( x_texture_position2, y_texture_position2 ));
 
 					Pixel p(fast_blerp(fvec4(pixel11.r, pixel21.r, pixel12.r, pixel22.r), fraction),
-							fast_blerp(fvec4(pixel11.g, pixel21.g, pixel12.g, pixel22.g), fraction),
-							fast_blerp(fvec4(pixel11.b, pixel21.b, pixel12.b, pixel22.b), fraction));
+						fast_blerp(fvec4(pixel11.g, pixel21.g, pixel12.g, pixel22.g), fraction),
+						fast_blerp(fvec4(pixel11.b, pixel21.b, pixel12.b, pixel22.b), fraction));
 
 					return p;
 				}

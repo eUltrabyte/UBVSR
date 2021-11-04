@@ -31,7 +31,8 @@ namespace ubv {
         Model model_akwarium;
         Model model_rekin;
         //Texture texture2;
-
+        Model model_dust2;
         fmat4x4 projection;
     };
+
 };

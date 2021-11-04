@@ -367,6 +367,7 @@ class FrameBuffer
 						continue;
 					}
 
+					//auto& mutex(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
 					std::scoped_lock lock(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
 					if (!depth_test || zbuffer_test_and_set(x, y, w_value))
 					{
@@ -391,6 +392,8 @@ class FrameBuffer
 										  fast_lerp(pixel.g, fog_params.color.g, fraction),
 										  fast_lerp(pixel.b, fog_params.color.b, fraction));
 						}
+						//std::scoped_lock lock(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
+						//if (!depth_test || zbuffer_test_and_set(x, y, w_value))
 						m_ms_color_buffer.at(x, y) = pixel;
 					}
 				}
