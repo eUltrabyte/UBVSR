@@ -38,7 +38,7 @@ namespace ubv {
 			header.width = t_width;
 			header.height = t_height;
 			header.bitsperpixel = 24;
-			const auto raw_data_size = (static_cast<std::size_t>(get_width()) * get_height() * (header.bitsperpixel / 8U));
+			const auto raw_data_size = (static_cast<std::size_t>(get_width()) * get_height() * (3U));
 	    	m_pixel_data.resize(raw_data_size);
 		}
 
@@ -47,7 +47,7 @@ namespace ubv {
             std::ifstream file(t_filename.data(), std::ios::in | std::ios::binary);
 
 		    if(!file.is_open()) {
-		    	std::abort();
+				throw std::runtime_error("Cannot open TGA");
 		    }
 
 	    	file.read(reinterpret_cast<char*>(&header.idlength), sizeof(header.idlength));
@@ -63,17 +63,17 @@ namespace ubv {
 	    	file.read(reinterpret_cast<char*>(&header.bitsperpixel), sizeof(header.bitsperpixel));
 	    	file.read(reinterpret_cast<char*>(&header.imagedescriptor), sizeof(header.imagedescriptor));
 
-	    	const auto raw_data_size = (static_cast<std::size_t>(get_width()) * get_height() * (header.bitsperpixel / 8U));
+	    	const auto raw_data_size = (static_cast<std::size_t>(get_width()) * get_height() * 3U);
 	    	m_pixel_data.resize(raw_data_size);
             file.read(reinterpret_cast<char*>(m_pixel_data.data()), raw_data_size);
 	    }
 
-		inline Pixel& get_pixel(u16vec2 t_position) {
-			return (*reinterpret_cast<Pixel*>(m_pixel_data.data() + (static_cast<std::size_t>(t_position.y) * get_width() + t_position.x) * (header.bitsperpixel/8U)));
+		inline Pixel& get_pixel(unsigned x, unsigned y) {
+			return (*reinterpret_cast<Pixel*>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
         }
 
-		inline const Pixel& get_pixel(u16vec2 t_position) const {
-			return (*reinterpret_cast<const Pixel*>(m_pixel_data.data() + (static_cast<std::size_t>(t_position.y) * get_width() + t_position.x) * (header.bitsperpixel/8U)));
+		inline const Pixel& get_pixel(unsigned x, unsigned y) const {
+			return (*reinterpret_cast<const Pixel*>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
         }
 
 		constexpr std::uint16_t get_width() const noexcept {
@@ -112,5 +112,6 @@ namespace ubv {
         //std::uint16_t m_width;
 	    //std::uint16_t m_height;
 	    std::vector<std::byte> m_pixel_data;
+		std::uint8_t m_bytes_per_pixel;
     };
 };

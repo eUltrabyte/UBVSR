@@ -27,7 +27,7 @@ add_executable(UBVSR
     "UBVSR/FpsCounter.hpp"
     "UBVSR/Buffer.hpp"
     "UBVSR/Model.hpp"
-)
+ "UBVSR/TextRenderer.hpp"  "UBVSR/TextRenderer.cpp")
 
 if(UNIX)
 target_link_libraries(UBVSR X11 Threads::Threads)

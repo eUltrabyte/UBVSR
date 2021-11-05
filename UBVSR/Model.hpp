@@ -21,7 +21,7 @@ class Model
   public:
 	fmat4x4 model_matrix = identity<float>();
 
-	inline explicit Model(std::string_view t_filename) noexcept
+	inline explicit Model(std::string_view t_filename)
 	{
 		std::vector<fvec3> vertices;
 		std::vector<fvec2> uvs;
@@ -78,7 +78,14 @@ class Model
 			{
 				current_texture = strings.at(1);
 				std::cout << "Changing texture to: " << current_texture << "..." << std::flush;
-				m_textures[current_texture] = std::make_unique<Texture>( "res/" + current_texture + ".tga", Texture::FilteringType::BILINEAR);
+				try
+				{
+					m_textures[current_texture] = std::make_unique<Texture>("res/" + current_texture + ".tga", Texture::FilteringType::BILINEAR);
+				}
+				catch (const std::exception&)
+				{
+					m_textures[current_texture] = std::make_unique<Texture>(missing_texture);
+				}
 				std::cout << " Done!" << std::endl;
 				
 			}
@@ -112,7 +119,7 @@ class Model
 				}
 				else if (faces_n > 3)
 				{
-					std::cout << "clipping a polygon with " << faces_n << " vertices." << std::endl;
+					//std::cout << "clipping a polygon with " << faces_n << " vertices." << std::endl;
 
 					add_faces_to_vector({ strings[1], strings[2], strings[3] });
 
@@ -137,6 +144,8 @@ class Model
 	}
 	std::unordered_map<std::string, std::vector<std::array<Vertex, 3>>> m_triangles;
 	std::unordered_map<std::string, std::unique_ptr<Texture>> m_textures;
+
+	static inline Texture missing_texture = Texture("res/missing.tga", Texture::FilteringType::NEAREST);
 };
 
 }; // namespace ubv

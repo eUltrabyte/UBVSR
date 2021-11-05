@@ -24,7 +24,7 @@ class FrameBuffer
 	inline explicit FrameBuffer(std::uint16_t t_width, std::uint16_t t_height) noexcept
 		: m_width{t_width}, m_height{t_height}, m_color_buffer{m_width, m_height}, m_ms_color_buffer{m_width, m_height},
 		  m_ms_depth_buffer{m_width, m_height}, m_ms_stencil_buffer{m_width, m_height},
-		  m_ms_ndc_positions{m_width, m_height}, m_ms_mutex_buffer{std::make_unique<std::mutex[]>(m_width * m_height)}
+		  m_ms_ndc_positions{m_width, m_height}//, m_ms_mutex_buffer{std::make_unique<std::mutex[]>(m_width * m_height)}
 	{
 		fill_ndc_positions();
 	}
@@ -55,6 +55,8 @@ class FrameBuffer
 
 	inline void clear() noexcept
 	{
+		triangles = 0;
+
 		m_color_buffer.clear();
 		m_ms_color_buffer.clear();
 		m_ms_depth_buffer.clear();
@@ -110,8 +112,10 @@ class FrameBuffer
 
 		const float determinant = a1 * b2 - a2 * b1;
 
-		const float x = (b2 * c1 - b1 * c2) / determinant;
-		const float y = (a1 * c2 - a2 * c1) / determinant;
+		const auto inverted_determinant = 1.0F / determinant;
+
+		const float x = (b2 * c1 - b1 * c2) * inverted_determinant;
+		const float y = (a1 * c2 - a2 * c1) * inverted_determinant;
 
 		return fvec2{x, y};
 	}
@@ -199,203 +203,203 @@ class FrameBuffer
 
 	bool depth_test = true;
 
-	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture,
-							  bool t_force_draw = false)
+	unsigned triangles = 0;
+
+	template<bool ForceDraw = false>
+	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
 	{
-		if (!t_force_draw)
+		if constexpr (!ForceDraw)
 		{
 			if (!cull_test(t_vertices))
 			{
 				return;
 			}
 
-			std::vector<std::uint8_t> wrong_vertices_indexes;
-			std::vector<std::uint8_t> correct_vertices_indexes;
+			std::uint8_t wrong_vertices_indexes_size = 0;
+			std::uint8_t correct_vertices_indexes_size = 0;
+
+			std::array<std::uint8_t, 3> wrong_vertices_indexes;
+			std::array<std::uint8_t, 3> correct_vertices_indexes;
 
 			for (std::uint8_t i = 0; i < 3; ++i)
 			{
 				if (t_vertices[i].position.z < 0.0F)
 				{
-					wrong_vertices_indexes.push_back(i);
+					wrong_vertices_indexes[wrong_vertices_indexes_size] = i;
+					++wrong_vertices_indexes_size;
 				}
 				else
 				{
-					correct_vertices_indexes.push_back(i);
+					correct_vertices_indexes[correct_vertices_indexes_size] = i;
+					++correct_vertices_indexes_size;
 				}
 			}
 
-			if (wrong_vertices_indexes.size() == 1)
+			if (wrong_vertices_indexes_size == 1)
 			{
 				const auto triangles = clip_with_one_wrong_vertex(
 					t_vertices[wrong_vertices_indexes[0]],
 					{t_vertices[correct_vertices_indexes[0]], t_vertices[correct_vertices_indexes[1]]});
 				for (const auto &triangle : triangles)
 				{
-					draw_triangle(triangle, t_texture, true);
+					draw_triangle<true>(triangle, t_texture);
 				}
 				return;
 			}
 
-			if (wrong_vertices_indexes.size() == 2)
+			if (wrong_vertices_indexes_size == 2)
 			{
 				const auto triangle = clip_with_two_wrong_vertices(
 					{t_vertices[wrong_vertices_indexes[0]], t_vertices[wrong_vertices_indexes[1]]},
 					t_vertices[correct_vertices_indexes[0]]);
-				return draw_triangle(triangle, t_texture, true);
+				return draw_triangle<true>(triangle, t_texture);
 			}
 		}
 
-		const std::array<fvec3, 3> ndc_vertices = {
-			static_cast<fvec3>(t_vertices[0].position) / t_vertices[0].position.w,
-			static_cast<fvec3>(t_vertices[1].position) / t_vertices[1].position.w,
-			static_cast<fvec3>(t_vertices[2].position) / t_vertices[2].position.w};
+		++triangles;
 
-		std::array<fvec3, 3> vertices = {fvec3((t_vertices[0].position.x / t_vertices[0].position.w + 1.0F) / 2.0F *
-												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
-											   (t_vertices[0].position.y / t_vertices[0].position.w + 1.0F) / 2.0F *
-												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
-											   t_vertices[0].position.z / t_vertices[0].position.w),
-										 fvec3((t_vertices[1].position.x / t_vertices[1].position.w + 1.0F) / 2.0F *
-												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
-											   (t_vertices[1].position.y / t_vertices[1].position.w + 1.0F) / 2.0F *
-												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
-											   t_vertices[1].position.z / t_vertices[1].position.w),
-										 fvec3((t_vertices[2].position.x / t_vertices[2].position.w + 1.0F) / 2.0F *
-												   static_cast<float>(m_width) * static_cast<float>(m_multisample),
-											   (t_vertices[2].position.y / t_vertices[2].position.w + 1.0F) / 2.0F *
-												   static_cast<float>(m_height) * static_cast<float>(m_multisample),
-											   t_vertices[2].position.z / t_vertices[2].position.w)};
+		const std::array<float, 3> inverted_w_values = {
+			1.0F / t_vertices[0].position.w, 1.0F / t_vertices[1].position.w, 1.0F / t_vertices[2].position.w};
+
+		const std::array<fvec2, 3> ndc_vertices = {static_cast<fvec2>(t_vertices[0].position) * inverted_w_values[0],
+												   static_cast<fvec2>(t_vertices[1].position) * inverted_w_values[1],
+												   static_cast<fvec2>(t_vertices[2].position) * inverted_w_values[2]};
+
+		const auto ms_width = static_cast<float>(m_width) * static_cast<float>(m_multisample);
+		const auto ms_height = static_cast<float>(m_height) * static_cast<float>(m_multisample);
+
+		const auto inv_ms_2width = 0.5F * ms_width;
+		const auto inv_ms_2height = 0.5F * ms_height;
+
+		std::array<fvec2, 3> vertices = {
+			fvec2((ndc_vertices[0].x + 1.0F) * inv_ms_2width, (ndc_vertices[0].y + 1.0F) * inv_ms_2height),
+			fvec2((ndc_vertices[1].x + 1.0F) * inv_ms_2width, (ndc_vertices[1].y + 1.0F) * inv_ms_2height),
+			fvec2((ndc_vertices[2].x + 1.0F) * inv_ms_2width, (ndc_vertices[2].y + 1.0F) * inv_ms_2height),
+		};
 
 		std::uint32_t start_x =
 			std::max<float>(std::min<float>({vertices[0].x, vertices[1].x, vertices[2].x}) - 1.0F, 0.0F);
 		std::uint32_t end_x = std::min<std::uint32_t>(
-			std::max<float>({vertices[0].x, vertices[1].x, vertices[2].x}) + 1, m_width * m_multisample);
+			std::max<float>({vertices[0].x, vertices[1].x, vertices[2].x}) + 1, ms_width);
 
 		std::uint32_t start_y =
 			std::max<float>(std::min<float>({vertices[0].y, vertices[1].y, vertices[2].y}) - 1.0F, 0.0F);
 		std::uint32_t end_y = std::min<std::uint32_t>(
-			std::max<float>({vertices[0].y, vertices[1].y, vertices[2].y}) + 1, m_height * m_multisample);
+			std::max<float>({vertices[0].y, vertices[1].y, vertices[2].y}) + 1, ms_height);
 
-		// for (std::uint32_t x = start_x; x < end_x; ++x)
+		for (std::uint32_t y = start_y; y < end_y; ++y)
 		{
-			for (std::uint32_t y = start_y; y < end_y; ++y)
+			std::uint32_t triangle_start_left_x = end_x;
+			std::uint32_t triangle_end_right_x = end_x;
+			for (std::uint32_t x = start_x; x < end_x; ++x)
 			{
-				std::uint32_t triangle_start_left_x = end_x;
-				std::uint32_t triangle_end_right_x = end_x;
-				for (std::uint32_t x = start_x; x < end_x; ++x)
+				if (is_point_inside_triangle(m_ms_ndc_positions.at(x, y), fvec2(ndc_vertices[0]),
+											 fvec2(ndc_vertices[1]), fvec2(ndc_vertices[2])))
 				{
-					if (is_point_inside_triangle(m_ms_ndc_positions.at(x, y), fvec2(ndc_vertices[0]),
-												 fvec2(ndc_vertices[1]), fvec2(ndc_vertices[2])))
+					triangle_start_left_x = x;
+					break;
+				}
+			}
+			if (triangle_start_left_x == end_x)
+			{
+				continue;
+			}
+			for (std::int32_t x = int(end_x) - 1; x >= start_x; --x)
+			{
+				if (is_point_inside_triangle(m_ms_ndc_positions.at(x, y), fvec2(ndc_vertices[0]),
+											 fvec2(ndc_vertices[1]), fvec2(ndc_vertices[2])))
+				{
+					triangle_end_right_x = x;
+					break;
+				}
+			}
+			if (triangle_end_right_x == end_x)
+			{
+				continue;
+			}
+			for (std::uint32_t x = triangle_start_left_x; x <= triangle_end_right_x; ++x)
+			{
+				const auto &ndc_position = m_ms_ndc_positions.at(x, y);
+				//if (stencil_test)
+				if (false)
+				{
+					const auto stencil_pixel_value = m_ms_stencil_buffer.at(x, y);
+					if (stencil_function == StencilFunction::LESS)
 					{
-						triangle_start_left_x = x;
-						break;
-					}
-				}
-				if (triangle_start_left_x == end_x)
-				{
-					continue;
-				}
-				for (std::int32_t x = int(end_x) - 1; x >= start_x; --x)
-				{
-					if (is_point_inside_triangle(m_ms_ndc_positions.at(x, y), fvec2(ndc_vertices[0]),
-												 fvec2(ndc_vertices[1]), fvec2(ndc_vertices[2])))
-					{
-						triangle_end_right_x = x;
-						break;
-					}
-				}
-				if (triangle_end_right_x == end_x)
-				{
-					continue;
-				}
-				for (std::uint32_t x = triangle_start_left_x; x <= triangle_end_right_x; ++x)
-				{
-					const auto &ndc_position = m_ms_ndc_positions.at(x, y);
-					if (stencil_test)
-					{
-						const auto stencil_pixel_value = m_ms_stencil_buffer.at(x, y);
-						if (stencil_function == StencilFunction::LESS)
+						if (stencil_pixel_value < stencil_value)
 						{
-							if (stencil_pixel_value < stencil_value)
-							{
-								continue;
-							}
-						}
-						else
-						{
-							if (stencil_pixel_value > stencil_value)
-							{
-								continue;
-							}
+							continue;
 						}
 					}
-					std::array<float, 3> scales;
-					for (int i = 0; i < 3; ++i)
+					else
 					{
-						const auto point =
-							line_intersection(fvec2(ndc_vertices[i]), ndc_position, fvec2(ndc_vertices[(i + 1) % 3]),
-											  fvec2(ndc_vertices[(i + 2) % 3]));
-						const auto d1 = fvec2(ndc_vertices[i]) - point;
-						const auto d2 = fvec2(ndc_position) - point;
+						if (stencil_pixel_value > stencil_value)
+						{
+							continue;
+						}
+					}
+				}
+				std::array<float, 3> scales;
+				for (int i = 0; i < 3; ++i)
+				{
+					const auto point =
+						line_intersection(fvec2(ndc_vertices[i]), ndc_position, fvec2(ndc_vertices[(i + 1) % 3]),
+										  fvec2(ndc_vertices[(i + 2) % 3]));
+					const auto d1 = fvec2(ndc_vertices[i]) - point;
+					const auto d2 = fvec2(ndc_position) - point;
+					const auto fraction = std::sqrt(d2.x * d2.x + d2.y * d2.y) / std::sqrt(d1.x * d1.x + d1.y * d1.y);
+					scales[i] = fraction;
+				}
+
+				const static auto aspect_ratio = float(m_width) / float(m_height);
+
+				const auto inverted_w_value =
+					(inverted_w_values[0] * scales[0] + inverted_w_values[1] * scales[1] +
+						inverted_w_values[2] * scales[2]);
+
+				const auto w_value = 1.0F / inverted_w_value;
+				//if (fog_params.enable && distance > fog_params.end)
+				//{
+				//	continue;
+				//}
+
+				// auto& mutex(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
+				//std::scoped_lock lock(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
+				if (!depth_test || zbuffer_test_and_set(x, y, w_value))
+				{
+
+					// m_ms_color_buffer.at(x, y)
+					auto pixel =
+						t_texture.sample(fvec2{((t_vertices[0].texture_uv.x * inverted_w_values[0]) * scales[0] +
+												(t_vertices[1].texture_uv.x * inverted_w_values[1]) * scales[1] +
+												(t_vertices[2].texture_uv.x * inverted_w_values[2]) * scales[2]) *
+												   w_value,
+											   ((t_vertices[0].texture_uv.y * inverted_w_values[0]) * scales[0] +
+												(t_vertices[1].texture_uv.y * inverted_w_values[1]) * scales[1] +
+												(t_vertices[2].texture_uv.y * inverted_w_values[2]) * scales[2]) *
+												   w_value});
+					if (fog_params.enable)
+					{
+						const float x_value =
+							(ndc_vertices[0].x * scales[0] + ndc_vertices[1].x * scales[1] + ndc_vertices[2].x * scales[2]) *
+							w_value * aspect_ratio;
+
+						const float y_value =
+							(ndc_vertices[0].y * scales[0] + ndc_vertices[1].y * scales[1] + ndc_vertices[2].y * scales[2]) *
+							w_value;
+
+						const float distance = std::sqrt(w_value * w_value + x_value * x_value + y_value * y_value);
+
+						const static auto inverted_fog_disance = 1.0F / (fog_params.end - fog_params.start);
 						const auto fraction =
-							std::sqrt(d2.x * d2.x + d2.y * d2.y) / std::sqrt(d1.x * d1.x + d1.y * d1.y);
-						scales[i] = fraction;
+							std::clamp((distance - fog_params.start) * inverted_fog_disance, 0.0F,
+									   1.0F) *
+							fog_params.destiny;
+						pixel = Pixel(fast_lerp(pixel.r, fog_params.color.r, fraction),
+									  fast_lerp(pixel.g, fog_params.color.g, fraction),
+									  fast_lerp(pixel.b, fog_params.color.b, fraction));
 					}
-
-					/*const float z_value = ndc_vertices[0].z * scales[0] + ndc_vertices[1].z * scales[1] + ndc_vertices[2].z * scales[2];
-					//far clipping
-					if (z_value > 1.0F || z_value < 0.0F)
-					{
-						continue;
-					}*/
-
-					const float w_value = 1.0F / ((1.0F / t_vertices[0].position.w * scales[0] +
-						1.0F / t_vertices[1].position.w * scales[1] +
-						1.0F / t_vertices[2].position.w * scales[2]));
-
-					const float x_value = (ndc_vertices[0].x * scales[0] +
-						ndc_vertices[1].x * scales[1] +
-						ndc_vertices[2].x * scales[2]) * w_value * float(m_width) / float(m_height);
-
-					const float y_value = (ndc_vertices[0].y * scales[0] +
-						ndc_vertices[1].y * scales[1] +
-						ndc_vertices[2].y * scales[2]) * w_value;
-
-					const float distance = std::sqrt(w_value * w_value + x_value * x_value + y_value * y_value);
-					if (fog_params.enable && distance > fog_params.end)
-					{
-						continue;
-					}
-
-					//auto& mutex(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
-					std::scoped_lock lock(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
-					if (!depth_test || zbuffer_test_and_set(x, y, w_value))
-					{
-						
-						// m_ms_color_buffer.at(x, y)
-						auto pixel = t_texture.sample(
-							fvec2{((t_vertices[0].texture_uv.x / t_vertices[0].position.w) * scales[0] +
-								   (t_vertices[1].texture_uv.x / t_vertices[1].position.w) * scales[1] +
-								   (t_vertices[2].texture_uv.x / t_vertices[2].position.w) * scales[2]) *
-									  w_value,
-								  ((t_vertices[0].texture_uv.y / t_vertices[0].position.w) * scales[0] +
-								   (t_vertices[1].texture_uv.y / t_vertices[1].position.w) * scales[1] +
-								   (t_vertices[2].texture_uv.y / t_vertices[2].position.w) * scales[2]) *
-									  w_value});
-						if (fog_params.enable)
-						{
-							const auto fraction =
-								std::clamp((distance - fog_params.start) / (fog_params.end - fog_params.start), 0.0F,
-										   1.0F) *
-								fog_params.destiny;
-							pixel = Pixel(fast_lerp(pixel.r, fog_params.color.r, fraction),
-										  fast_lerp(pixel.g, fog_params.color.g, fraction),
-										  fast_lerp(pixel.b, fog_params.color.b, fraction));
-						}
-						//std::scoped_lock lock(m_ms_mutex_buffer[y * m_width * m_multisample + x]);
-						//if (!depth_test || zbuffer_test_and_set(x, y, w_value))
-						m_ms_color_buffer.at(x, y) = pixel;
-					}
+					m_ms_color_buffer.at(x, y) = pixel;
 				}
 			}
 		}
@@ -442,7 +446,7 @@ class FrameBuffer
 		{
 			for (std::uint16_t y = 0; y < m_height; ++y)
 			{
-				t_tga.get_pixel(u16vec2{x, y}) = m_color_buffer.at(x, y);
+				t_tga.get_pixel(x, y) = m_color_buffer.at(x, y);
 			}
 		}
 		t_tga.to_file(t_tga_filename);
@@ -504,7 +508,7 @@ class FrameBuffer
 		m_ms_color_buffer = ColorBuffer(m_width * m_multisample, m_height * m_multisample);
 		m_ms_stencil_buffer = StencilBuffer(m_width * m_multisample, m_height * m_multisample);
 		m_ms_ndc_positions = NDCBuffer(m_width * m_multisample, m_height * m_multisample);
-		m_ms_mutex_buffer = std::make_unique<std::mutex[]>(m_width * m_height * m_multisample * m_multisample);
+		//m_ms_mutex_buffer = std::make_unique<std::mutex[]>(m_width * m_height * m_multisample * m_multisample);
 		fill_ndc_positions();
 	}
 
@@ -524,7 +528,7 @@ class FrameBuffer
 	DepthBuffer m_ms_depth_buffer;
 	NDCBuffer m_ms_ndc_positions;
 
-	std::unique_ptr<std::mutex[]> m_ms_mutex_buffer;
+	//std::unique_ptr<std::mutex[]> m_ms_mutex_buffer;
 
 	// stencil buffer
 	StencilBuffer m_ms_stencil_buffer;

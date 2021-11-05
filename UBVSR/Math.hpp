@@ -1,9 +1,9 @@
 #pragma once
 
+#include <array>
+#include <cmath>
 #include <cstdint>
 #include <type_traits>
-#include <cmath>
-#include <array>
 
 namespace ubv
 {
@@ -37,7 +37,7 @@ template <typename T> struct vec2
 	}
 	constexpr vec2<T> operator*(T t_value) const noexcept
 	{
-		return vec2<T>{x* t_value, y* t_value};
+		return vec2<T>{x * t_value, y * t_value};
 	}
 
 	constexpr vec2<T> operator/(T t_value) const noexcept
@@ -46,7 +46,7 @@ template <typename T> struct vec2
 	}
 	constexpr vec2<T> operator+(T t_value) const noexcept
 	{
-		return vec2<T>{x+ t_value, y+ t_value};
+		return vec2<T>{x + t_value, y + t_value};
 	}
 
 	constexpr vec2<T> operator-(T t_value) const noexcept
@@ -54,15 +54,26 @@ template <typename T> struct vec2
 		return vec2<T>{x - t_value, y - t_value};
 	}
 
-	constexpr vec2<T> operator-(const vec2<T>& t_vec) const noexcept
+	constexpr vec2<T> operator-(const vec2<T> &t_vec) const noexcept
 	{
 		return vec2<T>{x - t_vec.x, y - t_vec.y};
 	}
-	constexpr vec2<T> operator+(const vec2<T>& t_vec) const noexcept
+	constexpr vec2<T> operator+(const vec2<T> &t_vec) const noexcept
 	{
 		return vec2<T>{x + t_vec.x, y + t_vec.y};
 	}
 };
+
+template <typename T> [[nodiscard]] constexpr vec2<T> rotate_2d(const vec2<T>& t_point, T t_angle)
+{
+	const T s = std::sin(t_angle);
+	const T c = std::cos(t_angle);
+
+	const T x_new = t_point.x * c - t_point.y * s;
+	const T y_new = t_point.x * s + t_point.y * c;
+
+	return vec2<T>{x_new, y_new};
+}
 
 template <typename T> struct vec3
 {
@@ -123,6 +134,56 @@ template <typename T> struct vec3
 		return vec3<T>{x / t_value, y / t_value, z / t_value};
 	}
 };
+
+template <typename T>
+[[nodiscard]] constexpr vec3<T> rotate_3d(const vec3<T>& t_point, T t_pitch_angle, T t_yaw_angle, T t_roll_angle)
+{
+	vec3<T> point{ t_point };
+
+	//preform roll rotation (X, Y)
+	const auto roll_2d = rotate_2d(vec2<T>(point.x, point.y), t_roll_angle);
+
+	//apply yaw rotation to the point (X , Y)
+	point.x = roll_2d.x;
+	point.y = roll_2d.y;
+
+	//preform pitch rotation (Y , Z)
+	const auto pitch_2d = rotate_2d(vec2<T>(point.y, point.z), t_pitch_angle);
+
+	//apply pitch rotation to the point (Y , Z)
+	point.y = pitch_2d.x;
+	point.z = pitch_2d.y;
+
+	//preform yaw rotation (X , Z)
+	const auto yaw_2d = rotate_2d(vec2<T>(point.x, point.z), t_yaw_angle);
+	
+	//apply yaw rotation to the point (X , Z)
+	point.x = yaw_2d.x;
+	point.z = yaw_2d.y;
+
+	//return the rotated point
+	return point;
+}
+
+/*template <typename T> [[nodiscard]] constexpr vec2<T> rotate(const vec2<T>& t_point, T t_angle)
+{
+	const T s = std::sin(t_angle);
+	const T c = std::cos(t_angle);
+
+	const T new_x = t_point.x * c - t_point.y * s;
+	const T new_y = t_point.x * s + t_point.y * c;
+
+	return vec2<T>(-new_x, -new_y);
+}
+
+template <typename T>
+[[nodiscard]] constexpr vec3<T> rotate(const vec3<T> &t_point, T t_pitch_angle, T t_yaw_angle, T t_roll_angle)
+{
+	const auto yaw_result = rotate(vec2<T>(t_point.x, t_point.z), t_yaw_angle);
+	const auto pitch_result = rotate(vec2<T>(t_point.y, yaw_result.y), t_pitch_angle);
+	const auto roll_result = rotate(vec2<T>(yaw_result.x, pitch_result.x), t_roll_angle);
+	return vec3<T>{roll_result.x, roll_result.y, pitch_result.y};
+}*/
 
 template <typename T> struct vec4
 {
@@ -244,7 +305,51 @@ template <typename T> struct mat4x4
 		matrix[3][2] = -(t_far_z + t_near_z) / (t_far_z - t_near_z);
 	}
 
-	constexpr void translate(const vec3<T>& t_vec) noexcept
+	// rotation matrix
+	constexpr explicit mat4x4(const vec3<T>& t_position, T t_pitch, T t_yaw, T t_roll)
+	{
+		//vec3<T> right = ubv::rotate(vec3<T>(1, 0, 0), t_pitch, t_yaw, t_roll);
+		//vec3<T> up = ubv::rotate(vec3<T>(0, 1, 0), t_pitch, t_yaw, t_roll);
+		//vec3<T> forward = ubv::rotate(vec3<T>(0, 0, 1), t_pitch, t_yaw, t_roll);
+
+		const T a = t_pitch;
+		const T b = t_yaw;
+		const T y = t_roll;
+
+		const T cos_a = std::cos(a);
+		const T cos_b = std::cos(b);
+		const T cos_y = std::cos(y);
+
+		const T sin_a = std::sin(a);
+		const T sin_b = std::sin(b);
+		const T sin_y = std::sin(y);
+
+		const vec3<T> r1{cos_a * cos_b, cos_a * sin_b * sin_y - sin_a * cos_y, cos_a * sin_b * cos_y + sin_a * sin_y};
+		const vec3<T> r2{sin_a * cos_b, sin_a * sin_b * sin_y + cos_a * cos_y, sin_a * sin_b * cos_y - cos_a * sin_y};
+		const vec3<T> r3{-sin_b, cos_b * sin_y, cos_b * cos_y};
+
+		matrix[0][0] = r1.x;
+		matrix[0][1] = r1.y;
+		matrix[0][2] = r1.z;
+		matrix[0][3] = 0;
+
+		matrix[1][0] = r2.x;
+		matrix[1][1] = r2.y;
+		matrix[1][2] = r2.z;
+		matrix[1][3] = 0;
+
+		matrix[2][0] = r3.x;
+		matrix[2][1] = r3.y;
+		matrix[2][2] = r3.z;
+		matrix[2][3] = 0;
+
+		matrix[3][0] = 0;
+		matrix[3][1] = 0;
+		matrix[3][2] = 0;
+		matrix[3][3] = 1;
+	}
+
+	constexpr void translate(const vec3<T> &t_vec) noexcept
 	{
 		matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
 		matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
@@ -252,7 +357,7 @@ template <typename T> struct mat4x4
 		matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
 	}
 
-	constexpr void rotate(T t_angle, const vec3<T>& t_vec) noexcept
+	constexpr void rotate(T t_angle, const vec3<T> &t_vec) noexcept
 	{
 		const T a = t_angle;
 		const T c = std::cos(a);
@@ -283,7 +388,7 @@ template <typename T> struct mat4x4
 		*this = *this * result;
 	}
 
-	constexpr void scale(const vec3<T>& t_vec) noexcept
+	constexpr void scale(const vec3<T> &t_vec) noexcept
 	{
 		mat4x4<T> result = identity<T>();
 		result.matrix[0][0] = t_vec.x;
@@ -302,7 +407,7 @@ template <typename T> struct mat4x4
 			{
 				for (std::uint_fast8_t z = 0; z < 4; ++z)
 				{
-					//result.matrix[x][y] += matrix[x][z] * t_matrix.matrix[z][y];
+					// result.matrix[x][y] += matrix[x][z] * t_matrix.matrix[z][y];
 					result.matrix[x][y] += t_matrix.matrix[x][z] * matrix[z][y];
 				}
 			}
@@ -424,12 +529,12 @@ template <typename T>
 	matrix.matrix[0][1] = u.x;
 	matrix.matrix[1][1] = u.y;
 	matrix.matrix[2][1] = u.z;
-	matrix.matrix[0][2] = -f.x;
-	matrix.matrix[1][2] = -f.y;
-	matrix.matrix[2][2] = -f.z;
+	matrix.matrix[0][2] = f.x;
+	matrix.matrix[1][2] = f.y;
+	matrix.matrix[2][2] = f.z;
 	matrix.matrix[3][0] = -dot_product(s, t_eye);
 	matrix.matrix[3][1] = -dot_product(u, t_eye);
-	matrix.matrix[3][2] = dot_product(f, t_eye);
+	matrix.matrix[3][2] = -dot_product(f, t_eye);
 	return matrix;
 }
 
@@ -461,11 +566,14 @@ template <typename T> [[nodiscard]] inline vec3<T> normalize(const vec3<T> &t_ve
 	return t_value_a + (t_value_b - t_value_a) * t_fraction;
 }
 
-[[nodiscard]] constexpr float fast_blerp(const fvec4& t_vec, const fvec2& t_fraction_vec) {
-	return fast_lerp(fast_lerp(t_vec.x, t_vec.y, t_fraction_vec.x), fast_lerp(t_vec.z, t_vec.w, t_fraction_vec.x), t_fraction_vec.y);
+[[nodiscard]] constexpr float fast_blerp(const fvec4 &t_vec, const fvec2 &t_fraction_vec)
+{
+	return fast_lerp(fast_lerp(t_vec.x, t_vec.y, t_fraction_vec.x), fast_lerp(t_vec.z, t_vec.w, t_fraction_vec.x),
+					 t_fraction_vec.y);
 }
 
-/*template <typename T> [[nodiscard]] constexpr vec3<T> intersect_plane(const vec3<T>& t_plane_p, const vec3<T>& t_plane_n, const vec3<T>& t_line_start, const vec3<T>& t_line_end)
+/*template <typename T> [[nodiscard]] constexpr vec3<T> intersect_plane(const vec3<T>& t_plane_p, const vec3<T>&
+t_plane_n, const vec3<T>& t_line_start, const vec3<T>& t_line_end)
 {
 	t_plane_n = normalize(plane_n);
 	const T plane_d = -dot_product(plane_n, plane_p);
@@ -477,21 +585,24 @@ template <typename T> [[nodiscard]] inline vec3<T> normalize(const vec3<T> &t_ve
 	return t_line_start + line_to_intersect;
 }
 
-template<typename T> [[nodiscard]] constexpr std::uint8_t triangle_clip_against_plane(vec3<T> t_plane_p, vec3<T> t_plane_n, const std::array<Vertex, 3>& t_input_triangle, const std::array<Vertex, 3>& t_output_triangle1, const std::array<Vertex, 3>& t_output_triangle2)
+template<typename T> [[nodiscard]] constexpr std::uint8_t triangle_clip_against_plane(vec3<T> t_plane_p, vec3<T>
+t_plane_n, const std::array<Vertex, 3>& t_input_triangle, const std::array<Vertex, 3>& t_output_triangle1, const
+std::array<Vertex, 3>& t_output_triangle2)
 {
 	t_plane_n = normalize(t_plane_n);
 
 	auto dist = [&](vec3<T>& t_point)
 	{
 		vec3<T> normal = normalize(t_point);
-		return (t_plane_n.x * t_point.x + t_plane_n.y * t_point.y + t_plane_n.z * t_point.z - dot_product(t_plane_n, t_plane_p));
+		return (t_plane_n.x * t_point.x + t_plane_n.y * t_point.y + t_plane_n.z * t_point.z - dot_product(t_plane_n,
+t_plane_p));
 	};
 
 	vec3<T>* inside_points[3] = { };
 	std::uint8_t inside_point_count = 0;
 	vec3<T>* outside_points[3] = { };
 	std::uint8_t outside_point_count = 0;
-	
+
 	T d0 = dist(t_input_triangle[0]);
 	T d1 = dist(t_input_triangle[1]);
 	T d2 = dist(t_input_triangle[2]);
@@ -542,5 +653,5 @@ template<typename T> [[nodiscard]] constexpr std::uint8_t triangle_clip_against_
 		return 2;
 	}
 }*/
-	
+
 }; // namespace ubv

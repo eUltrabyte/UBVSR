@@ -10,6 +10,7 @@
 
 #include "Pixel.hpp"
 #include "Model.hpp"
+#include "TextRenderer.hpp"
 
 #if defined(_WIN32)
     #include "Window/WindowWin32.hpp"
@@ -33,6 +34,7 @@ namespace ubv {
         //Texture texture2;
         Model model_dust2;
         fmat4x4 projection;
+        TextRenderer text_renderer;
     };
 
 };

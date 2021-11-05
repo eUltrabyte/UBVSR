@@ -2,6 +2,7 @@
 
 #include "Buffer.hpp"
 #include "FpsCounter.hpp"
+#include "TextRenderer.hpp"
 
 #include <future>
 
@@ -41,18 +42,18 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			   const ubv::Texture &grass_texture, const ubv::Texture &skybox1_texture,
 			   const ubv::Texture &skybox2_texture, const ubv::Texture &skybox3_texture,
 			   const ubv::Texture &skybox4_texture, const ubv::Texture &skybox_top_texture,
-			   const ubv::Texture &skybox_bottom_texture) noexcept
+			   const ubv::Texture &skybox_bottom_texture, ubv::TextRenderer& t_text_renderer) noexcept
 {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	frame_buffer.fog_params = ubv::FrameBuffer::FogParams{
-		19.0F,                     // fog start
-		20.0F,                    // fog end
-		ubv::Pixel{255, 0, 0}, // fog color
+		0.1F,                     // fog start
+		175.0F,                    // fog end
+		ubv::Pixel{100, 150, 200}, // fog color
 		1.0F,                     // fog destiny
 		true                      // fog enabled
 	};
-	frame_buffer.set_multisample(1);
+	frame_buffer.set_multisample(2);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
 	while (true)
@@ -63,83 +64,19 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1);
 		float delta_time = (t2 - t3) * 2.0F;
-		std::cout << "FPS: " << fps_counter.update(t2) << '\n';
+		//std::cout << "FPS: " << fps_counter.update(t2) << '\n';
+		//std::printf("FPS: %u\n", fps_counter.update(t2));
 		t3 = t2;
-		static ubv::fvec3 camera_position{0.0F, 0.0F, 0.0F};
-		static ubv::fvec3 camera_pitch_yaw_roll{0.0F, ubv::degrees_to_radians(-90.0F), 0.0F};
+		static ubv::fvec3 camera_position{-10.2F, 3.6F, -8.2F};
+		static ubv::fvec3 camera_pitch_yaw_roll{ubv::degrees_to_radians(15.0F), ubv::degrees_to_radians(-180.0F), 0.0F};
 
 		static unsigned frame_number = 0;
-
-		// camera_pitch_yaw_roll.y = ubv::degrees_to_radians(elapsed_time * 60.0F * 1.0F);
-
-		// static const auto camera_front = ubv::fvec3(0.0f, 0.0f, -1.0f);
-		static const auto camera_up = ubv::fvec3(0.0f, 1.0f, 0.0f);
-
-		/*static uint16_t stencil_value_u16 = 0;
-		stencil_value_u16 += 10;
-		stencil_value_u16 %= 512;
-		unsigned wartosc = stencil_value_u16;
-		if (stencil_value_u16 > 255)
-		{
-			wartosc = 256 - stencil_value_u16;
-		}
-		frame_buffer.stencil_value = wartosc;
-		std::cout << unsigned(frame_buffer.stencil_value) << std::endl;*/
-
-		static auto &model_rekin = *models.at(1);
-
-		auto offset = rotate(ubv::fvec2(1.5F, 0.0F), ubv::fvec2(0.0F, 0.0F), elapsed_time);
-
-		auto rekin_model_matrix = ubv::identity<float>();
-		rekin_model_matrix.translate(
-			ubv::fvec3(offset.x, -1.7F + 0.25F + std::sin(elapsed_time * 4.0F) / 4.0F, offset.y));
-		rekin_model_matrix.rotate(ubv::degrees_to_radians(90.0F), ubv::fvec3(-1.0F, 0.0F, 0.0F));
-		rekin_model_matrix.rotate(elapsed_time + ubv::degrees_to_radians(-90.0F), ubv::fvec3(0.0F, 0.0F, -1.0F));
-		rekin_model_matrix.scale(ubv::fvec3(0.037F, 0.037F, 0.037F));
-		model_rekin.model_matrix = rekin_model_matrix;
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 		{
 			rotateMode = !rotateMode;
 		}
 
-		/*static float scale_factor = 1.0F;
-		static float translation_factor = 0.0F;
-		static float rotation_angle = 0.0F;
-
-		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
-		{
-			for (auto& model : models)
-			{
-				rotation_angle += delta_time / 10.0F;
-			}
-		}
-
-		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Escape)))
-		{
-			for (auto& model : models)
-			{
-				scale_factor += delta_time / 2.0F;
-			}
-		}
-
-		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
-		{
-			for (auto& model : models)
-			{
-				translation_factor += delta_time * 4.0F;
-			}
-		}
-
-		for (auto& model : models)
-		{
-			auto matrix = ubv::identity<float>();
-			matrix.scale(ubv::fvec3(scale_factor, scale_factor / 4.0F + 0.75F, scale_factor));
-			matrix.rotate(rotation_angle, ubv::fvec3(0.1F, 0.2F, 0.3F));
-			matrix.translate(ubv::fvec3{ 0.0F,translation_factor,0.0F });
-			model->model_matrix = matrix;
-		}
-		*/
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Left)))
 		{
 			if (rotateMode)
@@ -212,86 +149,23 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			}
 		}
 
-		camera_pitch_yaw_roll.x =
-			std::clamp(camera_pitch_yaw_roll.x, ubv::degrees_to_radians(-89.0F), ubv::degrees_to_radians(89.0F));
+		const auto pitch = camera_pitch_yaw_roll.x;
+		const auto yaw   = camera_pitch_yaw_roll.y;
+		const auto roll  = camera_pitch_yaw_roll.z;
 
-		ubv::fvec3 front;
-		front.x = std::cos((camera_pitch_yaw_roll.y)) * std::cos((camera_pitch_yaw_roll.x));
-		front.y = std::sin((camera_pitch_yaw_roll.x));
-		front.z = std::sin((camera_pitch_yaw_roll.y)) * std::cos((camera_pitch_yaw_roll.x));
+		//std::cout << "pitch: " << ubv::radians_to_degrees(pitch) << "   yaw: " << ubv::radians_to_degrees(yaw) << "   roll: " << ubv::radians_to_degrees(roll) << std::endl;
 
-		const auto camera_front = ubv::normalize(front);
+		const auto front = ubv::rotate_3d(ubv::fvec3(0, 0, 1), pitch, yaw, roll);
+		const auto up = ubv::rotate_3d(ubv::fvec3(0, 1, 0), pitch, yaw, roll);
 
-		auto view = ubv::look_at(camera_position, camera_position + camera_front, camera_up);
-		// auto VP = view * projection;
+		const auto view = ubv::look_at(camera_position, camera_position + front, up);
 
-		/*ubv::Vertex c0a{MVP * ubv::fvec4{ubv::fvec3(0, 0, 0), 1.0F}, ubv::fvec2{0, 0}};
-		ubv::Vertex c0b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c0c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c0d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c1a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c1b{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c1c{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c1d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c2a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c2b{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c2c{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c2d{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c3a{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c3b{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c3c{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c3d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c4a{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c4b{ MVP * ubv::fvec4{ ubv::fvec3(0, 0, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c4c{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c4d{ MVP * ubv::fvec4{ ubv::fvec3(1, 0, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
-		ubv::Vertex c5a{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 0), 1.0F }, ubv::fvec2{ 0, 0 } };
-		ubv::Vertex c5b{ MVP * ubv::fvec4{ ubv::fvec3(0, 1, 1), 1.0F }, ubv::fvec2{ 1, 0 } };
-		ubv::Vertex c5c{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 0), 1.0F }, ubv::fvec2{ 0, 1 } };
-		ubv::Vertex c5d{ MVP * ubv::fvec4{ ubv::fvec3(1, 1, 1), 1.0F }, ubv::fvec2{ 1, 1 } };
+		const auto pv_matrix = projection * view ;
 
-		const std::array<ubv::Vertex, 3> t0a{ c0b, c0c, c0a };
-		const std::array<ubv::Vertex, 3> t0b{ c0b, c0c, c0d };
-
-		const std::array<ubv::Vertex, 3> t1a{ c1b, c1c, c1a };
-		const std::array<ubv::Vertex, 3> t1b{ c1b, c1c, c1d };
-
-		const std::array<ubv::Vertex, 3> t2a{ c2b, c2c, c2a };
-		const std::array<ubv::Vertex, 3> t2b{ c2b, c2c, c2d };
-
-		const std::array<ubv::Vertex, 3> t3a{ c3b, c3c, c3a };
-		const std::array<ubv::Vertex, 3> t3b{ c3b, c3c, c3d };
-
-		const std::array<ubv::Vertex, 3> t4a{ c4b, c4c, c4a };
-		const std::array<ubv::Vertex, 3> t4b{ c4b, c4c, c4d };
-
-		const std::array<ubv::Vertex, 3> t5a{ c5b, c5c, c5a };
-		const std::array<ubv::Vertex, 3> t5b{ c5b, c5c, c5d };
-
-		std::vector<std::future<void>> tasks;
-
-		frame_buffer.draw_triangle(t0a, texture1);
-		frame_buffer.draw_triangle(t0b, texture1);
-		frame_buffer.draw_triangle(t1a, texture1);
-		frame_buffer.draw_triangle(t1b, texture1);
-		frame_buffer.draw_triangle(t2a, texture1);
-		frame_buffer.draw_triangle(t2b, texture1);
-		frame_buffer.draw_triangle(t3a, texture1);
-		frame_buffer.draw_triangle(t3b, texture1);
-		frame_buffer.draw_triangle(t4a, texture1);
-		frame_buffer.draw_triangle(t4b, texture1);
-		frame_buffer.draw_triangle(t5a, texture1);
-		frame_buffer.draw_triangle(t5b, texture1);*/
-
-		// std::vector<std::array<ubv::Vertex, 3>> triangles_to_draw = model.m_triangles;
-		// std::cout << triangles_to_draw.size() << std::endl;
-		const auto pv_matrix = projection * view;
-		std::vector<std::future<void>> tasks;
-
-		// frame_buffer.fog_params.enable = false;
+		frame_buffer.fog_params.enable = false;
 		frame_buffer.depth_test = false;
 
-		/*ubv::Vertex skyboxline1_a{ubv::fvec4(-1, -1, -1, 1.0F), ubv::fvec2(1.0F, 0.0F)};
+		ubv::Vertex skyboxline1_a{ubv::fvec4(-1, -1, -1, 1.0F), ubv::fvec2(1.0F, 0.0F)};
 		ubv::Vertex skyboxline1_b{ubv::fvec4(1, -1, -1, 1.0F), ubv::fvec2(0.0F, 0.0F)};
 		ubv::Vertex skyboxline1_c{ubv::fvec4(1, 1, -1, 1.0F), ubv::fvec2(0.0F, 1.0F)};
 		ubv::Vertex skyboxline1_d{ubv::fvec4(-1, 1, -1, 1.0F), ubv::fvec2(1.0F, 1.0F)};
@@ -351,43 +225,25 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		std::array<ubv::Vertex, 3> skybox_triangleB_a{skyboxlineB_a, skyboxlineB_d, skyboxlineB_b};
 		std::array<ubv::Vertex, 3> skybox_triangleB_b{skyboxlineB_a, skyboxlineB_d, skyboxlineB_c};
 
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle1_a, skybox3_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle1_b, skybox3_texture, false));
+		frame_buffer.draw_triangle(skybox_triangle1_a, skybox3_texture);
+		frame_buffer.draw_triangle(skybox_triangle1_b, skybox3_texture);
 
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle2_a, skybox1_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle2_b, skybox1_texture, false));
+		frame_buffer.draw_triangle(skybox_triangle2_a, skybox1_texture);
+		frame_buffer.draw_triangle(skybox_triangle2_b, skybox1_texture);
 
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle3_a, skybox4_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle3_b, skybox4_texture, false));
+		frame_buffer.draw_triangle(skybox_triangle3_a, skybox4_texture);
+		frame_buffer.draw_triangle(skybox_triangle3_b, skybox4_texture);
 
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle4_a, skybox2_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangle4_b, skybox2_texture, false));
+		frame_buffer.draw_triangle(skybox_triangle4_a, skybox2_texture);
+		frame_buffer.draw_triangle(skybox_triangle4_b, skybox2_texture);
 
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangleT_a, skybox_top_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangleT_b, skybox_top_texture, false));
+		frame_buffer.draw_triangle(skybox_triangleT_a, skybox_top_texture);
+		frame_buffer.draw_triangle(skybox_triangleT_b, skybox_top_texture);
 
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangleB_a, skybox_bottom_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   skybox_triangleB_b, skybox_bottom_texture, false));
-
-		for (const auto &task : tasks)
-		{
-			task.wait();
-		}
-		tasks.clear();
-		*/
-		//frame_buffer.fog_params.enable = true;
+		frame_buffer.draw_triangle(skybox_triangleB_a, skybox_bottom_texture);
+		frame_buffer.draw_triangle(skybox_triangleB_b, skybox_bottom_texture);
+		
+		frame_buffer.fog_params.enable = true;
 		frame_buffer.depth_test = true;
 
 		for (const auto &model : models)
@@ -395,16 +251,14 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			for (const auto &[texture, triangles] : model->m_triangles)
 			{
 				auto triangles_to_draw = triangles;
-				// std::cout << triangles_to_draw.size() << std::endl;
+
 				for (auto &triangle : triangles_to_draw)
 				{
 					for (auto &vertex : triangle)
 					{
 						vertex.position = pv_matrix * model->model_matrix * vertex.position;
 					}
-					// frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
-					tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-											   triangle, *model->m_textures[texture], false));
+					frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
 				}
 			}
 		}
@@ -424,93 +278,53 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		std::array<ubv::Vertex, 3> grass_triangle_a{grass_a, grass_b, grass_c};
 		std::array<ubv::Vertex, 3> grass_triangle_b{grass_a, grass_d, grass_c};
 
-		/*tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   grass_triangle_a, grass_texture, false));
-		tasks.push_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-								   grass_triangle_b, grass_texture, false));*/
+		std::string s_fps_num = "FPS: " +  std::to_string(fps_counter.update(t2));
 
-		// frame_buffer.draw_triangle(grass_triangle_a, grass_texture);
-		// frame_buffer.draw_triangle(grass_triangle_b, grass_texture);
+		std::string s_triangles = "Triangles: " + std::to_string(frame_buffer.triangles);
 
-		for (const auto &task : tasks)
-		{
-			task.wait();
-		}
-		/*tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t0a,
-		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-		t0b, texture1));
+		std::string s_pos_x = "X: " + std::to_string(camera_position.x);
+		std::string s_pos_y = "Y: " + std::to_string(camera_position.y);
+		std::string s_pos_z = "Z: " + std::to_string(camera_position.z);
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t1a,
-		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-		t1b, texture1));
+		std::string s_angle_p = "Pitch: " + std::to_string(ubv::radians_to_degrees(camera_pitch_yaw_roll.x));
+		std::string s_angle_y = "Yaw: " + std::to_string(ubv::radians_to_degrees(camera_pitch_yaw_roll.y));
+		std::string s_angle_r = "Roll: " + std::to_string(ubv::radians_to_degrees(camera_pitch_yaw_roll.z));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t2a,
-		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-		t2b, texture1));
+		std::string s_width = "Width: " + std::to_string(frame_buffer.get_width());
+		std::string s_height = "Height: " + std::to_string(frame_buffer.get_height());
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t3a,
-		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-		t3b, texture1));
+		std::string s_multisampling = "Multisampling: " + (frame_buffer.get_multisample() > 1 ? std::to_string(frame_buffer.get_multisample()) + "x" : std::string("off"));
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t4a,
-		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-		t4b, texture1));
+		std::string s_info = "Ultrabyte & Volian Software Rasterizer";
 
-		tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, t5a,
-		texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer,
-		t5b, texture1));*/
+		//frame_buffer.draw_z_buffer();
 
-		/*const ubv::Vertex vertex_a{projection.multiply(ubv::fvec3(rotate(ubv::fvec2{0.5, -0.5}, ubv::fvec2{0.0, 0.0},
-		0), 1.0F)), ubv::fvec2{-1, 0}}; // 1 0 const ubv::Vertex vertex_b{
-		projection.multiply(ubv::fvec3(rotate(ubv::fvec2{  0.5,  0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{
-		-1, -1 } }; const ubv::Vertex vertex_c{ projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5,  0.5 },
-		ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{ 0, -1 } }; const ubv::Vertex vertex_d{
-		projection.multiply(ubv::fvec3(rotate(ubv::fvec2{ -0.5, -0.5 }, ubv::fvec2{ 0.0, 0.0 }, 0), 1.0F)), ubv::fvec2{
-		0, 0 } };*/
+		frame_buffer.depth_test = false;
+		frame_buffer.fog_params.enable = false;
 
-		// const std::array<ubv::Vertex, 3> triangle1{ vertex_b, vertex_d, vertex_c };
-		// const std::array<ubv::Vertex, 3> triangle2{	vertex_b, vertex_d, vertex_a };
+		t_text_renderer.RenderTextLine(frame_buffer, s_info, 0, frame_buffer.get_height() - 18);
 
-		// tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle, &frame_buffer, triangle1,
-		// texture1)); tasks.emplace_back(std::async(std::launch::async, &ubv::FrameBuffer::draw_triangle,
-		// &frame_buffer, triangle2, texture1));
+		t_text_renderer.RenderTextLine(frame_buffer, s_fps_num, 0, 0 * 18);
 
-		// for(const auto& task : tasks) {
-		//	task.wait();
-		// }
+		t_text_renderer.RenderTextLine(frame_buffer, s_triangles, 0, 2 * 18);
 
-		if (frame_number == 0)
-		{
-			// frame_buffer.draw_z_buffer();
-			// frame_buffer.draw_to_stencil_buffer();
-			// frame_buffer.stencil_test = true;
-		}
+		t_text_renderer.RenderTextLine(frame_buffer, s_pos_x, 0, 4 * 18);
+		t_text_renderer.RenderTextLine(frame_buffer, s_pos_y, 0, 5 * 18);
+		t_text_renderer.RenderTextLine(frame_buffer, s_pos_z, 0, 6 * 18);
 
-		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space)))
-			renderZBuffer = !renderZBuffer;
+		t_text_renderer.RenderTextLine(frame_buffer, s_angle_p, 0, 8 * 18);
+		t_text_renderer.RenderTextLine(frame_buffer, s_angle_y, 0, 9 * 18);
+		t_text_renderer.RenderTextLine(frame_buffer, s_angle_r, 0, 10 * 18);
 
-		if(renderZBuffer)
-			frame_buffer.draw_z_buffer();*/
+		t_text_renderer.RenderTextLine(frame_buffer, s_width, 0, 12 * 18);
+		t_text_renderer.RenderTextLine(frame_buffer, s_height, 0, 13 * 18);
 
+		t_text_renderer.RenderTextLine(frame_buffer, s_multisampling, 0, 15 * 18);
+
+		
 		frame_buffer.sample();
 		window->display(frame_buffer);
 		window->update();
-
-		// frame_buffer.render_to_file("frames/bjutiful" + std::to_string(frame_number) + ".tga");
-		++frame_number;
-		// frame_buffer.render_to_file("test.tga");
-		/*frame_buffer.render_to_file([&]() {
-			std::stringstream ss_frame_number;
-			ss_frame_number << std::setfill('0') << std::setw(10) << frame_number;
-			static std::string filename;
-			filename = "frames/video_ms5_" + ss_frame_number.str() + ".tga";
-			return filename;
-		}());
-		++frame_number;
-		if (frame_number == 420)
-		{
-			std::quick_exit(0);
-		}*/
 	}
 }
 
@@ -546,16 +360,21 @@ void Sandbox::start()
 	std::cout << "Hello UBVSR.\n";
 
 #if defined(_WIN32)
-	ubv::WindowWin32 window(ubv::WindowProps{640, 480, "Test UBVSR"});
+	ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Ultrabyte & Volian Software Rasterizer"});
 #elif defined(__unix__)
-	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Test UBVSR"});
+	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Ultrabyte & Volian Software Rasterizer"});
 #endif
 
-	projection = fmat4x4(
-		90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 20.0F);
+	model_dust2.model_matrix = ubv::identity<float>();
+	model_dust2.model_matrix.rotate(ubv::degrees_to_radians(90.0F), fvec3(-1.0, 0, 0));
+	//model_dust2.model_matrix.scale(ubv::fvec3(0.5, 0.1, 0.5));
 
-	draw_loop(&window, texture1, projection, {&model_dust2, &model_rekin}, texture1, skybox1, skybox2, skybox3, skybox4,
-			  skybox_top, skybox_bottom);
+	projection = fmat4x4(
+		90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 175.0F);
+	Model model_wf{ "res/WF.obj" };
+	model_wf.model_matrix.scale(fvec3(0.1, 0.1, 0.1));
+	draw_loop(&window, texture1, projection, {&model_dust2 }, texture1, skybox1, skybox2, skybox3, skybox4,
+			  skybox_top, skybox_bottom, text_renderer);
 
 	std::cout << "Goodbye UBVSR\n";
 	std::cin.get();
