@@ -53,7 +53,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		1.0F,                     // fog destiny
 		true                      // fog enabled
 	};
-	frame_buffer.set_multisample(2);
+	frame_buffer.set_multisample(1);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
 	while (true)
@@ -248,6 +248,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 
 		for (const auto &model : models)
 		{
+			auto pvm_matrix = pv_matrix * model->model_matrix;
 			for (const auto &[texture, triangles] : model->m_triangles)
 			{
 				auto triangles_to_draw = triangles;
@@ -256,7 +257,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 				{
 					for (auto &vertex : triangle)
 					{
-						vertex.position = pv_matrix * model->model_matrix * vertex.position;
+						vertex.position = pvm_matrix * vertex.position;
 					}
 					frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
 				}
@@ -295,6 +296,8 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 
 		std::string s_multisampling = "Multisampling: " + (frame_buffer.get_multisample() > 1 ? std::to_string(frame_buffer.get_multisample()) + "x" : std::string("off"));
 
+		std::string s_sampled_pixels = "Sampled pixels: " + std::to_string(frame_buffer.sampled_pixels);
+
 		std::string s_info = "Ultrabyte & Volian Software Rasterizer";
 
 		//frame_buffer.draw_z_buffer();
@@ -302,27 +305,33 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		frame_buffer.depth_test = false;
 		frame_buffer.fog_params.enable = false;
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_info, 0, frame_buffer.get_height() - 18);
+		//t_text_renderer.RenderTextLine(frame_buffer, s_info, 0, frame_buffer.get_height() - 18);
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_fps_num, 0, 0 * 18);
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Escape)))
+		{
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_triangles, 0, 2 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_fps_num, 0, 0 * 18);
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_pos_x, 0, 4 * 18);
-		t_text_renderer.RenderTextLine(frame_buffer, s_pos_y, 0, 5 * 18);
-		t_text_renderer.RenderTextLine(frame_buffer, s_pos_z, 0, 6 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_triangles, 0, 2 * 18);
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_angle_p, 0, 8 * 18);
-		t_text_renderer.RenderTextLine(frame_buffer, s_angle_y, 0, 9 * 18);
-		t_text_renderer.RenderTextLine(frame_buffer, s_angle_r, 0, 10 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_pos_x, 0, 4 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_pos_y, 0, 5 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_pos_z, 0, 6 * 18);
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_width, 0, 12 * 18);
-		t_text_renderer.RenderTextLine(frame_buffer, s_height, 0, 13 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_angle_p, 0, 8 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_angle_y, 0, 9 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_angle_r, 0, 10 * 18);
 
-		t_text_renderer.RenderTextLine(frame_buffer, s_multisampling, 0, 15 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_width, 0, 12 * 18);
+			t_text_renderer.RenderTextLine(frame_buffer, s_height, 0, 13 * 18);
 
+			t_text_renderer.RenderTextLine(frame_buffer, s_multisampling, 0, 15 * 18);
+
+		}
+		//t_text_renderer.RenderTextLine(frame_buffer, s_sampled_pixels, 0, 17 * 18);
 		
 		frame_buffer.sample();
+		//frame_buffer.render_to_file("yacieyacie9292929.tga");
 		window->display(frame_buffer);
 		window->update();
 	}
@@ -360,7 +369,7 @@ void Sandbox::start()
 	std::cout << "Hello UBVSR.\n";
 
 #if defined(_WIN32)
-	ubv::WindowWin32 window(ubv::WindowProps{1280, 720, "Ultrabyte & Volian Software Rasterizer"});
+	ubv::WindowWin32 window(ubv::WindowProps{592, 333, "Ultrabyte & Volian Software Rasterizer"});
 #elif defined(__unix__)
 	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Ultrabyte & Volian Software Rasterizer"});
 #endif

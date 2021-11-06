@@ -23,11 +23,11 @@ template <typename Type, Type DefaultValue = Type{}> class Buffer
 	{
 		std::fill(m_data.begin(), m_data.end(), DefaultValue);
 	}
-	[[nodiscard]] inline const Type &at(std::uint16_t t_x, std::uint16_t t_y) const noexcept
+	[[nodiscard]] inline const Type &at(std::uint_fast16_t t_x, std::uint_fast16_t t_y) const noexcept
 	{
 		return m_data[static_cast<std::size_t>(t_y) * m_width + t_x];
 	}
-	[[nodiscard]] inline Type &at(std::uint16_t t_x, std::uint16_t t_y) noexcept
+	[[nodiscard]] inline Type &at(std::uint_fast16_t t_x, std::uint_fast16_t t_y) noexcept
 	{
 		return m_data[static_cast<std::size_t>(t_y) * m_width + t_x];
 		//return const_cast<Type &>(const_cast<const decltype(this)>(this)->at(t_x, t_y));
