@@ -58,6 +58,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 	bool renderZBuffer = false;
 	while (true)
 	{
+		ubv::Log::log("[NEW FRAME]");
 		frame_buffer.clear();
 		static FpsCounter fps_counter;
 		static Timepoint t3 = t1;

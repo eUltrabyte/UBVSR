@@ -19,6 +19,17 @@
 
 namespace ubv
 {
+	namespace Log
+	{
+		inline void log(std::string_view t_string)
+		{
+			//static std::mutex cout_mutex;
+			//std::scoped_lock lock{ cout_mutex };
+			//std::cout << t_string << std::endl;
+		}
+
+	}
+
 class FrameBuffer
 {
   public:
@@ -262,12 +273,15 @@ class FrameBuffer
 
 	void thread_function(unsigned t_thread_id)
 	{
+		Log::log("Starting thread " + std::to_string(t_thread_id));
 		while (true)
 		{
+			Log::log("Waiting for work on thread " + std::to_string(t_thread_id));
 			{
 				std::unique_lock<std::mutex> lock(cv_work_mutex);
 				cv_work.wait(lock, [&](){ return thr_do_work == true; });
 			}
+			Log::log("Finished waiting for work on thread " + std::to_string(t_thread_id));
 			//we have work to do!
 			{
 				std::lock_guard lock(cv_states_mutex);
@@ -275,11 +289,15 @@ class FrameBuffer
 			}
 			if (thr_draw)
 			{
+				Log::log("Started drawing on thread " + std::to_string(t_thread_id));
 				draw_prepared_triangles(t_thread_id);
+				Log::log("Finished drawing on thread " + std::to_string(t_thread_id));
 			}
 			else
 			{
+				Log::log("Started sampling on thread " + std::to_string(t_thread_id));
 				sample(t_thread_id);
+				Log::log("Finished sampling on thread " + std::to_string(t_thread_id));
 			}
 			{
 				std::lock_guard lock(cv_states_mutex);
@@ -287,8 +305,10 @@ class FrameBuffer
 			}
 			cv_states.notify_one();
 			{
+				Log::log("Waiting for all threads to finish on thread " + std::to_string(t_thread_id));
 				std::unique_lock<std::mutex> lock(cv_all_finished_mutex);
 				cv_all_finished.wait(lock, [&]() { return thr_all_finished == true; });
+				Log::log("Finished waiting for all threads to finish on thread " + std::to_string(t_thread_id));
 			}
 			{
 				std::lock_guard lock(cv_states_mutex);
@@ -328,22 +348,13 @@ class FrameBuffer
 		return true;
 	}
 
-	inline void wait_for_all_threads_to_be(ThreadState t_state)
-	{
-		for (std::size_t i = 0; i < total_threads; ++i)
-		{
-			while (thread_states[i] != t_state)
-			{
-				std::this_thread::yield();
-			}
-		}
-	}
-
 	inline void draw_prepared_triangles()
 	{
 		{
+			Log::log("[D] Waiting for all threads to be idle");
 			std::unique_lock lock(cv_states_mutex);
 			cv_states.wait(lock, [&]() {return are_all_threads_idle(); });
+			Log::log("[D] Finished waiting for all threads to be idle");
 		}
 		//wait_for_all_threads_to_be(ThreadState::IDLE);
 		{
@@ -359,8 +370,10 @@ class FrameBuffer
 		cv_work.notify_all();
 
 		{
+			Log::log("[D] Waiting for all threads to finish");
 			std::unique_lock lock(cv_states_mutex);
 			cv_states.wait(lock, [&]() {return are_all_threads_finished(); });
+			Log::log("[D] Finished waiting for all threads to finish");
 		}
 		//wait_for_all_threads_to_be(ThreadState::FINISHED);
 
@@ -380,8 +393,10 @@ class FrameBuffer
 	inline void sample()
 	{
 		{
+			Log::log("[S] Waiting for all threads to be idle");
 			std::unique_lock lock(cv_states_mutex);
 			cv_states.wait(lock, [&]() {return are_all_threads_idle(); });
+			Log::log("[S] Finished waiting for all threads to be idle");
 		}
 		{
 			std::lock_guard lock(cv_all_finished_mutex);
@@ -396,8 +411,10 @@ class FrameBuffer
 		cv_work.notify_all();
 
 		{
+			Log::log("[S] Waiting for all threads to finish");
 			std::unique_lock lock(cv_states_mutex);
 			cv_states.wait(lock, [&]() {return are_all_threads_finished(); });
+			Log::log("[S] Finished waiting for all threads to finish");
 		}
 
 		{
@@ -532,7 +549,7 @@ class FrameBuffer
 			&t_texture,
 			ndc_vertices,
 			inverted_w_values,
-			start_x, end_x, start_y, end_y,
+			start_x, end_x, start_y / total_threads * total_threads, end_y,
 			true_area_abc,
 			inv_true_area_abc,
 			constant1C, constant2C, constant3C,
@@ -549,7 +566,7 @@ class FrameBuffer
 		const auto prepared_triangles_size = prepared_triangles.size();
 		for (std::size_t i = 0; i < prepared_triangles_size; ++i)
 		{
-			const auto& triangle = prepared_triangles[i];
+			const auto triangle = prepared_triangles[i];
 			const auto& t_vertices = triangle.vertices;
 			const auto& start_x = triangle.start_x;
 			const auto& start_y = triangle.start_y;
