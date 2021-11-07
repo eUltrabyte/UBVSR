@@ -61,8 +61,8 @@ class TextRenderer
                 const std::array<Vertex, 3> triangle_a{vertex_a, vertex_b, vertex_c};
                 const std::array<Vertex, 3> triangle_b{vertex_a, vertex_d, vertex_c};
 
-                t_frame_buffer.draw_triangle(triangle_a, m_bitmap_chars);
-                t_frame_buffer.draw_triangle(triangle_b, m_bitmap_chars);
+                t_frame_buffer.prepare_triangle(triangle_a, m_bitmap_chars);
+                t_frame_buffer.prepare_triangle(triangle_b, m_bitmap_chars);
             }
         }
     }

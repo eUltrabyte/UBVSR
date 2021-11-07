@@ -15,6 +15,7 @@
 #include <numeric>
 #include <set>
 #include <vector>
+#include <condition_variable>
 
 namespace ubv
 {
@@ -24,11 +25,17 @@ class FrameBuffer
 	inline explicit FrameBuffer(std::uint16_t t_width, std::uint16_t t_height) noexcept
 		: m_width{t_width}, m_height{t_height}, m_color_buffer{m_width, m_height}, //m_ms_color_buffer{m_width, m_height},
 		  m_ms_depth_buffer{m_width, m_height}, //m_ms_stencil_buffer{m_width, m_height},
-	m_ms_pixel_info_buffer{ m_width, m_height  }
+	m_ms_pixel_info_buffer{ m_width, m_height  }, total_threads{std::clamp(std::thread::hardware_concurrency(), 1U, 1024U)}, thread_states(total_threads, ThreadState::IDLE)
 		  //m_ms_ndc_positions{m_width, m_height}//, m_ms_mutex_buffer{std::make_unique<std::mutex[]>(m_width * m_height)}
 	{
+		for (unsigned thread_id = 0; thread_id < total_threads; ++thread_id)
+		{
+			threads.emplace_back(&FrameBuffer::thread_function, this, thread_id).detach();
+		}
 		//fill_ndc_positions();
 	}
+
+	std::vector<std::thread> threads;
 
 	/*inline void fill_ndc_positions() noexcept
 	{
@@ -225,6 +232,436 @@ class FrameBuffer
 		return constant1 + C.y * constant2 + C.x * constant3;
 	}
 
+	enum class ThreadState : std::uint8_t
+	{
+		IDLE, BUSY, FINISHED
+	};
+
+	unsigned total_threads;
+	std::vector<ThreadState> thread_states;
+
+	//bool do_preparing = false;
+	//bool do_sampling = false;
+
+	//std::condition_variable do_work;
+
+	//bool thr_do_work = false;
+
+	bool thr_draw = false;
+	bool thr_do_work = false;
+	bool thr_all_finished = false;
+
+	std::condition_variable cv_work;
+	std::mutex cv_work_mutex;
+
+	std::condition_variable cv_all_finished;
+	std::mutex cv_all_finished_mutex;
+
+	std::condition_variable cv_states;
+	std::mutex cv_states_mutex;
+
+	void thread_function(unsigned t_thread_id)
+	{
+		while (true)
+		{
+			{
+				std::unique_lock<std::mutex> lock(cv_work_mutex);
+				cv_work.wait(lock, [&](){ return thr_do_work == true; });
+			}
+			//we have work to do!
+			{
+				std::lock_guard lock(cv_states_mutex);
+				thread_states[t_thread_id] = ThreadState::BUSY;
+			}
+			if (thr_draw)
+			{
+				draw_prepared_triangles(t_thread_id);
+			}
+			else
+			{
+				sample(t_thread_id);
+			}
+			{
+				std::lock_guard lock(cv_states_mutex);
+				thread_states[t_thread_id] = ThreadState::FINISHED;
+			}
+			cv_states.notify_one();
+			{
+				std::unique_lock<std::mutex> lock(cv_all_finished_mutex);
+				cv_all_finished.wait(lock, [&]() { return thr_all_finished == true; });
+			}
+			{
+				std::lock_guard lock(cv_states_mutex);
+				thread_states[t_thread_id] = ThreadState::IDLE;
+			}
+			cv_states.notify_one();
+		}
+	}
+
+	inline bool are_all_threads_finished() const
+	{
+		for (const auto state : thread_states)
+		{
+			if (state != ThreadState::FINISHED)
+				return false;
+		}
+		return true;
+	}
+
+	inline bool are_all_threads_busy() const
+	{
+		for (const auto state : thread_states)
+		{
+			if (state != ThreadState::BUSY)
+				return false;
+		}
+		return true;
+	}
+
+	inline bool are_all_threads_idle() const
+	{
+		for (const auto state : thread_states)
+		{
+			if (state != ThreadState::IDLE)
+				return false;
+		}
+		return true;
+	}
+
+	inline void wait_for_all_threads_to_be(ThreadState t_state)
+	{
+		for (std::size_t i = 0; i < total_threads; ++i)
+		{
+			while (thread_states[i] != t_state)
+			{
+				std::this_thread::yield();
+			}
+		}
+	}
+
+	inline void draw_prepared_triangles()
+	{
+		{
+			std::unique_lock lock(cv_states_mutex);
+			cv_states.wait(lock, [&]() {return are_all_threads_idle(); });
+		}
+		//wait_for_all_threads_to_be(ThreadState::IDLE);
+		{
+			std::lock_guard lock(cv_all_finished_mutex);
+			thr_all_finished = false;
+		}
+
+		thr_draw = true;
+		{
+			std::lock_guard lock(cv_work_mutex);
+			thr_do_work = true;
+		}
+		cv_work.notify_all();
+
+		{
+			std::unique_lock lock(cv_states_mutex);
+			cv_states.wait(lock, [&]() {return are_all_threads_finished(); });
+		}
+		//wait_for_all_threads_to_be(ThreadState::FINISHED);
+
+		{
+			std::lock_guard lock(cv_work_mutex);
+			thr_do_work = false;
+		}
+		{
+			std::lock_guard lock(cv_all_finished_mutex);
+			thr_all_finished = true;
+		}
+		cv_all_finished.notify_all();
+
+		prepared_triangles.clear();
+	}
+
+	inline void sample()
+	{
+		{
+			std::unique_lock lock(cv_states_mutex);
+			cv_states.wait(lock, [&]() {return are_all_threads_idle(); });
+		}
+		{
+			std::lock_guard lock(cv_all_finished_mutex);
+			thr_all_finished = false;
+		}
+
+		thr_draw = false;
+		{
+			std::lock_guard lock(cv_work_mutex);
+			thr_do_work = true;
+		}
+		cv_work.notify_all();
+
+		{
+			std::unique_lock lock(cv_states_mutex);
+			cv_states.wait(lock, [&]() {return are_all_threads_finished(); });
+		}
+
+		{
+			std::lock_guard lock(cv_work_mutex);
+			thr_do_work = false;
+		}
+		{
+			std::lock_guard lock(cv_all_finished_mutex);
+			thr_all_finished = true;
+		}
+		cv_all_finished.notify_all();
+	}
+
+	struct TriangleInfo
+	{
+		std::array<Vertex, 3> vertices;
+		const Texture* texture;
+		std::array<fvec2, 3> ndc_vertices;
+		std::array<float, 3> inverted_w_values;
+		std::uint32_t start_x, end_x, start_y, end_y;
+		float true_area_abc;
+		float inv_true_area_abc;
+		float constant1C, constant2C, constant3C;
+		float constant1B, constant2B, constant3B;
+	};
+
+	std::vector<TriangleInfo> prepared_triangles;
+
+	template<bool ForcePrepare = false>
+	inline void prepare_triangle(const std::array<Vertex, 3>& t_vertices, const Texture& t_texture)
+	{
+		if constexpr (!ForcePrepare)
+		{
+			if (!cull_test(t_vertices))
+			{
+				return;
+			}
+
+			std::uint8_t wrong_vertices_indexes_size = 0;
+			std::uint8_t correct_vertices_indexes_size = 0;
+
+			std::array<std::uint8_t, 3> wrong_vertices_indexes;
+			std::array<std::uint8_t, 3> correct_vertices_indexes;
+
+			for (std::uint8_t i = 0; i < 3; ++i)
+			{
+				if (t_vertices[i].position.z < 0.0F)
+				{
+					wrong_vertices_indexes[wrong_vertices_indexes_size] = i;
+					++wrong_vertices_indexes_size;
+				}
+				else
+				{
+					correct_vertices_indexes[correct_vertices_indexes_size] = i;
+					++correct_vertices_indexes_size;
+				}
+			}
+
+			if (wrong_vertices_indexes_size == 1)
+			{
+				const auto triangles = clip_with_one_wrong_vertex(
+					t_vertices[wrong_vertices_indexes[0]],
+					{ t_vertices[correct_vertices_indexes[0]], t_vertices[correct_vertices_indexes[1]] });
+				prepare_triangle<true>(triangles[0], t_texture);
+				prepare_triangle<true>(triangles[1], t_texture);
+				return;
+			}
+
+			if (wrong_vertices_indexes_size == 2)
+			{
+				const auto triangle = clip_with_two_wrong_vertices(
+					{ t_vertices[wrong_vertices_indexes[0]], t_vertices[wrong_vertices_indexes[1]] },
+					t_vertices[correct_vertices_indexes[0]]);
+				return prepare_triangle<true>(triangle, t_texture);
+			}
+		}
+
+		++triangles;
+
+		const std::array<float, 3> inverted_w_values = {
+			1.0F / t_vertices[0].position.w, 1.0F / t_vertices[1].position.w, 1.0F / t_vertices[2].position.w };
+
+		const std::array<fvec2, 3> ndc_vertices = { static_cast<fvec2>(t_vertices[0].position) * inverted_w_values[0],
+												   static_cast<fvec2>(t_vertices[1].position) * inverted_w_values[1],
+												   static_cast<fvec2>(t_vertices[2].position) * inverted_w_values[2] };
+
+		const static auto ms_width = static_cast<float>(m_width) * static_cast<float>(m_multisample);
+		const static auto ms_height = static_cast<float>(m_height) * static_cast<float>(m_multisample);
+
+		const static auto inv_ms_2width = 0.5F * ms_width;
+		const static auto inv_ms_2height = 0.5F * ms_height;
+
+		const static auto inv_inv_ms_2width = 2.0F * (1.0F / ms_width);
+		const static auto inv_inv_ms_2height = 2.0F * (1.0F / ms_height);
+
+		std::array<fvec2, 3> vertices = {
+			fvec2((ndc_vertices[0].x + 1.0F) * inv_ms_2width, (ndc_vertices[0].y + 1.0F) * inv_ms_2height),
+			fvec2((ndc_vertices[1].x + 1.0F) * inv_ms_2width, (ndc_vertices[1].y + 1.0F) * inv_ms_2height),
+			fvec2((ndc_vertices[2].x + 1.0F) * inv_ms_2width, (ndc_vertices[2].y + 1.0F) * inv_ms_2height),
+		};
+
+		std::uint32_t start_x =
+			std::max<float>(std::min<float>({ vertices[0].x, vertices[1].x, vertices[2].x }) - 1.0F, 0.0F);
+		std::uint32_t end_x = std::min<std::uint32_t>(
+			std::max<float>({ vertices[0].x, vertices[1].x, vertices[2].x }) + 1, ms_width);
+
+		std::uint32_t start_y =
+			std::max<float>(std::min<float>({ vertices[0].y, vertices[1].y, vertices[2].y }) - 1.0F, 0.0F);
+		std::uint32_t end_y = std::min<std::uint32_t>(
+			std::max<float>({ vertices[0].y, vertices[1].y, vertices[2].y }) + 1, ms_height);
+
+		const auto By = ndc_vertices[1].y;
+		const auto Ay = ndc_vertices[0].y;
+		const auto Cy = ndc_vertices[2].y;
+		const auto Ax = ndc_vertices[0].x;
+		const auto Bx = ndc_vertices[1].x;
+		const auto Cx = ndc_vertices[2].x;
+
+		const auto true_area_abc = triangle_area(ndc_vertices[0], ndc_vertices[1], ndc_vertices[2]);
+		const auto inv_true_area_abc = 1.0F / true_area_abc;
+
+		const auto constant1C = Ax * By - Bx * Ay;
+		const auto constant2C = -Ax + Bx;
+		const auto constant3C = Ay - By;
+
+		const auto constant1B = Ax * Cy - Cx * Ay;
+		const auto constant2B = -Ax + Cx;
+		const auto constant3B = Ay - Cy;
+
+		prepared_triangles.push_back(TriangleInfo{
+			t_vertices,
+			&t_texture,
+			ndc_vertices,
+			inverted_w_values,
+			start_x, end_x, start_y, end_y,
+			true_area_abc,
+			inv_true_area_abc,
+			constant1C, constant2C, constant3C,
+			constant1B, constant2B, constant3B
+			});
+	}
+
+	private:
+
+	std::mutex print_mutex;
+
+	inline void draw_prepared_triangles(unsigned t_thread_id)
+	{
+		const auto prepared_triangles_size = prepared_triangles.size();
+		for (std::size_t i = 0; i < prepared_triangles_size; ++i)
+		{
+			//copying is faster than using const references
+			const auto& triangle = prepared_triangles[i];
+			const auto& t_vertices = triangle.vertices;
+			const auto& start_x = triangle.start_x;
+			const auto& start_y = triangle.start_y;
+			const auto& end_x = triangle.end_x;
+			const auto& end_y = triangle.end_y;
+			const auto& ndc_vertices = triangle.ndc_vertices;
+			const auto& inverted_w_values = triangle.inverted_w_values;
+			const auto& constant1C = triangle.constant1C;
+			const auto& constant2C = triangle.constant2C;
+			const auto& constant3C = triangle.constant3C;
+			const auto& constant1B = triangle.constant1B;
+			const auto& constant2B = triangle.constant2B;
+			const auto& constant3B = triangle.constant3B;
+			const auto& true_area_abc = triangle.true_area_abc;
+			const auto& inv_true_area_abc = triangle.inv_true_area_abc;
+			const auto& t_texture = *triangle.texture;
+
+			const static auto ms_width = static_cast<float>(m_width) * static_cast<float>(m_multisample);
+			const static auto ms_height = static_cast<float>(m_height) * static_cast<float>(m_multisample);
+
+			const static auto inv_ms_2width = 0.5F * ms_width;
+			const static auto inv_ms_2height = 0.5F * ms_height;
+
+			const static auto inv_inv_ms_2width = 2.0F * (1.0F / ms_width);
+			const static auto inv_inv_ms_2height = 2.0F * (1.0F / ms_height);
+
+			for (std::uint32_t y = start_y + t_thread_id; y < end_y; y = y + total_threads)
+			{
+				const auto ndc_position_y = float(y) * inv_inv_ms_2height - 1.0F;
+				std::uint32_t triangle_start_left_x = end_x;
+				std::uint32_t triangle_end_right_x = end_x;
+				for (std::uint32_t x = start_x; x < end_x; ++x)
+				{
+					const auto ndc_position_x = float(x) * inv_inv_ms_2width - 1.0F;
+					if (is_point_inside_triangle(fvec2(ndc_position_x, ndc_position_y), fvec2(ndc_vertices[0]),
+						fvec2(ndc_vertices[1]), fvec2(ndc_vertices[2])))
+					{
+						triangle_start_left_x = x;
+						break;
+					}
+				}
+				if (triangle_start_left_x == end_x)
+				{
+					continue;
+				}
+				for (std::int32_t x = int(end_x) - 1; x >= start_x; --x)
+				{
+					const auto ndc_position_x = float(x) * inv_inv_ms_2width - 1.0F;
+					if (is_point_inside_triangle(fvec2(ndc_position_x, ndc_position_y), fvec2(ndc_vertices[0]),
+						fvec2(ndc_vertices[1]), fvec2(ndc_vertices[2])))
+					{
+						triangle_end_right_x = x;
+						break;
+					}
+				}
+				if (triangle_end_right_x == end_x)
+				{
+					continue;
+				}
+				const auto y_c_scale = constant1C + ndc_position_y * constant2C;
+				const auto y_b_scale = constant1B + ndc_position_y * constant2B;
+				for (std::uint32_t x = triangle_start_left_x; x <= triangle_end_right_x; ++x)
+				{
+					const auto ndc_position = fvec2(float(x) * inv_inv_ms_2width - 1.0F, ndc_position_y);
+					const auto c_scale = std::abs((y_c_scale + ndc_position.x * constant3C) * inv_true_area_abc);
+					const auto b_scale = std::abs((y_b_scale + ndc_position.x * constant3B) * inv_true_area_abc);
+					const auto a_scale = 1.0F - c_scale - b_scale;
+					const std::array<float, 3> scales{ a_scale, b_scale, c_scale };
+					const static auto aspect_ratio = float(m_width) / float(m_height);
+
+					const auto inverted_w_value =
+						(inverted_w_values[0] * scales[0] + inverted_w_values[1] * scales[1] +
+							inverted_w_values[2] * scales[2]);
+
+					const auto w_value = 1.0F / inverted_w_value;
+
+					if (!depth_test || zbuffer_test_and_set(x, y, w_value))
+					{
+						float fog_fraction = 0.0F;
+						if (fog_params.enable)
+						{
+							const float x_value =
+								(ndc_vertices[0].x * scales[0] + ndc_vertices[1].x * scales[1] + ndc_vertices[2].x * scales[2]) *
+								w_value * aspect_ratio;
+
+							const float y_value =
+								(ndc_vertices[0].y * scales[0] + ndc_vertices[1].y * scales[1] + ndc_vertices[2].y * scales[2]) *
+								w_value;
+
+							const float distance = std::sqrt(w_value * w_value + x_value * x_value + y_value * y_value);
+
+							const static auto inverted_fog_disance = 1.0F / (fog_params.end - fog_params.start);
+							fog_fraction =
+								std::clamp((distance - fog_params.start) * inverted_fog_disance, 0.0F,
+									1.0F) *
+								fog_params.destiny;
+						}
+						m_ms_pixel_info_buffer.at(x, y) = pixel_info{ &t_texture, fog_fraction, fvec2{((t_vertices[0].texture_uv.x * inverted_w_values[0]) * scales[0] +
+													(t_vertices[1].texture_uv.x * inverted_w_values[1]) * scales[1] +
+													(t_vertices[2].texture_uv.x * inverted_w_values[2]) * scales[2]) *
+													   w_value,
+												   ((t_vertices[0].texture_uv.y * inverted_w_values[0]) * scales[0] +
+													(t_vertices[1].texture_uv.y * inverted_w_values[1]) * scales[1] +
+													(t_vertices[2].texture_uv.y * inverted_w_values[2]) * scales[2]) *
+													   w_value} };
+					}
+				}
+			}
+		}
+	}
+
 	template<bool ForceDraw = false>
 	inline void draw_triangle(const std::array<Vertex, 3> &t_vertices, const Texture &t_texture)
 	{
@@ -367,44 +804,10 @@ class FrameBuffer
 			for (std::uint32_t x = triangle_start_left_x; x <= triangle_end_right_x; ++x)
 			{
 				const auto ndc_position = fvec2(float(x) * inv_inv_ms_2width - 1.0F, ndc_position_y);
-				//if (stencil_test)
-				/*if (false)
-				{
-					const auto stencil_pixel_value = m_ms_stencil_buffer.at(x, y);
-					if (stencil_function == StencilFunction::LESS)
-					{
-						if (stencil_pixel_value < stencil_value)
-						{
-							continue;
-						}
-					}
-					else
-					{
-						if (stencil_pixel_value > stencil_value)
-						{
-							continue;
-						}
-					}
-				}*/
-				//std::array<float, 3> scales;
-				//const auto c_scale = inverse_cdx * ndc_position.x + inverse_cdy * ndc_position.y + inverse_cK;
-				//const auto b_scale = inverse_bdx * ndc_position.x + inverse_bdy * ndc_position.y + inverse_bK;
 				const auto c_scale = std::abs((y_c_scale + ndc_position.x * constant3C) * inv_true_area_abc);
 				const auto b_scale = std::abs((y_b_scale + ndc_position.x * constant3B) * inv_true_area_abc);
 				const auto a_scale = 1.0F - c_scale - b_scale;
 				const std::array<float, 3> scales{a_scale, b_scale, c_scale};
-				/*for (int i = 0; i < 2; ++i)
-				{
-					const auto point =
-						line_intersection(fvec2(ndc_vertices[i]), ndc_position, fvec2(ndc_vertices[i + 1]),
-										  fvec2(ndc_vertices[i == 0 ? 2 : 0]));
-					const auto d1 = fvec2(ndc_vertices[i]) - point;
-					const auto d2 = fvec2(ndc_position) - point;
-					const auto fraction = std::sqrt(d2.x * d2.x + d2.y * d2.y) / std::sqrt(d1.x * d1.x + d1.y * d1.y);
-					scales[i] = fraction;
-				}
-				scales[2] = 1.0F - scales[0] - scales[1];*/
-
 				const static auto aspect_ratio = float(m_width) / float(m_height);
 
 				const auto inverted_w_value =
@@ -442,40 +845,6 @@ class FrameBuffer
 												(t_vertices[1].texture_uv.y * inverted_w_values[1]) * scales[1] +
 												(t_vertices[2].texture_uv.y * inverted_w_values[2]) * scales[2]) *
 												   w_value} };
-					/*++sampled_pixels;
-					auto pixel =
-						t_texture.sample(fvec2{((t_vertices[0].texture_uv.x * inverted_w_values[0]) * scales[0] +
-												(t_vertices[1].texture_uv.x * inverted_w_values[1]) * scales[1] +
-												(t_vertices[2].texture_uv.x * inverted_w_values[2]) * scales[2]) *
-												   w_value,
-											   ((t_vertices[0].texture_uv.y * inverted_w_values[0]) * scales[0] +
-												(t_vertices[1].texture_uv.y * inverted_w_values[1]) * scales[1] +
-												(t_vertices[2].texture_uv.y * inverted_w_values[2]) * scales[2]) *
-												   w_value});
-					if (fog_params.enable)
-					{
-						const float x_value =
-							(ndc_vertices[0].x * scales[0] + ndc_vertices[1].x * scales[1] + ndc_vertices[2].x * scales[2]) *
-							w_value * aspect_ratio;
-
-						const float y_value =
-							(ndc_vertices[0].y * scales[0] + ndc_vertices[1].y * scales[1] + ndc_vertices[2].y * scales[2]) *
-							w_value;
-
-						const float distance = std::sqrt(w_value * w_value + x_value * x_value + y_value * y_value);
-
-						const static auto inverted_fog_disance = 1.0F / (fog_params.end - fog_params.start);
-						const auto fraction =
-							std::clamp((distance - fog_params.start) * inverted_fog_disance, 0.0F,
-									   1.0F) *
-							fog_params.destiny;
-						pixel = Pixel(fast_lerp(pixel.r, fog_params.color.r, fraction),
-									  fast_lerp(pixel.g, fog_params.color.g, fraction),
-									  fast_lerp(pixel.b, fog_params.color.b, fraction));
-					}
-					m_ms_color_buffer.at(x, y) = pixel;
-					*/
-
 				}
 			}
 		}
@@ -491,9 +860,9 @@ class FrameBuffer
 		return t_total_value / t_size;
 	}*/
 
-	inline void sample_simple() noexcept
+	inline void sample_simple(unsigned t_thread_id) noexcept
 	{
-		for (std::uint32_t x = 0; x < m_width; ++x)
+		for (std::uint32_t x = t_thread_id; x < m_width; x = x + total_threads)
 		{
 			for (std::uint32_t y = 0; y < m_height; ++y)
 			{
@@ -518,17 +887,17 @@ class FrameBuffer
 		}
 	}
 
-	inline void sample() noexcept
+	inline void sample(unsigned t_thread_id) noexcept
 	{
 		if (m_multisample == 1)
 		{
-			return sample_simple();
+			return sample_simple(t_thread_id);
 		}
 		static const unsigned ms_times_ms = std::size_t(m_multisample) * m_multisample;
-		static std::vector<std::uint32_t> r_values(ms_times_ms);
-		static std::vector<std::uint32_t> g_values(ms_times_ms);
-		static std::vector<std::uint32_t> b_values(ms_times_ms);
-		for (std::uint32_t x = 0; x < m_width; ++x)
+		thread_local std::vector<std::uint32_t> r_values(ms_times_ms);
+		thread_local std::vector<std::uint32_t> g_values(ms_times_ms);
+		thread_local std::vector<std::uint32_t> b_values(ms_times_ms);
+		for (std::uint32_t x = t_thread_id; x < m_width; x = x + total_threads)
 		{
 			for (std::uint32_t y = 0; y < m_height; ++y)
 			{
@@ -573,7 +942,7 @@ class FrameBuffer
 			}
 		}
 	}
-
+	public:
 	inline void render_to_file(std::string_view t_tga_filename) const
 	{
 		TGA t_tga(m_width, m_height);

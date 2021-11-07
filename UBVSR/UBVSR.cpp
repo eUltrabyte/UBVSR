@@ -225,24 +225,26 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		std::array<ubv::Vertex, 3> skybox_triangleB_a{skyboxlineB_a, skyboxlineB_d, skyboxlineB_b};
 		std::array<ubv::Vertex, 3> skybox_triangleB_b{skyboxlineB_a, skyboxlineB_d, skyboxlineB_c};
 
-		frame_buffer.draw_triangle(skybox_triangle1_a, skybox3_texture);
-		frame_buffer.draw_triangle(skybox_triangle1_b, skybox3_texture);
+		frame_buffer.prepare_triangle(skybox_triangle1_a, skybox3_texture);
+		frame_buffer.prepare_triangle(skybox_triangle1_b, skybox3_texture);
 
-		frame_buffer.draw_triangle(skybox_triangle2_a, skybox1_texture);
-		frame_buffer.draw_triangle(skybox_triangle2_b, skybox1_texture);
+		frame_buffer.prepare_triangle(skybox_triangle2_a, skybox1_texture);
+		frame_buffer.prepare_triangle(skybox_triangle2_b, skybox1_texture);
 
-		frame_buffer.draw_triangle(skybox_triangle3_a, skybox4_texture);
-		frame_buffer.draw_triangle(skybox_triangle3_b, skybox4_texture);
+		frame_buffer.prepare_triangle(skybox_triangle3_a, skybox4_texture);
+		frame_buffer.prepare_triangle(skybox_triangle3_b, skybox4_texture);
 
-		frame_buffer.draw_triangle(skybox_triangle4_a, skybox2_texture);
-		frame_buffer.draw_triangle(skybox_triangle4_b, skybox2_texture);
+		frame_buffer.prepare_triangle(skybox_triangle4_a, skybox2_texture);
+		frame_buffer.prepare_triangle(skybox_triangle4_b, skybox2_texture);
 
-		frame_buffer.draw_triangle(skybox_triangleT_a, skybox_top_texture);
-		frame_buffer.draw_triangle(skybox_triangleT_b, skybox_top_texture);
+		frame_buffer.prepare_triangle(skybox_triangleT_a, skybox_top_texture);
+		frame_buffer.prepare_triangle(skybox_triangleT_b, skybox_top_texture);
 
-		frame_buffer.draw_triangle(skybox_triangleB_a, skybox_bottom_texture);
-		frame_buffer.draw_triangle(skybox_triangleB_b, skybox_bottom_texture);
+		frame_buffer.prepare_triangle(skybox_triangleB_a, skybox_bottom_texture);
+		frame_buffer.prepare_triangle(skybox_triangleB_b, skybox_bottom_texture);
 		
+		frame_buffer.draw_prepared_triangles();
+
 		frame_buffer.fog_params.enable = true;
 		frame_buffer.depth_test = true;
 
@@ -259,10 +261,12 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 					{
 						vertex.position = pvm_matrix * vertex.position;
 					}
-					frame_buffer.draw_triangle(triangle, *model->m_textures[texture]);
+					frame_buffer.prepare_triangle(triangle, *model->m_textures[texture]);
 				}
 			}
 		}
+
+		frame_buffer.draw_prepared_triangles();
 
 		constexpr float grass_y_offset = -3.16F;
 
@@ -309,6 +313,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Escape)))
 		{
+			t_text_renderer.RenderTextLine(frame_buffer, s_info, 0, frame_buffer.get_height() - 18);
 
 			t_text_renderer.RenderTextLine(frame_buffer, s_fps_num, 0, 0 * 18);
 
@@ -328,12 +333,17 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			t_text_renderer.RenderTextLine(frame_buffer, s_multisampling, 0, 15 * 18);
 
 		}
+		frame_buffer.draw_prepared_triangles();
 		//t_text_renderer.RenderTextLine(frame_buffer, s_sampled_pixels, 0, 17 * 18);
 		
 		frame_buffer.sample();
 		//frame_buffer.render_to_file("yacieyacie9292929.tga");
 		window->display(frame_buffer);
 		window->update();
+		//while (true)
+		//{
+			//std::this_thread::yield();
+		//}
 	}
 }
 
@@ -369,7 +379,7 @@ void Sandbox::start()
 	std::cout << "Hello UBVSR.\n";
 
 #if defined(_WIN32)
-	ubv::WindowWin32 window(ubv::WindowProps{592, 333, "Ultrabyte & Volian Software Rasterizer"});
+	ubv::WindowWin32 window(ubv::WindowProps{ 1280, 720, "Ultrabyte & Volian Software Rasterizer"});
 #elif defined(__unix__)
 	ubv::WindowX11 window(ubv::WindowProps{1280, 720, "Ultrabyte & Volian Software Rasterizer"});
 #endif
