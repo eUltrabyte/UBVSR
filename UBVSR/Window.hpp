@@ -25,19 +25,22 @@ enum Keys
     S,
     A,
     D,
+    E,
+    Q,
     Up,
     Down,
     Left,
     Right,
     Space,
-    Enter
+    Enter,
+    Shift
 };
 
 #if defined(_WIN32)
 const static inline std::map<Keys, unsigned> keys = {{Keys::Escape, 0x1B}, {Keys::Up, 0x26},    {Keys::Down, 0x28},
                                                      {Keys::Left, 0x25},   {Keys::Right, 0x27}, {Keys::W, 0x57},
                                                      {Keys::S, 0x53},      {Keys::A, 0x41},     {Keys::D, 0x44},
-                                                     {Keys::Space, 0x20},  {Keys::Enter, 0x0D}};
+                                                     {Keys::Space, 0x20},  {Keys::Enter, 0x0D}, {Keys::Shift, 0x10}, {Keys::E, 0x45}, {Keys::Q, 0x51} };
 #else
 const static inline std::map<Keys, unsigned> keys = {
     {Keys::Escape, 9}, {Keys::W, 25},     {Keys::S, 39},      {Keys::A, 38},     {Keys::D, 40},    {Keys::Up, 111},

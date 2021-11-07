@@ -549,7 +549,6 @@ class FrameBuffer
 		const auto prepared_triangles_size = prepared_triangles.size();
 		for (std::size_t i = 0; i < prepared_triangles_size; ++i)
 		{
-			//copying is faster than using const references
 			const auto& triangle = prepared_triangles[i];
 			const auto& t_vertices = triangle.vertices;
 			const auto& start_x = triangle.start_x;

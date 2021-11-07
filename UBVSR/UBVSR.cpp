@@ -63,16 +63,78 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		static Timepoint t3 = t1;
 		const Timepoint t2;
 		float elapsed_time = (t2 - t1);
-		float delta_time = (t2 - t3) * 2.0F;
+		float delta_time = (t2 - t3) * 4.0F;
 		//std::cout << "FPS: " << fps_counter.update(t2) << '\n';
 		//std::printf("FPS: %u\n", fps_counter.update(t2));
 		t3 = t2;
 		static ubv::fvec3 camera_position{-10.2F, 3.6F, -8.2F};
-		static ubv::fvec3 camera_pitch_yaw_roll{ubv::degrees_to_radians(15.0F), ubv::degrees_to_radians(-180.0F), 0.0F};
+		static ubv::fvec3 camera_pitch_yaw_roll{ubv::degrees_to_radians(0.0F), ubv::degrees_to_radians(-180.0F), 0.0F};
 
 		static unsigned frame_number = 0;
 
-		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
+		auto yaw_dir = ubv::rotate_2d(ubv::fvec2(0, 1), camera_pitch_yaw_roll.y);
+
+		const auto w_pressed = window->IsKeyPressed(ubv::keys.at(ubv::Keys::W));
+		const auto s_pressed = window->IsKeyPressed(ubv::keys.at(ubv::Keys::S));
+		const auto a_pressed = window->IsKeyPressed(ubv::keys.at(ubv::Keys::A));
+		const auto d_pressed = window->IsKeyPressed(ubv::keys.at(ubv::Keys::D));
+
+		const auto space_pressed = window->IsKeyPressed(ubv::keys.at(ubv::Keys::Space));
+		const auto shift_pressed = window->IsKeyPressed(ubv::keys.at(ubv::Keys::Shift));
+
+		const auto p_up_down = w_pressed ^ s_pressed;
+		const auto p_left_right = a_pressed ^ d_pressed;
+
+		const auto p_space_shift = space_pressed ^ shift_pressed;
+
+		if (p_up_down || p_left_right || p_space_shift)
+		{
+			ubv::fvec3 dir_to_move{ 0.0F,0.0F,0.0F };
+			if (p_up_down)
+			{
+				dir_to_move.z = w_pressed ? 1 : -1;
+			}
+			if (p_left_right)
+			{
+				dir_to_move.x = a_pressed ? 1 : -1;
+			}
+			if (p_space_shift)
+			{
+				dir_to_move.y = space_pressed ? 1 : -1;
+			}
+			dir_to_move = ubv::normalize(dir_to_move);
+			auto yaw_dir = ubv::rotate_2d(ubv::fvec2(dir_to_move.x, dir_to_move.z), camera_pitch_yaw_roll.y);
+			dir_to_move = ubv::fvec3(yaw_dir.x, dir_to_move.y, yaw_dir.y);
+
+			camera_position = camera_position + dir_to_move * ubv::fvec3(delta_time, delta_time, delta_time);
+		}
+
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::E)))
+		{
+			camera_pitch_yaw_roll.z -= delta_time / 4.0F;
+		}
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Q)))
+		{
+			camera_pitch_yaw_roll.z += delta_time / 4.0F;
+		}
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Up)))
+		{
+			camera_pitch_yaw_roll.x -= delta_time / 4.0F;
+		}
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Down)))
+		{
+			camera_pitch_yaw_roll.x += delta_time / 4.0F;
+		}
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Left)))
+		{
+			camera_pitch_yaw_roll.y -= delta_time / 4.0F;
+		}
+		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Right)))
+		{
+			camera_pitch_yaw_roll.y += delta_time / 4.0F;
+		}
+
+		/*if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Enter)))
 		{
 			rotateMode = !rotateMode;
 		}
@@ -85,7 +147,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			}
 			else
 			{
-				camera_position.x -= delta_time;
+				camera_position.x += delta_time;
 			}
 		}
 
@@ -127,14 +189,8 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::W)))
 		{
-			if (rotateMode)
-			{
-				camera_pitch_yaw_roll.y += delta_time / 3.0F;
-			}
-			else
-			{
-				camera_position.y += delta_time;
-			}
+			camera_position.x += yaw_dir.x * delta_time;
+			camera_position.z += yaw_dir.y * delta_time;
 		}
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::S)))
@@ -147,7 +203,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 			{
 				camera_position.y -= delta_time;
 			}
-		}
+		}*/
 
 		const auto pitch = camera_pitch_yaw_roll.x;
 		const auto yaw   = camera_pitch_yaw_roll.y;
