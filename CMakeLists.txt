@@ -27,7 +27,7 @@ add_executable(UBVSR
     "UBVSR/FpsCounter.hpp"
     "UBVSR/Buffer.hpp"
     "UBVSR/Model.hpp"
- "UBVSR/TextRenderer.hpp"  "UBVSR/TextRenderer.cpp" "UBVSR/FastVector.hpp" "UBVSR/FastVector.cpp")
+ "UBVSR/TextRenderer.hpp"  "UBVSR/TextRenderer.cpp")
 
 #enable LTO
 include(CheckIPOSupported)
