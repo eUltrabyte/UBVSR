@@ -20,6 +20,11 @@ template <typename T> [[nodiscard]] constexpr T radians_to_degrees(T t_radians) 
 	return t_radians * 180.0F / static_cast<T>(pi);
 }
 
+template <typename T> [[nodiscard]] constexpr T abs(T t_value) noexcept
+{
+	return t_value < 0.0F ? -t_value : t_value;
+}
+
 template <typename T> struct vec2
 {
 	static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");

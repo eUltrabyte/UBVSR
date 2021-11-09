@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <string_view>
 
 namespace ubv {
     class TGA {
@@ -42,11 +43,10 @@ namespace ubv {
 	    	m_pixel_data.resize(raw_data_size);
 		}
 
-
 	    inline explicit TGA(std::string_view t_filename) {
             std::ifstream file(t_filename.data(), std::ios::in | std::ios::binary);
 
-		    if(!file.is_open()) {
+		    if(!file) {
 				throw std::runtime_error("Cannot open TGA");
 		    }
 
@@ -88,7 +88,7 @@ namespace ubv {
 		{
 			std::ofstream file(t_filename.data(), std::ios::out | std::ios::binary);
 
-			if (!file.is_open()) {
+			if (!file) {
 				std::abort();
 			}
 
@@ -109,8 +109,6 @@ namespace ubv {
 		}
 
 	private:
-        //std::uint16_t m_width;
-	    //std::uint16_t m_height;
 	    std::vector<std::byte> m_pixel_data;
 		std::uint8_t m_bytes_per_pixel;
     };

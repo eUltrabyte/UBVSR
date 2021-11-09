@@ -27,7 +27,18 @@ add_executable(UBVSR
     "UBVSR/FpsCounter.hpp"
     "UBVSR/Buffer.hpp"
     "UBVSR/Model.hpp"
- "UBVSR/TextRenderer.hpp"  "UBVSR/TextRenderer.cpp")
+ "UBVSR/TextRenderer.hpp"  "UBVSR/TextRenderer.cpp" "UBVSR/FastVector.hpp" "UBVSR/FastVector.cpp")
+
+#enable LTO
+include(CheckIPOSupported)
+check_ipo_supported(RESULT supported OUTPUT error)
+
+if( supported )
+    message(STATUS "IPO / LTO enabled")
+    set_property(TARGET UBVSR PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+    message(STATUS "IPO / LTO not supported: <${error}>")
+endif()
 
 if(UNIX)
 target_link_libraries(UBVSR X11 Threads::Threads)

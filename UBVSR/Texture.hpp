@@ -4,6 +4,7 @@
 #include "TGA.hpp"
 
 #include <cmath>
+#include <string_view>
 
 namespace ubv
 {

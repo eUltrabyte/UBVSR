@@ -81,7 +81,7 @@ class FpsCounter
 	std::multiset<Timepoint> timepoints;
 
   public:
-	inline [[nodiscard]] uint32_t update(const Timepoint &timepoint = {})
+	[[nodiscard]] inline uint32_t update(const Timepoint &timepoint = {})
 	{
 		timepoints.emplace(timepoint);
 		timepoints.erase(timepoints.begin(), timepoints.lower_bound(timepoint - 1.0L));

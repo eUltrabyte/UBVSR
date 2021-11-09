@@ -5,6 +5,7 @@
 #include "TextRenderer.hpp"
 
 #include <future>
+#include <string_view>
 
 void zzz()
 {
@@ -48,16 +49,26 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	frame_buffer.fog_params = ubv::FrameBuffer::FogParams{
 		0.1F,                     // fog start
-		175.0F,                    // fog end
+		100.0F,                    // fog end
 		ubv::Pixel{100, 150, 200}, // fog color
 		1.0F,                     // fog destiny
 		true                      // fog enabled
 	};
+
+	/*frame_buffer.fog_params = ubv::FrameBuffer::FogParams{
+		9.0F,                     // fog start
+		10.0F,                    // fog end
+		ubv::Pixel{255, 0, 0}, // fog color
+		1.0F,                     // fog destiny
+		true                      // fog enabled
+	};*/
+
 	frame_buffer.set_multisample(1);
 	bool rotateMode = false;
 	bool renderZBuffer = false;
 	while (true)
 	{
+		static bool debug_info = false;
 		ubv::Log::log("[NEW FRAME]");
 		frame_buffer.clear();
 		static FpsCounter fps_counter;
@@ -355,7 +366,7 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		std::string s_width = "Width: " + std::to_string(frame_buffer.get_width());
 		std::string s_height = "Height: " + std::to_string(frame_buffer.get_height());
 
-		std::string s_multisampling = "Multisampling: " + (frame_buffer.get_multisample() > 1 ? std::to_string(frame_buffer.get_multisample()) + "x" : std::string("off"));
+		std::string s_multisampling = "Multisampling: " + (frame_buffer.get_multisample() > 1 ? std::to_string(static_cast<unsigned>(frame_buffer.get_multisample()) * frame_buffer.get_multisample()) + "x" : std::string("off"));
 
 		std::string s_sampled_pixels = "Sampled pixels: " + std::to_string(frame_buffer.sampled_pixels);
 
@@ -369,6 +380,11 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 		//t_text_renderer.RenderTextLine(frame_buffer, s_info, 0, frame_buffer.get_height() - 18);
 
 		if (window->IsKeyPressed(ubv::keys.at(ubv::Keys::Escape)))
+		{
+			debug_info = !debug_info;
+		}
+
+		if (debug_info)
 		{
 			t_text_renderer.RenderTextLine(frame_buffer, s_info, 0, frame_buffer.get_height() - 18);
 

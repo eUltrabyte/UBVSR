@@ -6,6 +6,7 @@
 #include <thread>
 #include <map>
 #include <unordered_map>
+#include <string_view>
 #include <set>
 
 #include "Pixel.hpp"

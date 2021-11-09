@@ -5,6 +5,7 @@
 #include "Vertex.hpp"
 
 #include <string>
+#include <string_view>
 
 namespace ubv
 {
@@ -23,7 +24,7 @@ class TextRenderer
     // static inline constexpr fvec2 char_size_uv{ 7.0F / 126.0F, 9.0F / 54.0F};
 
     inline void RenderTextLine(FrameBuffer &t_frame_buffer, std::string_view t_text, unsigned t_x_offset,
-                               unsigned t_y_offset)
+                               unsigned t_y_offset) const
     {
         // draw invidual chars
         const auto starting_x = float(t_x_offset) / float(t_frame_buffer.get_width()) * 2.0F - 1.0F;
