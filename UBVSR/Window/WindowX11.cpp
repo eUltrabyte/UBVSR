@@ -2,11 +2,15 @@
 
 #include "WindowX11.hpp"
 
+#include <X11/Xatom.h>
+
 #include <thread>
 #include <iostream>
 
-namespace ubv {
-	WindowX11::WindowX11(WindowProps t_win_props) : Window{ std::move(t_win_props) } {
+namespace ubv
+{
+	WindowX11::WindowX11(WindowProps t_win_props) : Window{std::move(t_win_props)}
+	{
 		m_display = XOpenDisplay(nullptr);
 		m_screen = DefaultScreen(m_display);
 		create();
@@ -17,13 +21,24 @@ namespace ubv {
 		destroy();
 	}
 
-	void WindowX11::create() {
-		m_window = XCreateSimpleWindow(m_display, RootWindow(m_display, m_screen), 10, 10, get_win_width(), get_win_height(), 1,
+	void WindowX11::create()
+	{
+		m_window = XCreateSimpleWindow(m_display, RootWindow(m_display, m_screen), 10, 10, get_win_width(),
+									   get_win_height(), 1,
 									   BlackPixel(m_display, m_screen), WhitePixel(m_display, m_screen));
 		XStoreName(m_display, m_window, get_win_title().c_str());
 		XSelectInput(m_display, m_window, ExposureMask | KeyPressMask | KeyReleaseMask);
 		XMapWindow(m_display, m_window);
 		XFlush(m_display);
+
+		// disable resizing:
+		auto sh = XAllocSizeHints();
+		sh->flags = PMinSize | PMaxSize;
+		sh->min_width = sh->max_width = get_win_width();
+		sh->min_height = sh->max_height = get_win_height();
+		//XSetWMNormalHints(d, w, sh);
+		XSetWMSizeHints(m_display, m_window, sh, XA_WM_NORMAL_HINTS);
+		XFree(sh);
 	}
 
 	void WindowX11::update() {
