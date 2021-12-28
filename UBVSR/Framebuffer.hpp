@@ -87,11 +87,6 @@ class FrameBuffer
 		// m_ms_stencil_buffer.clear();
 	}
 
-	inline bool zbuffer_test(std::uint_fast16_t t_x, std::uint_fast16_t t_y, float t_depth) const noexcept
-	{
-		return (t_depth < m_ms_depth_buffer.at(t_x, t_y));
-	}
-
 	inline bool zbuffer_test_and_set(std::uint_fast16_t t_x, std::uint_fast16_t t_y, float t_depth)
 	{
 		float &existing_depth = m_ms_depth_buffer.at(t_x, t_y);
@@ -103,8 +98,8 @@ class FrameBuffer
 		return false;
 	}
 
-	constexpr bool is_point_inside_triangle(const fvec2 &s, const fvec2 &a, const fvec2 &b,
-											const fvec2 &c) const noexcept
+	[[nodiscard]] static constexpr bool is_point_inside_triangle(const fvec2 &s, const fvec2 &a, const fvec2 &b,
+																 const fvec2 &c) noexcept
 	{
 		const auto as_x = s.x - a.x;
 		const auto as_y = s.y - a.y;
@@ -164,7 +159,7 @@ class FrameBuffer
 		const auto fraction0 =
 			(-t_wrong_vertex.position.z) / (t_correct_vertices[0].position.z - t_wrong_vertex.position.z);
 		const auto fraction1 =
-			(-t_wrong_vertex.position.z) / (t_correct_vertices[1].position.z - t_wrong_vertex.position.z);
+				(-t_wrong_vertex.position.z) / (t_correct_vertices[1].position.z - t_wrong_vertex.position.z);
 
 		const auto vertex0 = t_wrong_vertex.interpolate(t_correct_vertices[0], fraction0);
 		const auto vertex1 = t_wrong_vertex.interpolate(t_correct_vertices[1], fraction1);
@@ -173,27 +168,20 @@ class FrameBuffer
 				{vertex0, vertex1, t_correct_vertices[1]}};
 	}
 
-	constexpr std::array<Vertex, 3> clip_with_two_wrong_vertices(const std::array<Vertex, 2> &t_wrong_vertices,
-																 const Vertex &t_correct_vertex) const noexcept
+	[[nodiscard]] static constexpr std::array<Vertex, 3>
+	clip_with_two_wrong_vertices(const std::array<Vertex, 2> &t_wrong_vertices,
+								 const Vertex &t_correct_vertex) noexcept
 	{
 		const auto fraction0 =
-			(-t_wrong_vertices[0].position.z) / (t_correct_vertex.position.z - t_wrong_vertices[0].position.z);
+				(-t_wrong_vertices[0].position.z) / (t_correct_vertex.position.z - t_wrong_vertices[0].position.z);
 		const auto fraction1 =
-			(-t_wrong_vertices[1].position.z) / (t_correct_vertex.position.z - t_wrong_vertices[1].position.z);
+				(-t_wrong_vertices[1].position.z) / (t_correct_vertex.position.z - t_wrong_vertices[1].position.z);
 
 		const auto vertex0 = t_wrong_vertices[0].interpolate(t_correct_vertex, fraction0);
 		const auto vertex1 = t_wrong_vertices[1].interpolate(t_correct_vertex, fraction1);
 
 		return {vertex0, vertex1, t_correct_vertex};
 	}
-
-	bool stencil_test = false;
-	enum class StencilFunction : std::uint8_t
-	{
-		LESS,
-		GREATER
-	} stencil_function = StencilFunction::GREATER;
-	std::uint8_t stencil_value = 0x80;
 
 	/*inline void draw_to_stencil_buffer() noexcept
 	{
@@ -215,11 +203,6 @@ class FrameBuffer
 	static constexpr float triangle_area(const fvec2 &A, const fvec2 &B, const fvec2 &C) noexcept
 	{
 		return A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y);
-	}
-
-	static constexpr float triangle_area(float constant1, float constant2, float constant3, const fvec2 &C) noexcept
-	{
-		return constant1 + C.y * constant2 + C.x * constant3;
 	}
 
 	enum class ThreadState : std::uint8_t
@@ -252,7 +235,7 @@ class FrameBuffer
 	std::condition_variable cv_states;
 	std::mutex cv_states_mutex;
 
-	void thread_function(unsigned t_thread_id)
+	[[noreturn]] void thread_function(unsigned t_thread_id)
 	{
 		Log::log("Starting thread " + std::to_string(t_thread_id));
 		while (true)
@@ -260,7 +243,7 @@ class FrameBuffer
 			Log::log("Waiting for work on thread " + std::to_string(t_thread_id));
 			{
 				std::unique_lock<std::mutex> lock(cv_work_mutex);
-				cv_work.wait(lock, [&]() { return thr_do_work == true; });
+				cv_work.wait(lock, [&]() { return thr_do_work; });
 			}
 			Log::log("Finished waiting for work on thread " + std::to_string(t_thread_id));
 			// we have work to do!
@@ -288,7 +271,7 @@ class FrameBuffer
 			{
 				Log::log("Waiting for all threads to finish on thread " + std::to_string(t_thread_id));
 				std::unique_lock<std::mutex> lock(cv_all_finished_mutex);
-				cv_all_finished.wait(lock, [&]() { return thr_all_finished == true; });
+				cv_all_finished.wait(lock, [&]() { return thr_all_finished; });
 				Log::log("Finished waiting for all threads to finish on thread " + std::to_string(t_thread_id));
 			}
 			{
@@ -299,9 +282,9 @@ class FrameBuffer
 		}
 	}
 
-	inline bool are_all_threads_finished() const
+	[[nodiscard]] inline bool are_all_threads_finished() const
 	{
-		for (const auto state : thread_states)
+		for (const auto state: thread_states)
 		{
 			if (state != ThreadState::FINISHED)
 				return false;
@@ -309,19 +292,9 @@ class FrameBuffer
 		return true;
 	}
 
-	inline bool are_all_threads_busy() const
+	[[nodiscard]] inline bool are_all_threads_idle() const
 	{
-		for (const auto state : thread_states)
-		{
-			if (state != ThreadState::BUSY)
-				return false;
-		}
-		return true;
-	}
-
-	inline bool are_all_threads_idle() const
-	{
-		for (const auto state : thread_states)
+		for (const auto state: thread_states)
 		{
 			if (state != ThreadState::IDLE)
 				return false;
@@ -457,11 +430,11 @@ class FrameBuffer
 
 			if (wrong_vertices_indexes_size == 1)
 			{
-				const auto triangles = clip_with_one_wrong_vertex(
-					t_vertices[wrong_vertices_indexes[0]],
-					{t_vertices[correct_vertices_indexes[0]], t_vertices[correct_vertices_indexes[1]]});
-				prepare_triangle<true>(triangles[0], t_texture);
-				prepare_triangle<true>(triangles[1], t_texture);
+				const auto i_triangles = clip_with_one_wrong_vertex(
+						t_vertices[wrong_vertices_indexes[0]],
+						{t_vertices[correct_vertices_indexes[0]], t_vertices[correct_vertices_indexes[1]]});
+				prepare_triangle<true>(i_triangles[0], t_texture);
+				prepare_triangle<true>(i_triangles[1], t_texture);
 				return;
 			}
 
@@ -540,7 +513,6 @@ class FrameBuffer
 	}
 
   private:
-	std::mutex print_mutex;
 
 	inline void draw_prepared_triangles(unsigned t_thread_id)
 	{
@@ -674,9 +646,9 @@ class FrameBuffer
 		return t_total_value / t_size;
 	}*/
 
-	inline Pixel sample_pixel(std::uint32_t t_x, std::uint32_t t_y) const noexcept
+	[[nodiscard]] inline Pixel sample_pixel(std::uint32_t t_x, std::uint32_t t_y) const noexcept
 	{
-		const auto& pixel_info = m_ms_pixel_info_buffer.at(t_x, t_y);
+		const auto &pixel_info = m_ms_pixel_info_buffer.at(t_x, t_y);
 		if (!pixel_info.texture)
 		{
 			return fog_params.color;
@@ -747,7 +719,7 @@ class FrameBuffer
 	}
 
   public:
-	inline void render_to_file(std::string_view t_tga_filename) const
+	[[maybe_unused]] inline void render_to_file(std::string_view t_tga_filename) const
 	{
 		TGA t_tga(m_width, m_height);
 		for (std::uint16_t x = 0; x < m_width; ++x)
@@ -848,4 +820,4 @@ class FrameBuffer
 	// stencil buffer
 	// StencilBuffer m_ms_stencil_buffer;
 };
-}; // namespace ubv
+} // namespace ubv

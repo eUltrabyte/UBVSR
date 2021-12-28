@@ -42,7 +42,7 @@ class Model
 					{
 						if (!strings.back().empty())
 						{
-							strings.push_back({});
+							strings.emplace_back();
 						}
 					}
 					else
@@ -68,11 +68,11 @@ class Model
 			}
 			if (strings[0] == "v")
 			{
-				vertices.push_back(fvec3{std::stof(strings[1]),std::stof(strings[2]),std::stof(strings[3]) });
+				vertices.emplace_back(std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3]));
 			}
 			else if (strings[0] == "vt")
 			{
-				uvs.push_back(fvec2{ std::stof(strings[1]),std::stof(strings[2]) });
+				uvs.emplace_back(std::stof(strings[1]), std::stof(strings[2]));
 			}
 			else if (strings[0] == "usemtl")
 			{
@@ -138,14 +138,15 @@ class Model
 					const fvec2 uv = uvs.at(std::stoull(elements[1]) - 1);
 					face_verts[i] = Vertex{ fvec4{pos, 1.0F}, uv };
 				}*/
-				
+
 			}
 		}
 	}
+
 	std::unordered_map<std::string, std::vector<std::array<Vertex, 3>>> m_triangles;
 	std::unordered_map<std::string, std::unique_ptr<Texture>> m_textures;
 
 	static inline Texture missing_texture = Texture("res/missing.tga", Texture::FilteringType::NEAREST);
 };
 
-}; // namespace ubv
+} // namespace ubv

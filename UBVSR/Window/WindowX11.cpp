@@ -7,12 +7,13 @@
 
 namespace ubv {
 	WindowX11::WindowX11(WindowProps t_win_props) : Window{ std::move(t_win_props) } {
-		m_display = XOpenDisplay(0);
+		m_display = XOpenDisplay(nullptr);
 		m_screen = DefaultScreen(m_display);
 		create();
 	}
 
-	WindowX11::~WindowX11() {
+	WindowX11::~WindowX11() noexcept
+	{
 		destroy();
 	}
 
@@ -54,6 +55,6 @@ namespace ubv {
 	    return &m_event;
 	}
 
-};
+}
 
 #endif

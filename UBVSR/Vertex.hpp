@@ -19,7 +19,7 @@ namespace ubv {
 	struct Vertex {
 		fvec4 position;
 		fvec2 texture_uv;
-		constexpr Vertex interpolate(const Vertex& t_vertex, float t_fraction) const noexcept
+		[[nodiscard]] constexpr Vertex interpolate(const Vertex &t_vertex, float t_fraction) const noexcept
 		{
 			Vertex vertex;
 			vertex.position = position + (t_vertex.position - position) * t_fraction;
@@ -27,4 +27,4 @@ namespace ubv {
 			return vertex;
 		}
 	};
-};
+}

@@ -42,11 +42,13 @@ namespace ubv {
 		[[nodiscard]] inline bool IsKeyPressed(int keycode) noexcept {
 			switch(m_event.type) {
 				case KeyPress:
-				case KeyRelease: [[fallthrough]]
-					if (m_event.xkey.keycode == keycode) {
+				case KeyRelease:
+					if (m_event.xkey.keycode == keycode)
+					{
 						m_event.xkey.keycode = 0;
 						return true;
-					} else {
+					} else
+					{
 						return false;
 					}
 					break;
@@ -66,6 +68,6 @@ namespace ubv {
 		XEvent m_event;
 		XImage* m_image;
 	};
-};
+}
 
 #endif

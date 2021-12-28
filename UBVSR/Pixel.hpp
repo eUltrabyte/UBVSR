@@ -9,7 +9,7 @@ namespace ubv {
 			std::uint8_t b{0};
 			std::uint8_t g{0};
 			std::uint8_t r{0};
-			std::uint8_t a{255};
+		std::uint8_t a{255};
 		#else
 			std::uint8_t b;
 			std::uint8_t g;
@@ -20,10 +20,4 @@ namespace ubv {
 		constexpr explicit Pixel(std::uint8_t t_r, std::uint8_t t_g, std::uint8_t t_b) noexcept : r{ t_r }, g{ t_g }, b{ t_b } { }
 	};
 
-	constexpr Pixel interpolate(Pixel t_color1, Pixel t_color2, float t_fraction) noexcept {
-			t_fraction = std::clamp(t_fraction, 0.0F, 1.0F);
-			return Pixel{ std::uint8_t((float(t_color2.r) - float(t_color1.r)) * t_fraction + float(t_color1.r)),
-						  std::uint8_t((float(t_color2.g) - float(t_color1.g)) * t_fraction + float(t_color1.g)),
-						  std::uint8_t((float(t_color2.b) - float(t_color1.b)) * t_fraction + float(t_color1.b)) };
-	}
-};
+}

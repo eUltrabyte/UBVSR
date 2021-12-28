@@ -20,30 +20,30 @@ template <typename T> [[nodiscard]] constexpr T radians_to_degrees(T t_radians) 
 	return t_radians * 180.0F / static_cast<T>(pi);
 }
 
-template <typename T> [[nodiscard]] constexpr T abs(T t_value) noexcept
-{
-	return t_value < 0.0F ? -t_value : t_value;
-}
-
-template <typename T> struct vec2
-{
-	static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
-
-	T x;
-	T y;
-
-	constexpr explicit vec2() noexcept = default;
-	constexpr explicit vec2(T t_x, T t_y) noexcept : x{t_x}, y{t_y}
+	template<typename T>
+	struct vec2
 	{
-	}
-	template <typename U>
-	constexpr explicit vec2(const vec2<U> &t_vec) noexcept : x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}
-	{
-	}
-	constexpr vec2<T> operator*(T t_value) const noexcept
-	{
-		return vec2<T>{x * t_value, y * t_value};
-	}
+		static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
+
+		T x;
+		T y;
+
+		constexpr explicit vec2() noexcept = default;
+
+		constexpr explicit vec2(T t_x, T t_y) noexcept: x{t_x}, y{t_y}
+		{
+		}
+
+		template<typename U>
+		[[maybe_unused]] constexpr explicit
+		vec2(const vec2<U> &t_vec) noexcept : x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}
+		{
+		}
+
+		constexpr vec2<T> operator*(T t_value) const noexcept
+		{
+			return vec2<T>{x * t_value, y * t_value};
+		}
 
 	constexpr vec2<T> operator/(T t_value) const noexcept
 	{
@@ -93,19 +93,21 @@ template <typename T> struct vec3
 	{
 	}
 
-	template <typename U>
-	constexpr explicit vec3(const vec2<U> &t_vec, U t_z) noexcept
-		: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_z)}
+	template<typename U>
+	[[maybe_unused]] constexpr explicit vec3(const vec2<U> &t_vec, U t_z) noexcept
+			: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_z)}
 	{
 	}
-	template <typename U>
-	constexpr explicit vec3(U t_x, const vec2<U> &t_vec) noexcept
-		: x{static_cast<T>(t_x)}, y{static_cast<T>(t_vec.x)}, z{static_cast<T>(t_vec.y)}
+
+	template<typename U>
+	[[maybe_unused]] constexpr explicit vec3(U t_x, const vec2<U> &t_vec) noexcept
+			: x{static_cast<T>(t_x)}, y{static_cast<T>(t_vec.x)}, z{static_cast<T>(t_vec.y)}
 	{
 	}
-	template <typename U>
-	constexpr explicit vec3(const vec3<U> &t_vec) noexcept
-		: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_vec.z)}
+
+	template<typename U>
+	[[maybe_unused]] constexpr explicit vec3(const vec3<U> &t_vec) noexcept
+			: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_vec.z)}
 	{
 	}
 
@@ -204,27 +206,33 @@ template <typename T> struct vec4
 	{
 	}
 
-	template <typename U>
-	constexpr explicit vec4(const vec3<U> &t_vec, U t_w) noexcept
-		: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_vec.z)}, w{static_cast<T>(t_w)}
-	{
-	}
-	template <typename U>
-	constexpr explicit vec4(const vec2<U> &t_vec, U t_z, U t_w) noexcept
-		: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_z)}, w{static_cast<T>(t_w)}
-	{
-	}
-	template <typename U>
-	constexpr explicit vec4(const vec2<U> &t_vec1, const vec2<U> &t_vec2) noexcept
-		: x{static_cast<T>(t_vec1.x)}, y{static_cast<T>(t_vec1.y)}, z{static_cast<T>(t_vec2.x)}, w{static_cast<T>(
-																									 t_vec2.y)}
-	{
-	}
-	template <typename U>
-	constexpr explicit vec4(const vec4<U> &t_vec) noexcept
-		: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_vec.z)}, w{static_cast<T>(t_vec.w)}
-	{
-	}
+		template<typename U>
+		[[maybe_unused]] constexpr explicit vec4(const vec3<U> &t_vec, U t_w) noexcept
+				: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_vec.z)},
+				  w{static_cast<T>(t_w)}
+		{
+		}
+
+		template<typename U>
+		[[maybe_unused]] constexpr explicit vec4(const vec2<U> &t_vec, U t_z, U t_w) noexcept
+				: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_z)}, w{static_cast<T>(t_w)}
+		{
+		}
+
+		template<typename U>
+		[[maybe_unused]] constexpr explicit vec4(const vec2<U> &t_vec1, const vec2<U> &t_vec2) noexcept
+				: x{static_cast<T>(t_vec1.x)}, y{static_cast<T>(t_vec1.y)}, z{static_cast<T>(t_vec2.x)},
+				  w{static_cast<T>(
+							t_vec2.y)}
+		{
+		}
+
+		template<typename U>
+		[[maybe_unused]] constexpr explicit vec4(const vec4<U> &t_vec) noexcept
+				: x{static_cast<T>(t_vec.x)}, y{static_cast<T>(t_vec.y)}, z{static_cast<T>(t_vec.z)},
+				  w{static_cast<T>(t_vec.w)}
+		{
+		}
 
 	constexpr vec4<T> operator+(const vec4<T> &t_vec) const noexcept
 	{
@@ -272,24 +280,21 @@ using fvec3 = vec3<float>;
 using fvec4 = vec4<float>;
 
 using u16vec2 = vec2<std::uint16_t>;
-using u16vec3 = vec3<std::uint16_t>;
-using u16vec4 = vec4<std::uint16_t>;
 
-using u32vec2 = vec2<std::uint32_t>;
-using u32vec3 = vec3<std::uint32_t>;
-using u32vec4 = vec4<std::uint32_t>;
+	using u32vec2 = vec2<std::uint32_t>;
 
-template <typename T> struct mat4x4
-{
-	static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
+	template<typename T>
+	struct mat4x4
+	{
+		static_assert(std::is_arithmetic_v<T>, "Type must be arithmetic");
 
-	std::array<std::array<T, 4>, 4> matrix = {std::array<T, 4>{0, 0, 0, 0}, std::array<T, 4>{0, 0, 0, 0},
-											  std::array<T, 4>{0, 0, 0, 0}, std::array<T, 4>{0, 0, 0, 0}};
+		std::array<std::array<T, 4>, 4> matrix = {std::array<T, 4>{0, 0, 0, 0}, std::array<T, 4>{0, 0, 0, 0},
+												  std::array<T, 4>{0, 0, 0, 0}, std::array<T, 4>{0, 0, 0, 0}};
 
-	constexpr explicit mat4x4() noexcept = default;
+		constexpr explicit mat4x4() noexcept = default;
 
-	// perspective matrix
-	inline explicit mat4x4(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
+		// perspective matrix
+		inline explicit mat4x4(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
 	{
 		const T tan_half_fov_radians = 1.0F / std::tan(0.5F * degrees_to_radians(t_fov));
 		matrix[0][0] = 1.0F / t_aspect_ratio * tan_half_fov_radians;
@@ -354,13 +359,13 @@ template <typename T> struct mat4x4
 		matrix[3][3] = 1;
 	}
 
-	constexpr void translate(const vec3<T> &t_vec) noexcept
-	{
-		matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
-		matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
-		matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
-		matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
-	}
+		[[maybe_unused]] constexpr void translate(const vec3<T> &t_vec) noexcept
+		{
+			matrix[3][0] = matrix[0][0] * t_vec.x + matrix[1][0] * t_vec.y + matrix[2][0] * t_vec.z + matrix[3][0];
+			matrix[3][1] = matrix[0][1] * t_vec.x + matrix[1][1] * t_vec.y + matrix[2][1] * t_vec.z + matrix[3][1];
+			matrix[3][2] = matrix[0][2] * t_vec.x + matrix[1][2] * t_vec.y + matrix[2][2] * t_vec.z + matrix[3][2];
+			matrix[3][3] = matrix[0][3] * t_vec.x + matrix[1][3] * t_vec.y + matrix[2][3] * t_vec.z + matrix[3][3];
+		}
 
 	constexpr void rotate(T t_angle, const vec3<T> &t_vec) noexcept
 	{
@@ -489,52 +494,18 @@ template <typename T> struct mat4x4
 	}
 
 	using fmat4x4 = mat4x4<float>;
-	using u16mat4x4 = mat4x4<std::uint16_t>;
-	using u32mat4x4 = mat4x4<std::uint32_t>;
 
 	template<typename T>
-	[[nodiscard]] inline mat4x4<T> projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
+	[[nodiscard]] inline mat4x4<T> look_at(const vec3<T> &t_eye, const vec3<T> &t_center, const vec3<T> &t_up) noexcept
 	{
-		return mat4x4<T>{t_fov, t_aspect_ratio, t_near_z, t_far_z};
-		/*fmat4x4 matrix;
+		const vec3<T> f(normalize(t_center - t_eye));
+		const vec3<T> s(normalize(cross_product(f, t_up)));
+		const vec3<T> u(cross_product(s, f));
 
-		const T fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
-		matrix[0][0] = 1.0F / t_aspect_ratio * fov_radians;
-		matrix[1][1] = 1.0F / fov_radians;
-		matrix[2][2] = t_far_z / (t_far_z - t_near_z);
-		matrix[2][3] = 1.0F;
-		matrix[3][2] = -(2.0F * t_far_z * t_near_z) / (t_far_z - t_near_z);
-
-		return matrix;*/
-}
-
-template <typename T>
-[[nodiscard]] constexpr mat4x4<T> ortho2d(T t_left, T t_right, T t_bottom, T t_top, T t_near_z, T t_far_z) noexcept
-{
-	return mat4x4<T>{t_left, t_right, t_bottom, t_top, t_near_z, t_far_z};
-	/*fmat4x4 matrix;
-
-	matrix[0][0] = 2.0F / (t_right - t_left);
-	matrix[1][1] = 2.0F / (t_top - t_bottom);
-	matrix[2][2] = -2.0F / (t_far_z - t_near_z);
-	matrix[3][0] = -(t_right + t_left) / (t_right - t_left);
-	matrix[3][1] = -(t_top + t_bottom) / (t_top - t_bottom);
-	matrix[3][2] = -(t_far_z + t_near_z) / (t_far_z - t_near_z);
-
-	return matrix;*/
-}
-
-template <typename T>
-[[nodiscard]] inline mat4x4<T> look_at(const vec3<T> &t_eye, const vec3<T> &t_center, const vec3<T> &t_up) noexcept
-{
-	const vec3<T> f(normalize(t_center - t_eye));
-	const vec3<T> s(normalize(cross_product(f, t_up)));
-	const vec3<T> u(cross_product(s, f));
-
-	mat4x4<T> matrix{identity<T>()};
-	matrix.matrix[0][0] = s.x;
-	matrix.matrix[1][0] = s.y;
-	matrix.matrix[2][0] = s.z;
+		mat4x4<T> matrix{identity<T>()};
+		matrix.matrix[0][0] = s.x;
+		matrix.matrix[1][0] = s.y;
+		matrix.matrix[2][0] = s.z;
 	matrix.matrix[0][1] = u.x;
 	matrix.matrix[1][1] = u.y;
 	matrix.matrix[2][1] = u.z;
@@ -663,4 +634,4 @@ t_plane_p));
 	}
 }*/
 
-}; // namespace ubv
+} // namespace ubv

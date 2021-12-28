@@ -7,19 +7,6 @@
 #include <future>
 #include <string_view>
 
-void zzz()
-{
-	// ubv::StencilBuffer color_buffer(640, 480);
-	// color_buffer.at(40, 50) = true;
-	// const auto &bb = color_buffer;
-	// auto &z = bb.at(40, 50);
-	// color_buffer.clear();
-	// ubv::DepthBuffer depth_buffer(ubv::u16vec2{640,480});
-	// ubv::StencilBuffer stencil_buffer(ubv::u16vec2{640,480});
-	// stencil_buffer.at(ubv::u16vec2{ 3,4 }) = true;
-	// std::vector<float> yaa{std::size_t(5000) * uint16_t(3), std::numeric_limits<float>::infinity() };
-}
-
 ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle)
 {
 	float s = std::sin(t_angle);
@@ -39,17 +26,18 @@ ubv::fvec2 rotate(ubv::fvec2 t_point, ubv::fvec2 t_origin, float t_angle)
 	return t_point;
 }
 
-void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projection, std::vector<ubv::Model *> models,
-			   const ubv::Texture &grass_texture, const ubv::Texture &skybox1_texture,
-			   const ubv::Texture &skybox2_texture, const ubv::Texture &skybox3_texture,
-			   const ubv::Texture &skybox4_texture, const ubv::Texture &skybox_top_texture,
-			   const ubv::Texture &skybox_bottom_texture, ubv::TextRenderer& t_text_renderer) noexcept
+[[noreturn]] void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projection,
+							const std::vector<ubv::Model *> &models,
+							const ubv::Texture &grass_texture, const ubv::Texture &skybox1_texture,
+							const ubv::Texture &skybox2_texture, const ubv::Texture &skybox3_texture,
+							const ubv::Texture &skybox4_texture, const ubv::Texture &skybox_top_texture,
+							const ubv::Texture &skybox_bottom_texture, ubv::TextRenderer &t_text_renderer) noexcept
 {
 	const Timepoint t1;
 	ubv::FrameBuffer frame_buffer(window->get_win_width(), window->get_win_height());
 	frame_buffer.fog_params = ubv::FrameBuffer::FogParams{
-		0.1F,                     // fog start
-		100.0F,                    // fog end
+			0.1F,                     // fog start
+			100.0F,                    // fog end
 		ubv::Pixel{100, 150, 200}, // fog color
 		1.0F,                     // fog destiny
 		true                      // fog enabled
@@ -115,8 +103,8 @@ void draw_loop(ubv::Window *window, ubv::Texture &texture1, ubv::fmat4x4 &projec
 				dir_to_move.y = space_pressed ? 1 : -1;
 			}
 			dir_to_move = ubv::normalize(dir_to_move);
-			auto yaw_dir = ubv::rotate_2d(ubv::fvec2(dir_to_move.x, dir_to_move.z), camera_pitch_yaw_roll.y);
-			dir_to_move = ubv::fvec3(yaw_dir.x, dir_to_move.y, yaw_dir.y);
+			auto n_yaw_dir = ubv::rotate_2d(ubv::fvec2(dir_to_move.x, dir_to_move.z), camera_pitch_yaw_roll.y);
+			dir_to_move = ubv::fvec3(n_yaw_dir.x, dir_to_move.y, n_yaw_dir.y);
 
 			camera_position = camera_position + dir_to_move * ubv::fvec3(delta_time, delta_time, delta_time);
 		}
@@ -443,10 +431,6 @@ Sandbox::Sandbox(int t_argc, char **t_argv)
 	}
 }
 
-Sandbox::~Sandbox()
-{
-}
-
 void Sandbox::start()
 {
 	std::cout << "Hello UBVSR.\n";
@@ -462,16 +446,17 @@ void Sandbox::start()
 	//model_dust2.model_matrix.scale(ubv::fvec3(0.5, 0.1, 0.5));
 
 	projection = fmat4x4(
-		90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F, 175.0F);
-	Model model_wf{ "res/WF.obj" };
+			90.0F, static_cast<float>(window.get_win_width()) / static_cast<float>(window.get_win_height()), 0.1F,
+			175.0F);
+	Model model_wf{"res/WF.obj"};
 	model_wf.model_matrix.scale(fvec3(0.1, 0.1, 0.1));
-	draw_loop(&window, texture1, projection, {&model_dust2 }, texture1, skybox1, skybox2, skybox3, skybox4,
+	draw_loop(&window, texture1, projection, {&model_dust2}, texture1, skybox1, skybox2, skybox3, skybox4,
 			  skybox_top, skybox_bottom, text_renderer);
 
 	std::cout << "Goodbye UBVSR\n";
 	std::cin.get();
 }
-}; // namespace ubv
+} // namespace ubv
 
 int main(int argc, char **argv)
 try

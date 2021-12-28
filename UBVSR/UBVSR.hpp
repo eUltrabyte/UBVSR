@@ -23,8 +23,9 @@
 namespace ubv {
     class Sandbox {
     public:
-        explicit Sandbox(int t_argc, char** t_argv);
-        virtual ~Sandbox() noexcept;
+        explicit Sandbox(int t_argc, char **t_argv);
+
+		virtual ~Sandbox() noexcept = default;
 
         virtual void start();
 
@@ -38,4 +39,4 @@ namespace ubv {
         TextRenderer text_renderer;
     };
 
-};
+}

@@ -12,17 +12,21 @@
 
 namespace ubv
 {
-template <typename Type, Type DefaultValue = Type{}> class Buffer
-{
-  public:
-	inline explicit Buffer(std::uint16_t t_width, std::uint16_t t_height)
-		: m_width{t_width}, m_height{t_height}, m_data(static_cast<std::size_t>(m_width) * m_height, DefaultValue)
+
+	template<typename Type, Type DefaultValue = Type{}>
+	class [[maybe_unused]] Buffer
 	{
-	}
-	inline void clear() noexcept
-	{
-		std::fill(m_data.begin(), m_data.end(), DefaultValue);
-	}
+	public:
+		inline explicit Buffer(std::uint16_t t_width, std::uint16_t t_height)
+				: m_width{t_width}, m_height{t_height},
+				  m_data(static_cast<std::size_t>(m_width) * m_height, DefaultValue)
+		{
+		}
+
+		inline void clear() noexcept
+		{
+			std::fill(m_data.begin(), m_data.end(), DefaultValue);
+		}
 	[[nodiscard]] inline const Type &at(std::uint_fast16_t t_x, std::uint_fast16_t t_y) const noexcept
 	{
 		return m_data[static_cast<std::size_t>(t_y) * m_width + t_x];
@@ -50,8 +54,6 @@ template <typename Type, Type DefaultValue = Type{}> class Buffer
 
 using ColorBuffer = Buffer<Pixel>;
 using DepthBuffer = Buffer<float, std::numeric_limits<float>::infinity()>;
-using StencilBuffer = Buffer<std::uint8_t, false>;
-using NDCBuffer = Buffer<fvec2>;
-;
+
 
 } // namespace ubv

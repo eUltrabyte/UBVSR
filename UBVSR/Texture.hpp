@@ -19,7 +19,7 @@ class Texture
 
 	bool clamp = false;
 
-	constexpr vec2<int> fix_position(vec2<int> t_position) const noexcept
+	[[nodiscard]] constexpr vec2<int> fix_position(vec2<int> t_position) const noexcept
 	{
 		if (t_position.x < 0)
 			t_position.x = clamp ? 0 : size_x_m1;
@@ -43,7 +43,7 @@ class Texture
 		return fraction;
 	}
 
-	inline Pixel sample_bilinear(const fvec2& pos_uv) const noexcept
+	[[nodiscard]] inline Pixel sample_bilinear(const fvec2 &pos_uv) const noexcept
 	{
 		const int x_pos = std::floor(pos_uv.x - 0.5F);
 		const int y_pos = std::floor(pos_uv.y - 0.5F);
@@ -65,7 +65,7 @@ class Texture
 		return pixel;
 	}
 
-	inline Pixel sample(fvec2 pos_uv) const noexcept
+	[[nodiscard]] inline Pixel sample(fvec2 pos_uv) const noexcept
 	{
 		if (!clamp)
 		{
@@ -74,38 +74,23 @@ class Texture
 		}
 		pos_uv.x *= size_x;
 		pos_uv.y *= size_y;
-		switch (m_filtering_type)
+		if (m_filtering_type == FilteringType::BILINEAR) [[likely]]
 		{
-		case FilteringType::NEAREST: {
-			auto position = fix_position(vec2<int>(pos_uv.x, pos_uv.y));
-			return m_tga.get_pixel(position.x, position.y);
-		}
-		break;
-		case FilteringType::BILINEAR: {
 			return sample_bilinear(pos_uv);
 		}
-		break;
-		}
+		const auto position = fix_position(vec2<int>(pos_uv.x, pos_uv.y));
+		return m_tga.get_pixel(position.x, position.y);
 	}
 
-	inline Texture(std::string_view t_tga_filename, FilteringType t_filtering_type = FilteringType::NEAREST)
-		: m_tga{t_tga_filename}, m_filtering_type{t_filtering_type}, inverse_size_x{1.0F / float(m_tga.get_width())},
-		  inverse_size_y{1.0F / float(m_tga.get_height())}, size_x{float(m_tga.get_width())}, size_y{float(
-																								  m_tga.get_height())},
-		  size_x_m1(m_tga.get_width() - 1), size_y_m1(m_tga.get_height() - 1)
+	inline explicit Texture(std::string_view t_tga_filename, FilteringType t_filtering_type = FilteringType::NEAREST)
+			: m_tga{t_tga_filename}, m_filtering_type{t_filtering_type}, size_x{float(m_tga.get_width())}, size_y{float(
+			m_tga.get_height())},
+			  size_x_m1(m_tga.get_width() - 1), size_y_m1(m_tga.get_height() - 1)
 	{
 	}
 
-	constexpr u16vec2 get_size() const noexcept
-	{
-		return u16vec2(static_cast<uint16_t>(m_tga.get_width()), static_cast<uint16_t>(m_tga.get_height()));
-	}
-
-  private:
+private:
 	TGA m_tga;
-
-	float inverse_size_x;
-	float inverse_size_y;
 
 	float size_x;
 	float size_y;
@@ -113,4 +98,4 @@ class Texture
 	unsigned size_x_m1;
 	unsigned size_y_m1;
 };
-}; // namespace ubv
+} // namespace ubv

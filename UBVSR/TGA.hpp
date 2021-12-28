@@ -72,15 +72,18 @@ namespace ubv {
 			return (*reinterpret_cast<Pixel*>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
         }
 
-		inline const Pixel& get_pixel(unsigned x, unsigned y) const {
-			return (*reinterpret_cast<const Pixel*>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
-        }
+		[[nodiscard]] inline const Pixel &get_pixel(unsigned x, unsigned y) const
+		{
+			return (*reinterpret_cast<const Pixel *>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
+		}
 
-		constexpr std::uint16_t get_width() const noexcept {
+		[[nodiscard]] constexpr std::uint16_t get_width() const noexcept
+		{
 			return header.width;
 		}
 
-		constexpr std::uint16_t get_height() const noexcept {
+		[[nodiscard]] constexpr std::uint16_t get_height() const noexcept
+		{
 			return header.height;
 		}
 
@@ -100,16 +103,15 @@ namespace ubv {
 			file.write(reinterpret_cast<const char*>(&header.colourmapdepth), sizeof(header.colourmapdepth));
 			file.write(reinterpret_cast<const char*>(&header.x_origin), sizeof(header.x_origin));
 			file.write(reinterpret_cast<const char*>(&header.y_origin), sizeof(header.y_origin));
-			file.write(reinterpret_cast<const char*>(&header.width), sizeof(header.width));
-			file.write(reinterpret_cast<const char*>(&header.height), sizeof(header.height));
-			file.write(reinterpret_cast<const char*>(&header.bitsperpixel), sizeof(header.bitsperpixel));
-			file.write(reinterpret_cast<const char*>(&header.imagedescriptor), sizeof(header.imagedescriptor));
+			file.write(reinterpret_cast<const char *>(&header.width), sizeof(header.width));
+			file.write(reinterpret_cast<const char *>(&header.height), sizeof(header.height));
+			file.write(reinterpret_cast<const char *>(&header.bitsperpixel), sizeof(header.bitsperpixel));
+			file.write(reinterpret_cast<const char *>(&header.imagedescriptor), sizeof(header.imagedescriptor));
 
-			file.write(reinterpret_cast<const char*>(m_pixel_data.data()), m_pixel_data.size());
+			file.write(reinterpret_cast<const char *>(m_pixel_data.data()), m_pixel_data.size());
 		}
 
 	private:
-	    std::vector<std::byte> m_pixel_data;
-		std::uint8_t m_bytes_per_pixel;
-    };
-};
+		std::vector<std::byte> m_pixel_data;
+	};
+}

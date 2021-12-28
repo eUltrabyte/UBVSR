@@ -100,14 +100,14 @@ class Window
     [[nodiscard]] constexpr std::uint16_t get_win_height() const noexcept
     {
         return m_win_props.height;
-    }
+	}
 
-    [[nodiscard]] constexpr const std::string &get_win_title() const noexcept
-    {
-        return m_win_props.title;
-    }
+	[[nodiscard]] constexpr const std::string &get_win_title() const noexcept
+	{
+		return m_win_props.title;
+	}
 
-  private:
-    WindowProps m_win_props;
+private:
+	WindowProps m_win_props;
 };
-}; // namespace ubv
+} // namespace ubv
