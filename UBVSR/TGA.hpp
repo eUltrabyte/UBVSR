@@ -68,11 +68,12 @@ namespace ubv {
             file.read(reinterpret_cast<char*>(m_pixel_data.data()), raw_data_size);
 	    }
 
-		inline Pixel& get_pixel(unsigned x, unsigned y) {
-			return (*reinterpret_cast<Pixel*>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
-        }
+		inline Pixel &get_pixel(std::size_t x, std::size_t y)
+		{
+			return (*reinterpret_cast<Pixel *>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
+		}
 
-		[[nodiscard]] inline const Pixel &get_pixel(unsigned x, unsigned y) const
+		[[nodiscard]] inline const Pixel &get_pixel(std::size_t x, std::size_t y) const
 		{
 			return (*reinterpret_cast<const Pixel *>(m_pixel_data.data() + (y * get_width() + x) * (3U)));
 		}
@@ -108,7 +109,8 @@ namespace ubv {
 			file.write(reinterpret_cast<const char *>(&header.bitsperpixel), sizeof(header.bitsperpixel));
 			file.write(reinterpret_cast<const char *>(&header.imagedescriptor), sizeof(header.imagedescriptor));
 
-			file.write(reinterpret_cast<const char *>(m_pixel_data.data()), m_pixel_data.size());
+			file.write(reinterpret_cast<const char *>(m_pixel_data.data()),
+					   static_cast<std::streamsize>(m_pixel_data.size()));
 		}
 
 	private:
