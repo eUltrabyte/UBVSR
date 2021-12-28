@@ -393,14 +393,7 @@ template <typename T> struct mat4x4
 		*this = *this * result;
 	}
 
-	constexpr void scale(const vec3<T> &t_vec) noexcept
-	{
-		mat4x4<T> result = identity<T>();
-		result.matrix[0][0] = t_vec.x;
-		result.matrix[1][1] = t_vec.y;
-		result.matrix[2][2] = t_vec.z;
-		*this = *this * result;
-	}
+	constexpr void scale(const vec3<T> &t_vec) noexcept;
 
 	[[nodiscard]] constexpr mat4x4<T> operator*(const mat4x4<T> &t_matrix) const noexcept
 	{
@@ -474,34 +467,45 @@ template <typename T> struct mat4x4
 		*/
 };
 
-using fmat4x4 = mat4x4<float>;
-using u16mat4x4 = mat4x4<std::uint16_t>;
-using u32mat4x4 = mat4x4<std::uint32_t>;
+	template<typename T>
+	[[nodiscard]] constexpr mat4x4<T> identity() noexcept
+	{
+		mat4x4<T> matrix;
+		matrix.matrix[0][0] = 1.0F;
+		matrix.matrix[1][1] = 1.0F;
+		matrix.matrix[2][2] = 1.0F;
+		matrix.matrix[3][3] = 1.0F;
+		return matrix;
+	}
 
-template <typename T> [[nodiscard]] constexpr mat4x4<T> identity() noexcept
-{
-	mat4x4<T> matrix;
-	matrix.matrix[0][0] = 1.0F;
-	matrix.matrix[1][1] = 1.0F;
-	matrix.matrix[2][2] = 1.0F;
-	matrix.matrix[3][3] = 1.0F;
-	return matrix;
-}
+	template<typename T>
+	constexpr void mat4x4<T>::scale(const vec3<T> &t_vec) noexcept
+	{
+		mat4x4<T> result = identity<T>();
+		result.matrix[0][0] = t_vec.x;
+		result.matrix[1][1] = t_vec.y;
+		result.matrix[2][2] = t_vec.z;
+		*this = *this * result;
+	}
 
-template <typename T>
-[[nodiscard]] inline mat4x4<T> projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
-{
-	return mat4x4<T>{t_fov, t_aspect_ratio, t_near_z, t_far_z};
-	/*fmat4x4 matrix;
+	using fmat4x4 = mat4x4<float>;
+	using u16mat4x4 = mat4x4<std::uint16_t>;
+	using u32mat4x4 = mat4x4<std::uint32_t>;
 
-	const T fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
-	matrix[0][0] = 1.0F / t_aspect_ratio * fov_radians;
-	matrix[1][1] = 1.0F / fov_radians;
-	matrix[2][2] = t_far_z / (t_far_z - t_near_z);
-	matrix[2][3] = 1.0F;
-	matrix[3][2] = -(2.0F * t_far_z * t_near_z) / (t_far_z - t_near_z);
+	template<typename T>
+	[[nodiscard]] inline mat4x4<T> projection(T t_fov, T t_aspect_ratio, T t_near_z, T t_far_z) noexcept
+	{
+		return mat4x4<T>{t_fov, t_aspect_ratio, t_near_z, t_far_z};
+		/*fmat4x4 matrix;
 
-	return matrix;*/
+		const T fov_radians = 1.0F / std::tan(t_fov * 0.5F / 180.0F * 3.14159F);
+		matrix[0][0] = 1.0F / t_aspect_ratio * fov_radians;
+		matrix[1][1] = 1.0F / fov_radians;
+		matrix[2][2] = t_far_z / (t_far_z - t_near_z);
+		matrix[2][3] = 1.0F;
+		matrix[3][2] = -(2.0F * t_far_z * t_near_z) / (t_far_z - t_near_z);
+
+		return matrix;*/
 }
 
 template <typename T>

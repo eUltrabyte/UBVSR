@@ -33,13 +33,15 @@ add_executable(UBVSR
 include(CheckIPOSupported)
 check_ipo_supported(RESULT supported OUTPUT error)
 
-if( supported )
+if (supported)
     message(STATUS "IPO / LTO enabled")
     set_property(TARGET UBVSR PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-else()
+else ()
     message(STATUS "IPO / LTO not supported: <${error}>")
-endif()
+endif ()
 
-if(UNIX)
-target_link_libraries(UBVSR X11 Threads::Threads)
-endif(UNIX)
+if (UNIX)
+    target_link_libraries(UBVSR X11 Threads::Threads)
+endif (UNIX)
+
+file(COPY res/ DESTINATION res/)

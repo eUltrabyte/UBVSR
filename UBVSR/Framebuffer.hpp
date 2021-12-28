@@ -842,7 +842,7 @@ class FrameBuffer
 		float true_distance; // used for fog, it's the true distance, negative value means fog is disabled
 		fvec2 uv;
 	};
-	Buffer<pixel_info, pixel_info{nullptr}> m_ms_pixel_info_buffer;
+	Buffer<pixel_info, pixel_info{nullptr, 0, fvec2{}}> m_ms_pixel_info_buffer;
 	// std::unique_ptr<std::mutex[]> m_ms_mutex_buffer;
 
 	// stencil buffer

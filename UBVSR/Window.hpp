@@ -44,8 +44,20 @@ const static inline std::map<Keys, unsigned> keys = {{Keys::Escape, 0x1B}, {Keys
                                                      {Keys::Space, 0x20},  {Keys::Enter, 0x0D}, {Keys::Shift, 0x10}, {Keys::E, 0x45}, {Keys::Q, 0x51} };
 #else
 const static inline std::map<Keys, unsigned> keys = {
-    {Keys::Escape, 9}, {Keys::W, 25},     {Keys::S, 39},      {Keys::A, 38},     {Keys::D, 40},    {Keys::Up, 111},
-    {Keys::Down, 116}, {Keys::Left, 113}, {Keys::Right, 114}, {Keys::Space, 65}, {Keys::Enter, 36}};
+		{Keys::Escape, 9},
+		{Keys::W,      25},
+		{Keys::S,      39},
+		{Keys::A,      38},
+		{Keys::D,      40},
+		{Keys::Up,     111},
+		{Keys::Down,   116},
+		{Keys::Left,   113},
+		{Keys::Right,  114},
+		{Keys::Space,  65},
+		{Keys::Enter,  36},
+		{Keys::Shift,  50},
+		{Keys::E,      26},
+		{Keys::Q,      24}};
 #endif
 
 struct WindowProps
